@@ -1,0 +1,766 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Kallpa — Science-backed training, AI coaching, zero guesswork. Build your program your way." />
+  <meta name="theme-color" content="#0a0a0f" />
+  <title>Kallpa — Train Smarter, Not Harder</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <link rel="apple-touch-icon" href="favicon.png" />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Kallpa — Train Smarter, Not Harder" />
+  <meta property="og:description" content="Science-backed training. AI coaching. Zero guesswork." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://kallpa.co" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            bg: '#0a0a0f',
+            surface: '#13131a',
+            'surface-2': '#1a1a24',
+            violet: {
+              DEFAULT: '#7c3aed',
+              dark: '#6d28d9',
+              light: '#8b5cf6',
+              glow: 'rgba(124,58,237,0.3)',
+            },
+            emerald: {
+              DEFAULT: '#10b981',
+              light: '#34d399',
+            },
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            display: ['Inter', 'sans-serif'],
+          },
+          animation: {
+            'gradient-shift': 'gradientShift 8s ease infinite',
+            'fade-up': 'fadeUp 0.6s ease forwards',
+            'pulse-glow': 'pulseGlow 3s ease-in-out infinite',
+          },
+          keyframes: {
+            gradientShift: {
+              '0%, 100%': { backgroundPosition: '0% 50%' },
+              '50%': { backgroundPosition: '100% 50%' },
+            },
+            fadeUp: {
+              from: { opacity: '0', transform: 'translateY(24px)' },
+              to: { opacity: '1', transform: 'translateY(0)' },
+            },
+            pulseGlow: {
+              '0%, 100%': { boxShadow: '0 0 20px rgba(124,58,237,0.3)' },
+              '50%': { boxShadow: '0 0 40px rgba(124,58,237,0.6)' },
+            },
+          },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --surface: #13131a;
+      --surface-2: #1a1a24;
+      --violet: #7c3aed;
+      --violet-dark: #6d28d9;
+      --violet-light: #8b5cf6;
+      --emerald: #10b981;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background-color: var(--bg);
+      color: #e2e2f0;
+      font-family: 'Inter', system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+      html { scroll-behavior: auto; }
+    }
+
+    /* Hero animated gradient */
+    .hero-gradient {
+      background: linear-gradient(135deg, #0a0a0f 0%, #0f0a1e 25%, #0a0a0f 50%, #0a1a0f 75%, #0a0a0f 100%);
+      background-size: 400% 400%;
+      animation: gradientShift 8s ease infinite;
+    }
+
+    @keyframes gradientShift {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    /* Glassmorphism card */
+    .glass-card {
+      background: rgba(19, 19, 26, 0.8);
+      border: 1px solid rgba(124, 58, 237, 0.15);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    .glass-card:hover {
+      border-color: rgba(124, 58, 237, 0.35);
+      transform: translateY(-2px);
+      transition: all 0.3s ease;
+    }
+
+    /* Navbar blur */
+    .nav-blur {
+      background: rgba(10, 10, 15, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(124, 58, 237, 0.1);
+    }
+
+    /* Gradient text */
+    .gradient-text {
+      background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 50%, #6d28d9 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Phone mockup glow */
+    .phone-glow {
+      box-shadow: 0 0 40px rgba(124, 58, 237, 0.25), 0 0 80px rgba(124, 58, 237, 0.1);
+      animation: pulseGlow 3s ease-in-out infinite;
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 30px rgba(124,58,237,0.25), 0 0 60px rgba(124,58,237,0.1); }
+      50% { box-shadow: 0 0 50px rgba(124,58,237,0.45), 0 0 100px rgba(124,58,237,0.2); }
+    }
+
+    /* Fade-in on scroll */
+    .fade-in-up {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .fade-in-up.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Step connector line */
+    .step-line::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 100%;
+      width: 2px;
+      height: 48px;
+      background: linear-gradient(to bottom, rgba(124,58,237,0.5), transparent);
+      transform: translateX(-50%);
+    }
+
+    /* Focus styles */
+    :focus-visible {
+      outline: 2px solid #7c3aed;
+      outline-offset: 3px;
+      border-radius: 4px;
+    }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: rgba(124,58,237,0.4); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(124,58,237,0.7); }
+
+    /* Button spinner */
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: inline-block;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Social proof separator */
+    .proof-dot::before {
+      content: '·';
+      margin: 0 0.75rem;
+      color: rgba(124,58,237,0.5);
+    }
+  </style>
+</head>
+<body class="bg-[#0a0a0f] text-[#e2e2f0]">
+
+<!-- ===== NAVIGATION ===== -->
+<header class="nav-blur fixed top-0 left-0 right-0 z-50" role="banner">
+  <nav class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between" aria-label="Main navigation">
+    <!-- Logo -->
+    <a href="/" class="flex items-center gap-2 group" aria-label="Kallpa home">
+      <img src="Kallpa3.png" alt="Kallpa icon" class="h-10 w-auto" /><img src="Kallpa2.png" alt="Kallpa" class="h-7 w-auto ml-2" />
+    </a>
+
+    <!-- Right side -->
+    <div class="flex items-center gap-4">
+      <!-- Language toggle -->
+      <div class="flex items-center gap-1 text-sm" aria-label="Language selection">
+        <span class="font-semibold text-white bg-[rgba(124,58,237,0.2)] px-2 py-0.5 rounded" aria-current="page">EN</span>
+        <span class="text-[#6b6b8a]">|</span>
+        <a href="es.html" class="text-[#9999b8] hover:text-white transition-colors px-2 py-0.5 rounded hover:bg-[rgba(124,58,237,0.1)]" hreflang="es" lang="es">ES</a>
+      </div>
+
+      <!-- CTA -->
+      <a href="#waitlist"
+         class="hidden sm:inline-flex items-center gap-2 bg-gradient-to-r from-[#7c3aed] to-[#6d28d9] hover:from-[#8b5cf6] hover:to-[#7c3aed] text-white font-semibold text-sm px-4 py-2 rounded-lg transition-all duration-200 shadow-lg shadow-[rgba(124,58,237,0.3)]"
+         aria-label="Join the Kallpa waitlist">
+        Join the waitlist
+      </a>
+    </div>
+  </nav>
+</header>
+
+<main>
+
+<!-- ===== HERO ===== -->
+<section class="hero-gradient relative min-h-screen flex items-center pt-16 overflow-hidden" aria-labelledby="hero-headline">
+  <!-- Background orbs -->
+  <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-[rgba(124,58,237,0.08)] rounded-full blur-3xl pointer-events-none" aria-hidden="true"></div>
+  <div class="absolute bottom-1/4 right-1/4 w-80 h-80 bg-[rgba(109,40,217,0.06)] rounded-full blur-3xl pointer-events-none" aria-hidden="true"></div>
+
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-20 lg:py-28 w-full">
+    <div class="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+
+      <!-- Text content -->
+      <div class="fade-in-up">
+        <!-- Hero logo -->
+        <div class="mb-8">
+          <div class="flex items-center gap-4">
+            <img src="Kallpa3.png" alt="Kallpa icon" class="h-20 sm:h-24 w-auto" />
+            <img src="Kallpa2.png" alt="Kallpa" class="h-12 sm:h-14 w-auto" />
+          </div>
+        </div>
+
+        <!-- Bilingual badge -->
+        <div class="inline-flex items-center gap-2 bg-[rgba(124,58,237,0.12)] border border-[rgba(124,58,237,0.25)] text-[#a78bfa] text-xs font-semibold px-3 py-1.5 rounded-full mb-6" aria-label="Available in English and Spanish">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          Available in English &amp; Español
+        </div>
+
+        <h1 id="hero-headline" class="font-display text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-[1.05] tracking-tight text-white mb-6" >
+          Science-backed training<br />
+          <span class="gradient-text">AI coaching</span><br />
+          Zero guesswork
+        </h1>
+
+        <p class="text-lg sm:text-xl text-[#9999b8] leading-relaxed mb-8 max-w-lg">
+          Kallpa gives you three ways to build your program, tracks your progress with science-based volume landmarks, and coaches you in real time, so you can focus on lifting.
+        </p>
+
+        <div class="flex flex-col sm:flex-row gap-3">
+          <a href="#waitlist"
+             class="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-[#7c3aed] to-[#6d28d9] hover:from-[#8b5cf6] hover:to-[#7c3aed] text-white font-semibold px-6 py-3.5 rounded-xl transition-all duration-200 shadow-xl shadow-[rgba(124,58,237,0.35)] text-base"
+             aria-label="Join the Kallpa waitlist">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            Join the waitlist
+          </a>
+          <a href="#how-it-works"
+             class="inline-flex items-center justify-center gap-2 border border-[rgba(124,58,237,0.35)] text-[#a78bfa] hover:bg-[rgba(124,58,237,0.1)] font-semibold px-6 py-3.5 rounded-xl transition-all duration-200 text-base"
+             aria-label="See how Kallpa works">
+            See how it works
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Phone mockup -->
+      <div class="flex justify-center lg:justify-end fade-in-up" style="animation-delay:0.2s">
+        <div class="relative">
+          <div class="phone-glow w-[260px] sm:w-[280px] h-[520px] sm:h-[560px] rounded-[2.5rem] border border-[rgba(124,58,237,0.3)] overflow-hidden"
+               role="img" aria-label="Kallpa app home screen">
+            <img src="Homescreen.jpeg"
+                 alt="Kallpa home screen showing weekly training summary, active program, and AI coaching card"
+                 class="w-full h-full object-cover object-top" />
+          </div>
+          <!-- Glow ring -->
+          <div class="absolute inset-0 rounded-[2.5rem] bg-gradient-to-b from-[rgba(124,58,237,0.05)] to-transparent pointer-events-none" aria-hidden="true"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ===== SOCIAL PROOF BAR ===== -->
+<section class="border-y border-[rgba(124,58,237,0.1)] bg-[#13131a]" aria-label="Key features overview">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-5">
+    <div class="flex flex-wrap items-center justify-center gap-y-2 text-sm text-[#9999b8] font-medium text-center">
+      <span>Built for intermediate lifters</span>
+      <span class="proof-dot">Science-based volume tracking</span>
+      <span class="proof-dot">Offline-first</span>
+      <span class="proof-dot">Bilingual EN/ES</span>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FEATURES ===== -->
+<section id="features" class="py-20 lg:py-28" aria-labelledby="features-headline">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6">
+    <div class="text-center mb-14 fade-in-up">
+      <h2 id="features-headline" class="font-display text-3xl sm:text-4xl font-extrabold text-white mb-4" >
+        Everything you need to train smarter
+      </h2>
+      <p class="text-[#9999b8] text-lg max-w-xl mx-auto">
+        Built on exercise science. Powered by AI. Designed for lifters who take their training seriously.
+      </p>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+
+      <!-- Card 1: Periodized Programs -->
+      <article class="glass-card rounded-2xl p-6 fade-in-up transition-all duration-300">
+        <div class="w-11 h-11 rounded-xl bg-[rgba(124,58,237,0.15)] flex items-center justify-center mb-4" aria-hidden="true">
+          <svg class="w-5 h-5 text-[#a78bfa]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+        </div>
+        <h3 class="font-semibold text-white text-lg mb-2">Three Ways to Build</h3>
+        <p class="text-[#9999b8] text-sm leading-relaxed">
+          Build fully manually, use Smart Build to get an AI-generated program tailored to your goal and level, or pick from pre-designed programs and make them your own.
+        </p>
+      </article>
+
+      <!-- Card 2: AI Coaching -->
+      <article class="glass-card rounded-2xl p-6 fade-in-up transition-all duration-300" style="animation-delay:0.1s">
+        <div class="w-11 h-11 rounded-xl bg-[rgba(124,58,237,0.15)] flex items-center justify-center mb-4" aria-hidden="true">
+          <svg class="w-5 h-5 text-[#a78bfa]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 10 10"/><path d="M12 6v6l4 2"/><circle cx="18" cy="6" r="3"/><path d="M18 3v3h3"/></svg>
+        </div>
+        <h3 class="font-semibold text-white text-lg mb-2">AI Coaching</h3>
+        <p class="text-[#9999b8] text-sm leading-relaxed">
+          7 types of coaching events: plateau alerts, deload recommendations, consistency wins, and more. The AI learns your patterns and adapts.
+        </p>
+      </article>
+
+      <!-- Card 3: Offline-First -->
+      <article class="glass-card rounded-2xl p-6 fade-in-up transition-all duration-300" style="animation-delay:0.2s">
+        <div class="w-11 h-11 rounded-xl bg-[rgba(124,58,237,0.15)] flex items-center justify-center mb-4" aria-hidden="true">
+          <svg class="w-5 h-5 text-[#a78bfa]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><line x1="1" y1="1" x2="23" y2="23"/><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/><path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/><path d="M10.71 5.05A16 16 0 0 1 22.56 9"/><path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+        </div>
+        <h3 class="font-semibold text-white text-lg mb-2">Offline-First</h3>
+        <p class="text-[#9999b8] text-sm leading-relaxed">
+          Train anywhere. All data lives on your device first, syncs to the cloud when you're back online.
+        </p>
+      </article>
+
+      <!-- Card 4: Volume Tracking -->
+      <article class="glass-card rounded-2xl p-6 fade-in-up transition-all duration-300" style="animation-delay:0.1s">
+        <div class="w-11 h-11 rounded-xl bg-[rgba(124,58,237,0.15)] flex items-center justify-center mb-4" aria-hidden="true">
+          <svg class="w-5 h-5 text-[#a78bfa]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="18" y="3" width="4" height="18"/><rect x="10" y="8" width="4" height="13"/><rect x="2" y="13" width="4" height="8"/></svg>
+        </div>
+        <h3 class="font-semibold text-white text-lg mb-2">Volume Tracking</h3>
+        <p class="text-[#9999b8] text-sm leading-relaxed">
+          Track sets per muscle group against science-based MEV/MAV/MRV landmarks. Know exactly when to push and when to back off.
+        </p>
+      </article>
+
+      <!-- Card 5: Bilingual -->
+      <article class="glass-card rounded-2xl p-6 fade-in-up transition-all duration-300" style="animation-delay:0.2s">
+        <div class="w-11 h-11 rounded-xl bg-[rgba(124,58,237,0.15)] flex items-center justify-center mb-4" aria-hidden="true">
+          <svg class="w-5 h-5 text-[#a78bfa]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        </div>
+        <h3 class="font-semibold text-white text-lg mb-2">Bilingual</h3>
+        <p class="text-[#9999b8] text-sm leading-relaxed">
+          Full English and Spanish support throughout the app — not just the UI, but the AI coaching messages too.
+        </p>
+      </article>
+
+      <!-- Card 6: Progress Insights -->
+      <article class="glass-card rounded-2xl p-6 fade-in-up transition-all duration-300" style="animation-delay:0.3s">
+        <div class="w-11 h-11 rounded-xl bg-[rgba(124,58,237,0.15)] flex items-center justify-center mb-4" aria-hidden="true">
+          <svg class="w-5 h-5 text-[#a78bfa]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </div>
+        <h3 class="font-semibold text-white text-lg mb-2">Progress Insights</h3>
+        <p class="text-[#9999b8] text-sm leading-relaxed">
+          e1RM tracking, sparkline trends, and weekly summaries that tell you what actually happened — not just what you logged.
+        </p>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<!-- ===== HOW IT WORKS ===== -->
+<section id="how-it-works" class="py-20 lg:py-28 bg-[#13131a]" aria-labelledby="how-headline">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6">
+    <div class="text-center mb-14 fade-in-up">
+      <h2 id="how-headline" class="font-display text-3xl sm:text-4xl font-extrabold text-white mb-4" >
+        Three steps to smarter training
+      </h2>
+      <p class="text-[#9999b8] text-lg max-w-xl mx-auto">
+        From setup to your first coached week in minutes.
+      </p>
+    </div>
+
+    <div class="max-w-2xl mx-auto space-y-0">
+
+      <!-- Step 1 -->
+      <div class="relative flex gap-6 pb-12 fade-in-up">
+        <div class="flex flex-col items-center">
+          <div class="w-12 h-12 rounded-full bg-gradient-to-br from-[#7c3aed] to-[#6d28d9] flex items-center justify-center text-white font-bold text-lg flex-shrink-0 shadow-lg shadow-[rgba(124,58,237,0.4)] z-10">
+            1
+          </div>
+          <div class="w-0.5 flex-1 bg-gradient-to-b from-[rgba(124,58,237,0.5)] to-[rgba(124,58,237,0.05)] mt-2" aria-hidden="true"></div>
+        </div>
+        <div class="pt-2 pb-4">
+          <h3 class="font-semibold text-white text-xl mb-2">Set up your program</h3>
+          <p class="text-[#9999b8] leading-relaxed">
+            Build from scratch, use Smart Build to generate a program from your goal and experience level, or start from a pre-designed template.
+          </p>
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="relative flex gap-6 pb-12 fade-in-up" style="animation-delay:0.15s">
+        <div class="flex flex-col items-center">
+          <div class="w-12 h-12 rounded-full bg-gradient-to-br from-[#7c3aed] to-[#6d28d9] flex items-center justify-center text-white font-bold text-lg flex-shrink-0 shadow-lg shadow-[rgba(124,58,237,0.4)] z-10">
+            2
+          </div>
+          <div class="w-0.5 flex-1 bg-gradient-to-b from-[rgba(124,58,237,0.5)] to-[rgba(124,58,237,0.05)] mt-2" aria-hidden="true"></div>
+        </div>
+        <div class="pt-2 pb-4">
+          <h3 class="font-semibold text-white text-xl mb-2">Train and log</h3>
+          <p class="text-[#9999b8] leading-relaxed">
+            Log sets, weight, and RIR (reps in reserve). The app tracks your effort and recovery in real time.
+          </p>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="relative flex gap-6 fade-in-up" style="animation-delay:0.3s">
+        <div class="flex flex-col items-center">
+          <div class="w-12 h-12 rounded-full bg-gradient-to-br from-[#7c3aed] to-[#6d28d9] flex items-center justify-center text-white font-bold text-lg flex-shrink-0 shadow-lg shadow-[rgba(124,58,237,0.4)] z-10">
+            3
+          </div>
+        </div>
+        <div class="pt-2">
+          <h3 class="font-semibold text-white text-xl mb-2">Get coached</h3>
+          <p class="text-[#9999b8] leading-relaxed">
+            After each week, your AI coach reviews your data and surfaces insights — deload when you need it, push when you're ready.
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ===== SCREENSHOT SHOWCASE ===== -->
+<section class="py-20 lg:py-28" aria-labelledby="screenshots-headline">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6">
+    <div class="text-center mb-14 fade-in-up">
+      <h2 id="screenshots-headline" class="font-display text-3xl sm:text-4xl font-extrabold text-white mb-4" >
+        Built for the way you train
+      </h2>
+      <p class="text-[#9999b8] text-lg max-w-xl mx-auto">
+        Every screen designed to keep you in the zone — not fumbling with your phone.
+      </p>
+    </div>
+
+    <div class="flex flex-col sm:flex-row gap-6 justify-center items-center sm:items-end">
+
+      <!-- Screenshot 1: Exercise log -->
+      <div class="fade-in-up">
+        <div class="w-[260px] h-[520px] rounded-[2.5rem] border border-[rgba(124,58,237,0.25)] overflow-hidden"
+             style="box-shadow: 0 0 30px rgba(124,58,237,0.2);"
+             role="img" aria-label="Kallpa exercise log screen">
+          <img src="LoggingSet.jpeg"
+               alt="Kallpa exercise logging screen showing sets, reps, weight, and RIR input for an active workout"
+               class="w-full h-full object-cover object-top" />
+        </div>
+      </div>
+
+      <!-- Screenshot 2: Workout list (center, tallest) -->
+      <div class="fade-in-up" style="animation-delay:0.15s">
+        <div class="w-[280px] h-[560px] rounded-[2.5rem] border border-[rgba(124,58,237,0.35)] overflow-hidden"
+             style="box-shadow: 0 0 50px rgba(124,58,237,0.3), 0 0 100px rgba(124,58,237,0.1);"
+             role="img" aria-label="Kallpa workout list screen">
+          <img src="WorkoutHistory.jpeg"
+               alt="Kallpa workout history list showing completed sessions with dates, duration, and muscle groups trained"
+               class="w-full h-full object-cover object-top" />
+        </div>
+      </div>
+
+      <!-- Screenshot 3: PR / history -->
+      <div class="fade-in-up" style="animation-delay:0.3s">
+        <div class="w-[260px] h-[520px] rounded-[2.5rem] border border-[rgba(124,58,237,0.25)] overflow-hidden"
+             style="box-shadow: 0 0 30px rgba(124,58,237,0.2);"
+             role="img" aria-label="Kallpa PR and progress screen">
+          <img src="PRs.jpeg"
+               alt="Kallpa personal records screen showing estimated 1RM progress charts and strength trends over time"
+               class="w-full h-full object-cover object-top" />
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ===== WAITLIST ===== -->
+<section id="waitlist" class="py-20 lg:py-28 bg-[#13131a] relative overflow-hidden" aria-labelledby="waitlist-headline">
+  <!-- Background glow -->
+  <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-[rgba(124,58,237,0.06)] rounded-full blur-3xl pointer-events-none" aria-hidden="true"></div>
+
+  <div class="max-w-xl mx-auto px-4 sm:px-6 text-center relative z-10">
+    <div class="fade-in-up">
+      <!-- Badge -->
+      <div class="inline-flex items-center gap-2 bg-[rgba(16,185,129,0.1)] border border-[rgba(16,185,129,0.25)] text-[#34d399] text-xs font-semibold px-3 py-1.5 rounded-full mb-6">
+        <span class="w-1.5 h-1.5 bg-[#10b981] rounded-full animate-pulse" aria-hidden="true"></span>
+        Coming soon
+      </div>
+
+      <h2 id="waitlist-headline" class="font-display text-3xl sm:text-4xl font-extrabold text-white mb-3" >
+        Kallpa is coming soon.
+      </h2>
+      <p class="text-[#9999b8] text-lg mb-8">
+        Join the waitlist and get early access when we launch.
+      </p>
+
+      <p id="waitlist-setup-notice" class="hidden text-amber-300/90 text-sm mb-4" role="status">
+        Waitlist is not configured on this deploy. For local preview, copy <code class="text-violet-light">config.example.js</code> to <code class="text-violet-light">config.js</code>. For GitHub Pages, set Actions secrets (see <code class="text-violet-light">web/README.md</code>).
+      </p>
+
+      <!-- Step 1: Email -->
+      <form id="waitlist-form" class="mb-4" novalidate aria-label="Waitlist signup form">
+        <!-- Step 1: email input -->
+        <div id="step-1" class="flex flex-col sm:flex-row gap-3">
+          <div class="flex-1">
+            <label for="email-input" class="sr-only">Email address</label>
+            <input
+              id="email-input"
+              type="email"
+              name="email"
+              placeholder="your@email.com"
+              autocomplete="email"
+              required
+              class="w-full bg-[#0a0a0f] border border-[rgba(124,58,237,0.25)] focus:border-[#7c3aed] text-white placeholder-[#6b6b8a] px-4 py-3.5 rounded-xl text-base outline-none transition-colors"
+              aria-required="true"
+              aria-describedby="form-message"
+            />
+          </div>
+          <button
+            type="button"
+            id="continue-btn"
+            class="flex items-center justify-center gap-2 bg-gradient-to-r from-[#7c3aed] to-[#6d28d9] hover:from-[#8b5cf6] hover:to-[#7c3aed] text-white font-semibold px-6 py-3.5 rounded-xl transition-all duration-200 shadow-lg shadow-[rgba(124,58,237,0.3)] whitespace-nowrap text-base"
+            aria-label="Continue to choose signup type"
+          >
+            Continue
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+
+        <!-- Step 2: choose signup type (hidden until email entered) -->
+        <div id="step-2" class="hidden mt-6" aria-live="polite">
+          <p class="text-white font-semibold mb-4">How would you like to join?</p>
+          <div class="grid sm:grid-cols-2 gap-3 mb-5">
+
+            <!-- Option A: Notify me -->
+            <button
+              type="submit"
+              id="btn-notify"
+              data-type="notify"
+              class="signup-option-btn flex flex-col items-start gap-2 p-4 rounded-xl border-2 border-[rgba(124,58,237,0.25)] bg-[rgba(124,58,237,0.05)] hover:border-[#7c3aed] hover:bg-[rgba(124,58,237,0.12)] transition-all duration-200 text-left group"
+              aria-label="Get notified when Kallpa launches"
+            >
+              <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-lg bg-[rgba(124,58,237,0.2)] flex items-center justify-center flex-shrink-0">
+                  <svg class="w-4 h-4 text-[#a78bfa]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                </div>
+                <span class="font-semibold text-white text-sm">Notify me at launch</span>
+              </div>
+              <p class="text-[#9999b8] text-xs leading-relaxed pl-10">
+                Get an email when Kallpa is available on the App Store.
+              </p>
+            </button>
+
+            <!-- Option B: Beta tester -->
+            <button
+              type="submit"
+              id="btn-beta"
+              data-type="beta"
+              class="signup-option-btn flex flex-col items-start gap-2 p-4 rounded-xl border-2 border-[rgba(16,185,129,0.25)] bg-[rgba(16,185,129,0.05)] hover:border-[#10b981] hover:bg-[rgba(16,185,129,0.12)] transition-all duration-200 text-left group relative"
+              aria-label="Apply to become a beta tester"
+            >
+              <!-- Limited badge -->
+              <div class="absolute top-3 right-3 bg-[rgba(16,185,129,0.15)] border border-[rgba(16,185,129,0.3)] text-[#34d399] text-[10px] font-bold px-2 py-0.5 rounded-full">
+                Limited spots
+              </div>
+              <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-lg bg-[rgba(16,185,129,0.2)] flex items-center justify-center flex-shrink-0">
+                  <svg class="w-4 h-4 text-[#34d399]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+                </div>
+                <span class="font-semibold text-white text-sm">Become a beta tester</span>
+              </div>
+              <p class="text-[#9999b8] text-xs leading-relaxed pl-10">
+                Get early access before launch. Help shape the app with your feedback.
+              </p>
+            </button>
+
+          </div>
+
+          <!-- Loading spinner (shared) -->
+          <div id="submit-spinner" class="hidden flex justify-center mb-3" aria-hidden="true">
+            <span class="spinner"></span>
+          </div>
+
+          <!-- Back link -->
+          <button type="button" id="back-btn" class="text-[#6b6b8a] hover:text-[#9999b8] text-xs transition-colors">
+            ← Change email
+          </button>
+        </div>
+      </form>
+
+      <!-- Form message -->
+      <div id="form-message" role="status" aria-live="polite" class="min-h-[24px] text-sm font-medium"></div>
+
+      <!-- Privacy note -->
+      <p class="text-[#6b6b8a] text-xs mt-4">
+        <svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        No spam. Unsubscribe anytime.
+      </p>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ===== FOOTER ===== -->
+<footer class="border-t border-[rgba(124,58,237,0.1)] bg-[#0a0a0f]" role="contentinfo">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-12">
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-10">
+
+      <!-- Brand -->
+      <div class="lg:col-span-2">
+        <div class="flex flex-col mb-3">
+          <div class="flex items-center gap-2 mb-1"><img src="Kallpa3.png" alt="Kallpa icon" class="h-8 w-auto" /><img src="Kallpa2.png" alt="Kallpa" class="h-5 w-auto" /></div>
+        </div>
+        <p class="text-[#6b6b8a] text-sm leading-relaxed max-w-xs">
+          Science-backed training and AI coaching for intermediate lifters who want to stop guessing and start progressing.
+        </p>
+        <!-- Social icons -->
+        <div class="flex gap-3 mt-4">
+          <a href="#" class="w-9 h-9 rounded-lg bg-[#13131a] border border-[rgba(124,58,237,0.15)] flex items-center justify-center text-[#9999b8] hover:text-white hover:border-[rgba(124,58,237,0.4)] transition-all" aria-label="Kallpa on Instagram">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+          </a>
+          <a href="#" class="w-9 h-9 rounded-lg bg-[#13131a] border border-[rgba(124,58,237,0.15)] flex items-center justify-center text-[#9999b8] hover:text-white hover:border-[rgba(124,58,237,0.4)] transition-all" aria-label="Kallpa on X (Twitter)">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Links -->
+      <div>
+        <h3 class="text-white font-semibold text-sm mb-4">Legal</h3>
+        <ul class="space-y-2">
+          <li><a href="#" class="text-[#9999b8] hover:text-white text-sm transition-colors">Privacy Policy</a></li>
+          <li><a href="#" class="text-[#9999b8] hover:text-white text-sm transition-colors">Terms of Service</a></li>
+        </ul>
+      </div>
+
+      <!-- Contact & Language -->
+      <div>
+        <h3 class="text-white font-semibold text-sm mb-4">Contact</h3>
+        <ul class="space-y-2 mb-6">
+          <li>
+            <a href="mailto:hello@kallpa.co" class="text-[#9999b8] hover:text-white text-sm transition-colors flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              hello@kallpa.co
+            </a>
+          </li>
+        </ul>
+        <div>
+          <h3 class="text-white font-semibold text-sm mb-3">Language</h3>
+          <div class="flex items-center gap-2 text-sm">
+            <span class="font-semibold text-white bg-[rgba(124,58,237,0.2)] px-2 py-0.5 rounded" aria-current="page">EN</span>
+            <span class="text-[#6b6b8a]">|</span>
+            <a href="es.html" class="text-[#9999b8] hover:text-white transition-colors" hreflang="es" lang="es">ES</a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="border-t border-[rgba(124,58,237,0.08)] pt-6 text-center">
+      <p class="text-[#6b6b8a] text-sm">
+        &copy; 2026 Kallpa. All rights reserved. &nbsp;&middot;&nbsp; Kallpa means <em>strength, power, energy</em> in Quechua.
+      </p>
+    </div>
+  </div>
+</footer>
+
+<!-- ===== JAVASCRIPT ===== -->
+<script src="config.js"></script>
+<script src="waitlist-config.js"></script>
+<script>
+  // ── Intersection Observer for fade-in-up animations ──────────────────────
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (!prefersReducedMotion) {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.12, rootMargin: '0px 0px -40px 0px' }
+    );
+
+    document.querySelectorAll('.fade-in-up').forEach((el) => observer.observe(el));
+  } else {
+    // Show all elements immediately if reduced motion is preferred
+    document.querySelectorAll('.fade-in-up').forEach((el) => {
+      el.style.opacity = '1';
+      el.style.transform = 'none';
+    });
+  }
+
+  // ── Sticky nav shadow on scroll ──────────────────────────────────────────
+  const header = document.querySelector('header');
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 10) {
+      header.style.boxShadow = '0 4px 24px rgba(0,0,0,0.4)';
+    } else {
+      header.style.boxShadow = 'none';
+    }
+  }, { passive: true });
+
+  window.initKallpaWaitlist({ locale: 'en' });
+</script>
+
+</body>
+</html>
