@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Your Kallpa email address has been confirmed." />
+  <meta name="theme-color" content="#0a0a0f" />
+  <meta name="robots" content="noindex" />
+  <title>Email confirmed — Kallpa</title>
+  <link rel="icon" type="image/png" href="../../favicon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background: #0a0a0f; color: #e2e2f0; font-family: Inter, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+    :focus-visible { outline: 2px solid #7c3aed; outline-offset: 3px; }
+    .btn-primary {
+      display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+      min-height: 3rem; padding: 0 1.5rem; border-radius: 0.75rem;
+      background: #7c3aed; color: #fff; font-weight: 600; font-size: 0.9375rem;
+      transition: background 0.15s, box-shadow 0.15s;
+      box-shadow: 0 0 24px rgba(124, 58, 237, 0.35);
+    }
+    .btn-primary:hover { background: #6d28d9; }
+    .check-ring {
+      width: 4.5rem; height: 4.5rem; border-radius: 9999px;
+      background: rgba(16, 185, 129, 0.12); border: 2px solid rgba(16, 185, 129, 0.45);
+      display: flex; align-items: center; justify-content: center;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+<header class="border-b border-[rgba(124,58,237,0.1)] bg-[#0a0a0f]/95 backdrop-blur">
+  <nav class="max-w-lg mx-auto px-4 sm:px-6 h-16 flex items-center justify-between" aria-label="Main navigation">
+    <a href="../../index.html" class="flex items-center gap-2" aria-label="Kallpa home">
+      <img src="../../Kallpa3.png" alt="" class="h-9 w-auto" />
+      <img src="../../Kallpa2.png" alt="Kallpa" class="h-6 w-auto" />
+    </a>
+    <div class="flex items-center gap-3 text-sm">
+      <button type="button" id="lang-en" class="font-semibold text-white bg-[rgba(124,58,237,0.2)] px-2 py-0.5 rounded" aria-pressed="true">EN</button>
+      <span class="text-[#6b6b8a]">|</span>
+      <button type="button" id="lang-es" class="text-[#9999b8] hover:text-white transition-colors" aria-pressed="false">ES</button>
+    </div>
+  </nav>
+</header>
+
+<main class="flex-1 max-w-lg mx-auto px-4 sm:px-6 py-16 w-full text-center" id="main-content">
+  <div class="check-ring mx-auto mb-6" aria-hidden="true">
+    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M20 6L9 17l-5-5"/>
+    </svg>
+  </div>
+
+  <h1 class="text-2xl sm:text-3xl font-bold text-white mb-3" data-i18n="title">Email confirmed</h1>
+  <p class="text-[#9999b8] text-base leading-relaxed mb-8 max-w-md mx-auto" data-i18n="body">
+    Your email address is verified. You can sign in to Kallpa with the email and password you chose.
+  </p>
+
+  <div class="flex flex-col items-center gap-4">
+    <a id="open-app" href="#" class="btn-primary w-full sm:w-auto min-w-[220px]">
+      <span data-i18n="openApp">Open Kallpa app</span>
+    </a>
+    <p class="text-[#6b6b8a] text-sm max-w-sm" data-i18n="desktopHint">
+      On a computer? Open the Kallpa app on your phone or emulator, then sign in — your account is ready.
+    </p>
+  </div>
+
+  <p id="error-state" class="hidden mt-10 text-[#f87171] text-sm" data-i18n="error">
+    This link may be invalid or expired. Request a new confirmation email from the app, or contact hello@kallpa.co.
+  </p>
+</main>
+
+<footer class="py-8 text-center text-[#6b6b8a] text-xs">
+  <a href="../../index.html" class="hover:text-white transition-colors" data-i18n="backHome">Back to kallpa.co</a>
+</footer>
+
+<script>
+(function () {
+  var APP_SCHEME = 'co.kallpa.app://login-callback/';
+  var strings = {
+    en: {
+      title: 'Email confirmed',
+      body: 'Your email address is verified. You can sign in to Kallpa with the email and password you chose.',
+      openApp: 'Open Kallpa app',
+      desktopHint: 'On a computer? Open the Kallpa app on your phone or emulator, then sign in — your account is ready.',
+      error: 'This link may be invalid or expired. Request a new confirmation email from the app, or contact hello@kallpa.co.',
+      backHome: 'Back to kallpa.co',
+      resetTitle: 'Password updated',
+      resetBody: 'Your password has been reset. Open Kallpa and sign in with your new password.'
+    },
+    es: {
+      title: 'Correo confirmado',
+      body: 'Tu correo está verificado. Ya puedes iniciar sesión en Kallpa con el email y la contraseña que elegiste.',
+      openApp: 'Abrir la app Kallpa',
+      desktopHint: '¿Estás en una computadora? Abre Kallpa en tu teléfono o emulador e inicia sesión — tu cuenta ya está lista.',
+      error: 'Este enlace puede ser inválido o haber expirado. Pide un nuevo correo de confirmación en la app o escribe a hello@kallpa.co.',
+      backHome: 'Volver a kallpa.co',
+      resetTitle: 'Contraseña actualizada',
+      resetBody: 'Tu contraseña se restableció. Abre Kallpa e inicia sesión con tu nueva contraseña.'
+    }
+  };
+
+  var lang = (navigator.language || '').toLowerCase().startsWith('es') ? 'es' : 'en';
+  var hash = window.location.hash || '';
+  var search = window.location.search || '';
+  var params = new URLSearchParams(search);
+  var hasError = params.has('error') || params.has('error_description');
+  var isRecovery = hash.indexOf('type=recovery') !== -1 || search.indexOf('type=recovery') !== -1;
+
+  function applyLang(code) {
+    lang = code;
+    var t = strings[code];
+    document.documentElement.lang = code;
+    document.getElementById('lang-en').className = code === 'en'
+      ? 'font-semibold text-white bg-[rgba(124,58,237,0.2)] px-2 py-0.5 rounded'
+      : 'text-[#9999b8] hover:text-white transition-colors';
+    document.getElementById('lang-es').className = code === 'es'
+      ? 'font-semibold text-white bg-[rgba(124,58,237,0.2)] px-2 py-0.5 rounded'
+      : 'text-[#9999b8] hover:text-white transition-colors';
+    document.getElementById('lang-en').setAttribute('aria-pressed', code === 'en');
+    document.getElementById('lang-es').setAttribute('aria-pressed', code === 'es');
+
+    var title = isRecovery ? t.resetTitle : t.title;
+    var body = isRecovery ? t.resetBody : t.body;
+    document.querySelector('[data-i18n="title"]').textContent = title;
+    document.querySelector('[data-i18n="body"]').textContent = body;
+    document.querySelector('[data-i18n="openApp"]').textContent = t.openApp;
+    document.querySelector('[data-i18n="desktopHint"]').textContent = t.desktopHint;
+    document.querySelector('[data-i18n="error"]').textContent = t.error;
+    document.querySelector('[data-i18n="backHome"]').textContent = t.backHome;
+  }
+
+  document.getElementById('lang-en').addEventListener('click', function () { applyLang('en'); });
+  document.getElementById('lang-es').addEventListener('click', function () { applyLang('es'); });
+  applyLang(lang);
+
+  var openApp = document.getElementById('open-app');
+  var appUrl = APP_SCHEME + (hash ? hash : '');
+  openApp.href = appUrl;
+
+  if (hasError) {
+    document.getElementById('error-state').classList.remove('hidden');
+    document.getElementById('main-content').querySelector('.check-ring').style.borderColor = 'rgba(248,113,113,0.5)';
+    document.getElementById('main-content').querySelector('.check-ring').style.background = 'rgba(248,113,113,0.1)';
+    document.getElementById('main-content').querySelector('svg').setAttribute('stroke', '#f87171');
+    document.getElementById('main-content').querySelector('svg path').setAttribute('d', 'M18 6L6 18M6 6l12 12');
+  } else if (hash && hash.indexOf('access_token=') !== -1) {
+    var mobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    if (mobile) {
+      window.location.replace(appUrl);
+    }
+  } else if (!hash && !search) {
+    document.getElementById('error-state').classList.remove('hidden');
+  }
+})();
+</script>
+</body>
+</html>
