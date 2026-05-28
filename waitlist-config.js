@@ -140,6 +140,10 @@
         });
 
         if (response.ok || response.status === 201) {
+          // Fire Meta Pixel Lead event
+          if (typeof fbq === 'function') {
+            fbq('track', 'Lead', { content_name: signupType, content_category: selectedPlatform || 'android' });
+          }
           const msg =
             signupType === 'beta'
               ? locale === 'es'
