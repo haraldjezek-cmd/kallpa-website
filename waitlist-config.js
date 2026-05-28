@@ -35,7 +35,10 @@
     const submitSpinner = document.getElementById('submit-spinner');
     const formMessage = document.getElementById('form-message');
     const optionBtns = document.querySelectorAll('.signup-option-btn');
+    const platformBtns = document.querySelectorAll('.platform-btn');
     const setupNotice = document.getElementById('waitlist-setup-notice');
+
+    let selectedPlatform = null;
 
     if (!form || !emailInput || !continueBtn) return;
 
@@ -53,6 +56,19 @@
     function isValidEmail(email) {
       return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
     }
+
+    // Platform button toggle
+    platformBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        selectedPlatform = btn.dataset.platform;
+        platformBtns.forEach((b) => {
+          b.classList.remove('border-[#7c3aed]', 'bg-[rgba(124,58,237,0.15)]', 'text-white');
+          b.classList.add('border-[rgba(124,58,237,0.25)]', 'bg-[rgba(124,58,237,0.05)]', 'text-[#9999b8]');
+        });
+        btn.classList.remove('border-[rgba(124,58,237,0.25)]', 'bg-[rgba(124,58,237,0.05)]', 'text-[#9999b8]');
+        btn.classList.add('border-[#7c3aed]', 'bg-[rgba(124,58,237,0.15)]', 'text-white');
+      });
+    });
 
     continueBtn.addEventListener('click', () => {
       const email = emailInput.value.trim();
@@ -120,7 +136,7 @@
             Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
             Prefer: 'return=minimal',
           },
-          body: JSON.stringify({ email, locale, signup_type: signupType }),
+          body: JSON.stringify({ email, locale, signup_type: signupType, platform: selectedPlatform || 'android' }),
         });
 
         if (response.ok || response.status === 201) {
