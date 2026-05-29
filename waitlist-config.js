@@ -148,9 +148,8 @@
           if (typeof fbq === 'function') {
             fbq('track', 'Lead', {
               content_name: signupType,
-              content_category: selectedPlatform || 'android'},
-		{
-              em: email.toLowerCase().trim()
+              content_category: selectedPlatform || 'android',
+              email: email.toLowerCase().trim()
             });
           }
           const msg =
@@ -165,6 +164,10 @@
           step2.classList.add('hidden');
           step1.classList.add('hidden');
           form.reset();
+          // Redirect to thank-you page
+          setTimeout(() => {
+            window.location.href = locale === 'es' ? '/gracias.html' : '/thank-you.html';
+          }, 300);
         } else if (response.status === 409) {
           // Already signed up — still fire Lead for audience building
           if (typeof fbq === 'function') {

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="¡Estás en la lista de espera de Kallpa!" />
+  <meta name="theme-color" content="#0a0a0f" />
+  <title>Kallpa — ¡Estás dentro!</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <link rel="apple-touch-icon" href="favicon.png" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+  <!-- Meta Pixel -->
+  <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', '1032633032791344');
+    fbq('track', 'PageView');
+    fbq('track', 'CompleteRegistration', { content_name: 'waitlist' });
+  </script>
+  <noscript>
+    <img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=1032633032791344&ev=PageView&noscript=1" />
+  </noscript>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            bg: '#0a0a0f',
+            surface: '#13131a',
+            violet: { DEFAULT: '#7c3aed', dark: '#6d28d9', light: '#8b5cf6' },
+            emerald: { DEFAULT: '#10b981', light: '#34d399' },
+          },
+          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    body {
+      background-color: #0a0a0f;
+      color: #e2e2f0;
+      font-family: 'Inter', system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    .gradient-text {
+      background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 50%, #6d28d9 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    @keyframes checkPop {
+      0% { transform: scale(0); opacity: 0; }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .check-pop { animation: checkPop 0.5s ease forwards; }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .fade-up { animation: fadeUp 0.6s ease forwards; }
+    .fade-up-delay { animation: fadeUp 0.6s ease 0.3s forwards; opacity: 0; }
+    .fade-up-delay-2 { animation: fadeUp 0.6s ease 0.5s forwards; opacity: 0; }
+  </style>
+</head>
+<body class="min-h-screen flex items-center justify-center px-4">
+
+  <!-- Background orbs -->
+  <div class="fixed top-1/4 left-1/4 w-96 h-96 bg-[rgba(124,58,237,0.06)] rounded-full blur-3xl pointer-events-none" aria-hidden="true"></div>
+  <div class="fixed bottom-1/4 right-1/4 w-80 h-80 bg-[rgba(16,185,129,0.04)] rounded-full blur-3xl pointer-events-none" aria-hidden="true"></div>
+
+  <div class="max-w-lg w-full text-center relative z-10">
+
+    <!-- Success checkmark -->
+    <div class="check-pop mb-8">
+      <div class="w-20 h-20 mx-auto rounded-full bg-[rgba(16,185,129,0.15)] border-2 border-[rgba(16,185,129,0.4)] flex items-center justify-center">
+        <svg class="w-10 h-10 text-[#34d399]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Heading -->
+    <h1 class="fade-up text-3xl sm:text-4xl font-extrabold text-white mb-4">
+      ¡Estás en la lista!
+    </h1>
+
+    <p class="fade-up-delay text-lg text-[#9999b8] mb-8 max-w-md mx-auto">
+      Gracias por unirte a la lista de espera de Kallpa. Te avisaremos en cuanto la app esté lista para descargar.
+    </p>
+
+    <!-- What's next card -->
+    <div class="fade-up-delay-2 bg-[#13131a] border border-[rgba(124,58,237,0.2)] rounded-2xl p-6 mb-8 text-left">
+      <h2 class="text-white font-semibold text-lg mb-4">¿Qué sigue?</h2>
+      <ul class="space-y-3 text-[#9999b8] text-sm">
+        <li class="flex items-start gap-3">
+          <span class="w-6 h-6 rounded-full bg-[rgba(124,58,237,0.15)] flex items-center justify-center flex-shrink-0 mt-0.5">
+            <span class="text-[#a78bfa] text-xs font-bold">1</span>
+          </span>
+          <span>Estamos terminando los últimos detalles y pruebas</span>
+        </li>
+        <li class="flex items-start gap-3">
+          <span class="w-6 h-6 rounded-full bg-[rgba(124,58,237,0.15)] flex items-center justify-center flex-shrink-0 mt-0.5">
+            <span class="text-[#a78bfa] text-xs font-bold">2</span>
+          </span>
+          <span>Recibirás un correo cuando Kallpa esté disponible en la tienda</span>
+        </li>
+        <li class="flex items-start gap-3">
+          <span class="w-6 h-6 rounded-full bg-[rgba(124,58,237,0.15)] flex items-center justify-center flex-shrink-0 mt-0.5">
+            <span class="text-[#a78bfa] text-xs font-bold">3</span>
+          </span>
+          <span>Los beta testers recibirán noticias aún antes</span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Back to home -->
+    <a href="/es.html"
+       class="fade-up-delay-2 inline-flex items-center gap-2 text-[#a78bfa] hover:text-white font-medium transition-colors">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+      </svg>
+      Volver a kallpa.co
+    </a>
+
+  </div>
+
+</body>
+</html>
