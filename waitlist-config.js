@@ -144,10 +144,13 @@
         });
 
         if (response.ok || response.status === 201) {
-          // Fire Meta Pixel Lead event with Advanced Matching (hashed email)
+          // Fire Meta Pixel Lead event with email for advanced matching
           if (typeof fbq === 'function') {
-            fbq('init', '1032633032791344', { em: email.toLowerCase().trim() });
-            fbq('track', 'Lead', { content_name: signupType, content_category: selectedPlatform || 'android' });
+            fbq('track', 'Lead', {
+              content_name: signupType,
+              content_category: selectedPlatform || 'android',
+              email: email.toLowerCase().trim()
+            });
           }
           const msg =
             signupType === 'beta'
@@ -164,8 +167,11 @@
         } else if (response.status === 409) {
           // Already signed up — still fire Lead for audience building
           if (typeof fbq === 'function') {
-            fbq('init', '1032633032791344', { em: email.toLowerCase().trim() });
-            fbq('track', 'Lead', { content_name: signupType, content_category: selectedPlatform || 'android' });
+            fbq('track', 'Lead', {
+              content_name: signupType,
+              content_category: selectedPlatform || 'android',
+              email: email.toLowerCase().trim()
+            });
           }
           setMessage(
             formMessage,
