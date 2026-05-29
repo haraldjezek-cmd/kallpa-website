@@ -143,8 +143,6 @@
           body: JSON.stringify({ email, locale, signup_type: signupType, platform: selectedPlatform || 'android' }),
         });
 
-        console.log('[Kallpa waitlist] response status:', response.status);
-
         if (response.ok || response.status === 201) {
           // Fire Meta Pixel Lead event with email for advanced matching
           if (typeof fbq === 'function') {
