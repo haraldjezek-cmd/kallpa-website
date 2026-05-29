@@ -93,6 +93,10 @@
       setMessage(formMessage, '', false);
       step1.classList.add('hidden');
       step2.classList.remove('hidden');
+      // Fire ViewContent when user shows signup intent
+      if (typeof fbq === 'function') {
+        fbq('track', 'ViewContent', { content_name: 'waitlist_step2' });
+      }
       const notifyBtn = document.getElementById('btn-notify');
       if (notifyBtn) notifyBtn.focus();
     });
@@ -140,8 +144,9 @@
         });
 
         if (response.ok || response.status === 201) {
-          // Fire Meta Pixel Lead event
+          // Fire Meta Pixel Lead event with Advanced Matching (hashed email)
           if (typeof fbq === 'function') {
+            fbq('init', '1032633032791344', { em: email.toLowerCase().trim() });
             fbq('track', 'Lead', { content_name: signupType, content_category: selectedPlatform || 'android' });
           }
           const msg =
@@ -157,6 +162,11 @@
           step1.classList.add('hidden');
           form.reset();
         } else if (response.status === 409) {
+          // Already signed up — still fire Lead for audience building
+          if (typeof fbq === 'function') {
+            fbq('init', '1032633032791344', { em: email.toLowerCase().trim() });
+            fbq('track', 'Lead', { content_name: signupType, content_category: selectedPlatform || 'android' });
+          }
           setMessage(
             formMessage,
             locale === 'es' ? '¡Ya estás en la lista!' : "You're already on the list!",
