@@ -166,7 +166,7 @@
           form.reset();
           // Redirect to thank-you page
           setTimeout(() => {
-            window.location.href = locale === 'es' ? '/gracias.html' : '/thank-you.html';
+            window.location.href = locale === 'es' ? 'gracias.html' : 'thank-you.html';
           }, 300);
         } else if (response.status === 409) {
           // Already signed up — still fire Lead for audience building
@@ -182,6 +182,10 @@
             locale === 'es' ? '¡Ya estás en la lista!' : "You're already on the list!",
             false
           );
+          // Redirect to thank-you page even for existing users
+          setTimeout(() => {
+            window.location.href = locale === 'es' ? 'gracias.html' : 'thank-you.html';
+          }, 300);
         } else {
           const errorData = await response.json().catch(() => ({}));
           console.error('Waitlist error:', response.status, errorData);
