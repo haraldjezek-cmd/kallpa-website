@@ -148,8 +148,9 @@
           if (typeof fbq === 'function') {
             fbq('track', 'Lead', {
               content_name: signupType,
-              content_category: selectedPlatform || 'android',
-              email: email.toLowerCase().trim()
+              content_category: selectedPlatform || 'android'},
+		{
+              em: email.toLowerCase().trim()
             });
           }
           const msg =
