@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kallpa Dashboard — Design Mockups</title>
+  <link rel="icon" type="image/png" href="../favicon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            bg: '#0F0F12',
+            surface: '#1C1C21',
+            'surface-2': '#242429',
+            violet: { DEFAULT: '#A855F7', dark: '#7C3AED', subtle: '#6D28D9', muted: 'rgba(168,85,247,0.12)' },
+            success: '#22C55E',
+            warning: '#EAB308',
+            error: '#EF4444',
+            info: '#3B82F6',
+            'text-primary': '#FAFAFA',
+            'text-secondary': '#9CA3AF',
+            'text-disabled': '#6B7280',
+            border: '#2E2E35',
+          },
+          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+        },
+      },
+    };
+  </script>
+</head>
+<body class="bg-bg text-text-primary font-sans antialiased">
+
+<!-- ============================================================
+     MOCKUP NAVIGATION — switch between design options
+     ============================================================ -->
+<div class="fixed top-0 left-0 right-0 z-50 bg-bg/90 backdrop-blur-md border-b border-border px-6 py-3 flex items-center justify-between">
+  <div class="flex items-center gap-3">
+    <img src="../Kallpa3.png" alt="" class="h-7" />
+    <span class="text-sm font-bold text-violet">Design Mockups</span>
+  </div>
+  <div class="flex gap-2 text-xs">
+    <a href="#option-a" class="px-3 py-1.5 rounded-lg bg-violet/10 border border-violet/30 text-violet font-semibold">Option A</a>
+    <a href="#option-b" class="px-3 py-1.5 rounded-lg bg-surface border border-border text-text-secondary hover:text-white">Option B</a>
+    <a href="#option-c" class="px-3 py-1.5 rounded-lg bg-surface border border-border text-text-secondary hover:text-white">Option C</a>
+  </div>
+</div>
+
+<div class="pt-16 max-w-6xl mx-auto px-4 sm:px-6 space-y-32 pb-32">
+
+<!-- ============================================================
+     OPTION A — "Bento Grid" Dashboard
+     Inspired by: Apple Health, Linear, Vercel
+     Key idea: Asymmetric bento boxes with large hero metrics,
+     gradient accents, and micro-charts inline.
+     ============================================================ -->
+<section id="option-a" class="pt-8">
+  <div class="mb-8">
+    <h2 class="text-3xl font-extrabold text-white">Option A — <span class="text-violet">Bento Grid</span></h2>
+    <p class="text-text-secondary text-sm mt-1">Asymmetric cards with hero metrics, sparklines, and gradient accents. Program section prominent.</p>
+  </div>
+
+  <!-- Greeting + streak hero -->
+  <div class="grid grid-cols-12 gap-4 mb-4">
+    <!-- Main greeting — spans 8 cols -->
+    <div class="col-span-12 lg:col-span-8 rounded-2xl bg-gradient-to-br from-violet-dark/20 via-surface to-surface border border-violet/10 p-6 relative overflow-hidden">
+      <div class="absolute top-0 right-0 w-64 h-64 bg-violet/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4"></div>
+      <p class="text-text-secondary text-sm">Good evening,</p>
+      <h1 class="text-3xl font-extrabold text-white mt-1">Harald</h1>
+      <p class="text-text-secondary text-sm mt-2">Week 6 of 8 · Upper/Lower Split · 3 sessions left this week</p>
+      <!-- Weekly progress dots -->
+      <div class="flex gap-2 mt-4">
+        <div class="w-10 h-2 rounded-full bg-violet"></div>
+        <div class="w-10 h-2 rounded-full bg-violet"></div>
+        <div class="w-10 h-2 rounded-full bg-violet/30"></div>
+        <div class="w-10 h-2 rounded-full bg-surface-2"></div>
+        <div class="w-10 h-2 rounded-full bg-surface-2"></div>
+      </div>
+    </div>
+    <!-- Streak card — spans 4 cols -->
+    <div class="col-span-12 lg:col-span-4 rounded-2xl bg-surface border border-border p-6 flex flex-col items-center justify-center text-center">
+      <div class="text-4xl mb-1">🔥</div>
+      <div class="text-4xl font-black text-warning">7</div>
+      <div class="text-xs text-text-secondary font-medium uppercase tracking-wide mt-1">Week Streak</div>
+      <div class="text-xs text-text-disabled mt-1">Best: 12 weeks</div>
+    </div>
+  </div>
+
+  <!-- Bento stats row -->
+  <div class="grid grid-cols-12 gap-4 mb-4">
+    <!-- Big stat: Total workouts -->
+    <div class="col-span-6 sm:col-span-3 rounded-2xl bg-surface border border-border p-5">
+      <div class="text-xs text-text-disabled uppercase tracking-wide font-semibold">Workouts</div>
+      <div class="text-3xl font-black text-white mt-2">147</div>
+      <div class="text-xs text-success mt-1">+4 this week</div>
+    </div>
+    <!-- Big stat: Sets this week -->
+    <div class="col-span-6 sm:col-span-3 rounded-2xl bg-surface border border-border p-5">
+      <div class="text-xs text-text-disabled uppercase tracking-wide font-semibold">Sets This Week</div>
+      <div class="text-3xl font-black text-white mt-2">62</div>
+      <div class="flex gap-0.5 mt-2 h-4 items-end">
+        <div class="w-2 rounded-t bg-violet/40" style="height:40%"></div>
+        <div class="w-2 rounded-t bg-violet/50" style="height:55%"></div>
+        <div class="w-2 rounded-t bg-violet/60" style="height:70%"></div>
+        <div class="w-2 rounded-t bg-violet/80" style="height:85%"></div>
+        <div class="w-2 rounded-t bg-violet" style="height:100%"></div>
+      </div>
+    </div>
+    <!-- PRs this month -->
+    <div class="col-span-6 sm:col-span-3 rounded-2xl bg-surface border border-border p-5">
+      <div class="text-xs text-text-disabled uppercase tracking-wide font-semibold">PRs This Month</div>
+      <div class="text-3xl font-black text-warning mt-2">3</div>
+      <div class="text-xs text-text-secondary mt-1">⭐ Bench, Squat, Row</div>
+    </div>
+    <!-- Bodyweight -->
+    <div class="col-span-6 sm:col-span-3 rounded-2xl bg-surface border border-border p-5">
+      <div class="text-xs text-text-disabled uppercase tracking-wide font-semibold">Bodyweight</div>
+      <div class="text-3xl font-black text-white mt-2">82.4<span class="text-lg text-text-secondary ml-1">kg</span></div>
+      <div class="text-xs text-success mt-1">-0.6 kg this month</div>
+    </div>
+  </div>
+
+  <!-- Program + Volume bento -->
+  <div class="grid grid-cols-12 gap-4 mb-4">
+    <!-- Active Program — large card -->
+    <div class="col-span-12 lg:col-span-7 rounded-2xl bg-surface border border-border p-6">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <div class="text-xs text-violet font-bold uppercase tracking-wide">Active Program</div>
+          <h3 class="text-xl font-bold text-white mt-1">Upper/Lower Hypertrophy</h3>
+        </div>
+        <span class="text-xs bg-violet/10 text-violet px-2.5 py-1 rounded-full font-semibold">Week 6/8</span>
+      </div>
+      <!-- Program days grid -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-4">
+        <div class="rounded-xl bg-surface-2 border border-border p-3">
+          <div class="text-xs text-text-secondary font-medium">Day 1</div>
+          <div class="text-sm font-semibold text-white mt-1">Upper Push</div>
+          <div class="text-xs text-text-disabled mt-0.5">Chest, Shoulders, Triceps</div>
+          <div class="text-xs text-success mt-2">✓ Done</div>
+        </div>
+        <div class="rounded-xl bg-surface-2 border border-border p-3">
+          <div class="text-xs text-text-secondary font-medium">Day 2</div>
+          <div class="text-sm font-semibold text-white mt-1">Lower</div>
+          <div class="text-xs text-text-disabled mt-0.5">Quads, Hams, Glutes</div>
+          <div class="text-xs text-success mt-2">✓ Done</div>
+        </div>
+        <div class="rounded-xl bg-violet/10 border border-violet/30 p-3">
+          <div class="text-xs text-violet font-medium">Day 3</div>
+          <div class="text-sm font-semibold text-white mt-1">Upper Pull</div>
+          <div class="text-xs text-text-disabled mt-0.5">Back, Biceps, Rear Delts</div>
+          <div class="text-xs text-violet mt-2">→ Next</div>
+        </div>
+        <div class="rounded-xl bg-surface-2 border border-border p-3">
+          <div class="text-xs text-text-secondary font-medium">Day 4</div>
+          <div class="text-sm font-semibold text-white mt-1">Lower + Arms</div>
+          <div class="text-xs text-text-disabled mt-0.5">Quads, Hams, Bi/Tri</div>
+          <div class="text-xs text-text-disabled mt-2">Pending</div>
+        </div>
+      </div>
+      <!-- Mesocycle bar -->
+      <div class="mt-5">
+        <div class="flex justify-between text-xs text-text-disabled mb-1">
+          <span>Mesocycle Progress</span>
+          <span>Week 6 of 8</span>
+        </div>
+        <div class="h-2 bg-surface-2 rounded-full overflow-hidden">
+          <div class="h-full bg-gradient-to-r from-violet-dark to-violet rounded-full" style="width:75%"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Volume by muscle — compact radial-style -->
+    <div class="col-span-12 lg:col-span-5 rounded-2xl bg-surface border border-border p-6">
+      <div class="text-xs text-violet font-bold uppercase tracking-wide mb-4">Weekly Volume</div>
+      <div class="space-y-3">
+        <!-- Each muscle: name + bar + count -->
+        <div class="flex items-center gap-3">
+          <span class="text-xs text-text-secondary w-20">Chest</span>
+          <div class="flex-1 h-2.5 bg-surface-2 rounded-full overflow-hidden relative">
+            <div class="absolute inset-y-0 left-0 bg-success rounded-full" style="width:70%"></div>
+            <!-- MEV marker -->
+            <div class="absolute inset-y-0 w-px bg-info/50" style="left:30%"></div>
+            <!-- MRV marker -->
+            <div class="absolute inset-y-0 w-px bg-error/50" style="left:90%"></div>
+          </div>
+          <span class="text-xs font-bold text-white w-6 text-right">14</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="text-xs text-text-secondary w-20">Back</span>
+          <div class="flex-1 h-2.5 bg-surface-2 rounded-full overflow-hidden relative">
+            <div class="absolute inset-y-0 left-0 bg-success rounded-full" style="width:80%"></div>
+            <div class="absolute inset-y-0 w-px bg-info/50" style="left:25%"></div>
+            <div class="absolute inset-y-0 w-px bg-error/50" style="left:95%"></div>
+          </div>
+          <span class="text-xs font-bold text-white w-6 text-right">16</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="text-xs text-text-secondary w-20">Quads</span>
+          <div class="flex-1 h-2.5 bg-surface-2 rounded-full overflow-hidden relative">
+            <div class="absolute inset-y-0 left-0 bg-warning rounded-full" style="width:90%"></div>
+            <div class="absolute inset-y-0 w-px bg-info/50" style="left:30%"></div>
+            <div class="absolute inset-y-0 w-px bg-error/50" style="left:85%"></div>
+          </div>
+          <span class="text-xs font-bold text-white w-6 text-right">18</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="text-xs text-text-secondary w-20">Side Delts</span>
+          <div class="flex-1 h-2.5 bg-surface-2 rounded-full overflow-hidden relative">
+            <div class="absolute inset-y-0 left-0 bg-info rounded-full" style="width:25%"></div>
+            <div class="absolute inset-y-0 w-px bg-info/50" style="left:35%"></div>
+            <div class="absolute inset-y-0 w-px bg-error/50" style="left:90%"></div>
+          </div>
+          <span class="text-xs font-bold text-white w-6 text-right">5</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="text-xs text-text-secondary w-20">Hamstrings</span>
+          <div class="flex-1 h-2.5 bg-surface-2 rounded-full overflow-hidden relative">
+            <div class="absolute inset-y-0 left-0 bg-success rounded-full" style="width:55%"></div>
+            <div class="absolute inset-y-0 w-px bg-info/50" style="left:30%"></div>
+            <div class="absolute inset-y-0 w-px bg-error/50" style="left:85%"></div>
+          </div>
+          <span class="text-xs font-bold text-white w-6 text-right">11</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="text-xs text-text-secondary w-20">Biceps</span>
+          <div class="flex-1 h-2.5 bg-surface-2 rounded-full overflow-hidden relative">
+            <div class="absolute inset-y-0 left-0 bg-success rounded-full" style="width:60%"></div>
+            <div class="absolute inset-y-0 w-px bg-info/50" style="left:25%"></div>
+            <div class="absolute inset-y-0 w-px bg-error/50" style="left:80%"></div>
+          </div>
+          <span class="text-xs font-bold text-white w-6 text-right">9</span>
+        </div>
+      </div>
+      <!-- Legend -->
+      <div class="flex gap-4 mt-4 text-xs text-text-disabled">
+        <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-info"></span>MEV</span>
+        <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-success"></span>MAV</span>
+        <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-error"></span>MRV</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRs + Recent workouts row -->
+  <div class="grid grid-cols-12 gap-4">
+    <!-- Top PRs -->
+    <div class="col-span-12 lg:col-span-5 rounded-2xl bg-surface border border-border p-6">
+      <div class="text-xs text-warning font-bold uppercase tracking-wide mb-4">⭐ Personal Records</div>
+      <div class="space-y-3">
+        <div class="flex items-center justify-between p-3 rounded-xl bg-surface-2">
+          <div>
+            <div class="text-sm font-semibold text-white">Bench Press</div>
+            <div class="text-xs text-text-disabled">May 25 · 3 sets logged</div>
+          </div>
+          <div class="text-right">
+            <div class="text-lg font-black text-warning">102.5<span class="text-xs text-text-secondary ml-0.5">kg</span></div>
+            <div class="text-xs text-success">+2.5 kg</div>
+          </div>
+        </div>
+        <div class="flex items-center justify-between p-3 rounded-xl bg-surface-2">
+          <div>
+            <div class="text-sm font-semibold text-white">Squat</div>
+            <div class="text-xs text-text-disabled">May 22 · 4 sets logged</div>
+          </div>
+          <div class="text-right">
+            <div class="text-lg font-black text-warning">145.0<span class="text-xs text-text-secondary ml-0.5">kg</span></div>
+            <div class="text-xs text-success">+5.0 kg</div>
+          </div>
+        </div>
+        <div class="flex items-center justify-between p-3 rounded-xl bg-surface-2">
+          <div>
+            <div class="text-sm font-semibold text-white">Barbell Row</div>
+            <div class="text-xs text-text-disabled">May 27 · 3 sets logged</div>
+          </div>
+          <div class="text-right">
+            <div class="text-lg font-black text-warning">95.0<span class="text-xs text-text-secondary ml-0.5">kg</span></div>
+            <div class="text-xs text-text-disabled">= same</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent workouts — timeline style -->
+    <div class="col-span-12 lg:col-span-7 rounded-2xl bg-surface border border-border p-6">
+      <div class="text-xs text-text-disabled font-bold uppercase tracking-wide mb-4">Recent Workouts</div>
+      <div class="space-y-0">
+        <div class="flex gap-4 pb-4 border-l-2 border-violet/30 pl-4 ml-2 relative">
+          <div class="absolute -left-[5px] top-0 w-2.5 h-2.5 rounded-full bg-violet border-2 border-bg"></div>
+          <div class="flex-1">
+            <div class="flex items-center justify-between">
+              <span class="text-sm font-semibold text-white">Upper Pull</span>
+              <span class="text-xs text-text-disabled">Today · 52m</span>
+            </div>
+            <p class="text-xs text-text-secondary mt-0.5">5 exercises · 18 sets · Recovery: <span class="text-success">4/5</span></p>
+          </div>
+        </div>
+        <div class="flex gap-4 pb-4 border-l-2 border-violet/20 pl-4 ml-2 relative">
+          <div class="absolute -left-[5px] top-0 w-2.5 h-2.5 rounded-full bg-violet/50 border-2 border-bg"></div>
+          <div class="flex-1">
+            <div class="flex items-center justify-between">
+              <span class="text-sm font-semibold text-white">Lower</span>
+              <span class="text-xs text-text-disabled">Yesterday · 61m</span>
+            </div>
+            <p class="text-xs text-text-secondary mt-0.5">6 exercises · 22 sets · Recovery: <span class="text-warning">3/5</span></p>
+          </div>
+        </div>
+        <div class="flex gap-4 pb-4 border-l-2 border-violet/10 pl-4 ml-2 relative">
+          <div class="absolute -left-[5px] top-0 w-2.5 h-2.5 rounded-full bg-surface-2 border-2 border-bg"></div>
+          <div class="flex-1">
+            <div class="flex items-center justify-between">
+              <span class="text-sm font-semibold text-white">Upper Push</span>
+              <span class="text-xs text-text-disabled">Mon · 48m</span>
+            </div>
+            <p class="text-xs text-text-secondary mt-0.5">5 exercises · 16 sets · Recovery: <span class="text-success">4/5</span></p>
+          </div>
+        </div>
+        <div class="flex gap-4 border-l-2 border-transparent pl-4 ml-2 relative">
+          <div class="absolute -left-[5px] top-0 w-2.5 h-2.5 rounded-full bg-surface-2 border-2 border-bg"></div>
+          <div class="flex-1">
+            <div class="flex items-center justify-between">
+              <span class="text-sm font-semibold text-white">Lower</span>
+              <span class="text-xs text-text-disabled">Sat · 55m</span>
+            </div>
+            <p class="text-xs text-text-secondary mt-0.5">6 exercises · 20 sets · Recovery: <span class="text-success">5/5</span></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     OPTION B — "Dark Fitness App" Dashboard
+     Inspired by: Strava, Whoop, Oura Ring
+     Key idea: Full-width cards with large data viz, ring charts,
+     and a "today's focus" hero section. More visual, less text.
+     ============================================================ -->
+<section id="option-b" class="pt-8">
+  <div class="mb-8">
+    <h2 class="text-3xl font-extrabold text-white">Option B — <span class="text-success">Fitness App</span></h2>
+    <p class="text-text-secondary text-sm mt-1">Full-width cards, ring/arc charts, "today's focus" hero. More visual, less tabular.</p>
+  </div>
+
+  <!-- Hero: Today's Focus -->
+  <div class="rounded-3xl bg-gradient-to-br from-surface via-surface to-violet-dark/10 border border-border p-8 mb-6 relative overflow-hidden">
+    <div class="absolute -top-20 -right-20 w-80 h-80 bg-violet/8 rounded-full blur-3xl"></div>
+    <div class="relative">
+      <div class="flex items-start justify-between">
+        <div>
+          <p class="text-text-secondary text-sm font-medium">Today's Focus</p>
+          <h2 class="text-2xl font-extrabold text-white mt-1">Upper Pull Day</h2>
+          <p class="text-text-secondary text-sm mt-1">Back · Biceps · Rear Delts</p>
+          <div class="flex items-center gap-4 mt-4">
+            <div class="flex items-center gap-1.5">
+              <div class="w-2 h-2 rounded-full bg-success"></div>
+              <span class="text-xs text-text-secondary">5 exercises</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <div class="w-2 h-2 rounded-full bg-violet"></div>
+              <span class="text-xs text-text-secondary">~18 sets</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <div class="w-2 h-2 rounded-full bg-info"></div>
+              <span class="text-xs text-text-secondary">~52 min</span>
+            </div>
+          </div>
+        </div>
+        <!-- Ring chart: week progress -->
+        <div class="relative w-28 h-28 flex-shrink-0">
+          <svg class="w-full h-full -rotate-90" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="42" fill="none" stroke="#242429" stroke-width="8"/>
+            <circle cx="50" cy="50" r="42" fill="none" stroke="#A855F7" stroke-width="8" stroke-linecap="round" stroke-dasharray="264" stroke-dashoffset="106"/>
+          </svg>
+          <div class="absolute inset-0 flex flex-col items-center justify-center">
+            <span class="text-xl font-black text-white">3/5</span>
+            <span class="text-[10px] text-text-disabled">this week</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Program overview — horizontal scroll cards -->
+  <div class="mb-6">
+    <div class="flex items-center justify-between mb-3">
+      <h3 class="text-sm font-bold text-white uppercase tracking-wide">Program: Upper/Lower Hypertrophy</h3>
+      <span class="text-xs text-violet font-semibold">Week 6 of 8</span>
+    </div>
+    <div class="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 snap-x">
+      <div class="snap-start flex-shrink-0 w-44 rounded-xl bg-success/10 border border-success/20 p-4">
+        <div class="text-xs text-success font-semibold">Day 1 ✓</div>
+        <div class="text-sm font-bold text-white mt-1">Upper Push</div>
+        <div class="text-xs text-text-disabled mt-1">5 ex · 16 sets</div>
+      </div>
+      <div class="snap-start flex-shrink-0 w-44 rounded-xl bg-success/10 border border-success/20 p-4">
+        <div class="text-xs text-success font-semibold">Day 2 ✓</div>
+        <div class="text-sm font-bold text-white mt-1">Lower</div>
+        <div class="text-xs text-text-disabled mt-1">6 ex · 22 sets</div>
+      </div>
+      <div class="snap-start flex-shrink-0 w-44 rounded-xl bg-violet/10 border border-violet/30 p-4 ring-2 ring-violet/20">
+        <div class="text-xs text-violet font-semibold">Day 3 → Next</div>
+        <div class="text-sm font-bold text-white mt-1">Upper Pull</div>
+        <div class="text-xs text-text-disabled mt-1">5 ex · ~18 sets</div>
+      </div>
+      <div class="snap-start flex-shrink-0 w-44 rounded-xl bg-surface border border-border p-4">
+        <div class="text-xs text-text-disabled font-semibold">Day 4</div>
+        <div class="text-sm font-bold text-white mt-1">Lower + Arms</div>
+        <div class="text-xs text-text-disabled mt-1">7 ex · ~20 sets</div>
+      </div>
+      <div class="snap-start flex-shrink-0 w-44 rounded-xl bg-surface border border-border p-4">
+        <div class="text-xs text-text-disabled font-semibold">Day 5</div>
+        <div class="text-sm font-bold text-white mt-1">Full Body</div>
+        <div class="text-xs text-text-disabled mt-1">5 ex · ~15 sets</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Strength + Volume side by side -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+    <!-- e1RM Trends -->
+    <div class="rounded-2xl bg-surface border border-border p-6">
+      <div class="text-xs text-warning font-bold uppercase tracking-wide mb-4">Strength Trends (e1RM)</div>
+      <div class="space-y-4">
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-sm font-medium text-white">Bench Press</span>
+            <span class="text-sm font-bold text-white">102.5 kg</span>
+          </div>
+          <!-- Fake sparkline -->
+          <div class="flex items-end gap-px h-8">
+            <div class="flex-1 rounded-t bg-violet/20" style="height:60%"></div>
+            <div class="flex-1 rounded-t bg-violet/25" style="height:65%"></div>
+            <div class="flex-1 rounded-t bg-violet/30" style="height:62%"></div>
+            <div class="flex-1 rounded-t bg-violet/35" style="height:70%"></div>
+            <div class="flex-1 rounded-t bg-violet/40" style="height:72%"></div>
+            <div class="flex-1 rounded-t bg-violet/50" style="height:78%"></div>
+            <div class="flex-1 rounded-t bg-violet/60" style="height:82%"></div>
+            <div class="flex-1 rounded-t bg-violet/70" style="height:85%"></div>
+            <div class="flex-1 rounded-t bg-violet/80" style="height:90%"></div>
+            <div class="flex-1 rounded-t bg-violet" style="height:100%"></div>
+          </div>
+          <div class="text-xs text-success mt-1">↑ +8.2% over 8 weeks</div>
+        </div>
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-sm font-medium text-white">Squat</span>
+            <span class="text-sm font-bold text-white">145.0 kg</span>
+          </div>
+          <div class="flex items-end gap-px h-8">
+            <div class="flex-1 rounded-t bg-success/20" style="height:70%"></div>
+            <div class="flex-1 rounded-t bg-success/25" style="height:72%"></div>
+            <div class="flex-1 rounded-t bg-success/30" style="height:75%"></div>
+            <div class="flex-1 rounded-t bg-success/40" style="height:80%"></div>
+            <div class="flex-1 rounded-t bg-success/50" style="height:82%"></div>
+            <div class="flex-1 rounded-t bg-success/60" style="height:88%"></div>
+            <div class="flex-1 rounded-t bg-success/70" style="height:90%"></div>
+            <div class="flex-1 rounded-t bg-success/80" style="height:95%"></div>
+            <div class="flex-1 rounded-t bg-success/90" style="height:97%"></div>
+            <div class="flex-1 rounded-t bg-success" style="height:100%"></div>
+          </div>
+          <div class="text-xs text-success mt-1">↑ +5.1% over 8 weeks</div>
+        </div>
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-sm font-medium text-white">Deadlift</span>
+            <span class="text-sm font-bold text-white">180.0 kg</span>
+          </div>
+          <div class="flex items-end gap-px h-8">
+            <div class="flex-1 rounded-t bg-warning/30" style="height:92%"></div>
+            <div class="flex-1 rounded-t bg-warning/30" style="height:94%"></div>
+            <div class="flex-1 rounded-t bg-warning/30" style="height:93%"></div>
+            <div class="flex-1 rounded-t bg-warning/30" style="height:95%"></div>
+            <div class="flex-1 rounded-t bg-warning/30" style="height:94%"></div>
+            <div class="flex-1 rounded-t bg-warning/40" style="height:96%"></div>
+            <div class="flex-1 rounded-t bg-warning/40" style="height:97%"></div>
+            <div class="flex-1 rounded-t bg-warning/50" style="height:98%"></div>
+            <div class="flex-1 rounded-t bg-warning/60" style="height:99%"></div>
+            <div class="flex-1 rounded-t bg-warning" style="height:100%"></div>
+          </div>
+          <div class="text-xs text-warning mt-1">→ Plateau detected (6 weeks)</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Volume heatmap — muscle × week grid -->
+    <div class="rounded-2xl bg-surface border border-border p-6">
+      <div class="text-xs text-violet font-bold uppercase tracking-wide mb-4">Volume Heatmap (Last 4 Weeks)</div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-xs">
+          <thead>
+            <tr class="text-text-disabled">
+              <th class="text-left font-medium pb-2 pr-3">Muscle</th>
+              <th class="font-medium pb-2 w-10 text-center">W3</th>
+              <th class="font-medium pb-2 w-10 text-center">W4</th>
+              <th class="font-medium pb-2 w-10 text-center">W5</th>
+              <th class="font-medium pb-2 w-10 text-center">W6</th>
+            </tr>
+          </thead>
+          <tbody class="text-white">
+            <tr><td class="py-1 text-text-secondary">Chest</td><td class="text-center"><span class="inline-block w-7 h-7 rounded-lg bg-success/40 leading-7">10</span></td><td class="text-center"><span class="inline-block w-7 h-7 rounded-lg bg-success/60 leading-7">12</span></td><td class="text-center"><span class="inline-block w-7 h-7 rounded-lg bg-success/80 leading-7">14</span></td><td class="text-center"><span class="inline-block w-7 h-7 rounded-lg bg-success leading-7 font-bold">14</span></td></tr>
+            <tr><td class="py-1 text-text-secondary">Back</td><td class="text-center"><span class="inline-block w-7 h-7 rounded-lg bg-success/50 leading-7">12</span></td><td class="text-center"><span class="inline-block w-7 h-7 rounded-lg bg-success/60 leading-7">14</span></td><td class="text-center"><span class="inline-block w-7 h-7 rounded-lg bg-success/80 leading-7">15</span></td><td class="text-center"><span class="inline-block w-7 h-7 rounded-lg bg-success leading-7 font-bold">16</span></td></tr>
+            <tr><td class="py-1 text-text-secondary">Quads</td><td class="text-center"><span class="inline-block w-7 h-7 rounded-lg bg-success/40 leading-7">10</span></td><td class="text-center"><span class="inline-block w-7 h-7 rounded-lg bg-warning/50 leading-7">14</span></td><td class="text-center"><span class="inline-block w-7 h-7 rounded-lg bg-warning/70 leading-7">16</span></td><td class="text-center"><span class="inline-block w-7 h-7 rounded-lg bg-error/70 leading-7 font-bold">18</span></td></tr>
+            <tr><td class="py-1 text-text-secondary">Delts</td><td class="text-center"><span class="inline-block w-7 h-7 rounded-lg bg-info/30 leading-7">4</span></td><td class="text-center"><span class="inline-block w-7 h-7 rounded-lg bg-info/40 leading-7">5</span></td><td class="text-center"><span class="inline-block w-7 h-7 rounded-lg bg-info/40 leading-7">5</span></td><td class="text-center"><span class="inline-block w-7 h-7 rounded-lg bg-info/50 leading-7 font-bold">5</span></td></tr>
+            <tr><td class="py-1 text-text-secondary">Hams</td><td class="text-center"><span class="inline-block w-7 h-7 rounded-lg bg-success/30 leading-7">8</span></td><td class="text-center"><span class="inline-block w-7 h-7 rounded-lg bg-success/40 leading-7">10</span></td><td class="text-center"><span class="inline-block w-7 h-7 rounded-lg bg-success/50 leading-7">10</span></td><td class="text-center"><span class="inline-block w-7 h-7 rounded-lg bg-success/60 leading-7 font-bold">11</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="flex gap-3 mt-3 text-[10px] text-text-disabled">
+        <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-info/40"></span>Below MEV</span>
+        <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-success/60"></span>In MAV</span>
+        <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-warning/60"></span>Near MRV</span>
+        <span class="flex items-center gap-1"><span class="w-3 h-3 rounded bg-error/60"></span>At MRV</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     OPTION C — "Command Center" Dashboard
+     Inspired by: Notion, Raycast, Arc browser
+     Key idea: Dense information, monospace accents, terminal-like
+     aesthetic. Everything visible at once. Power-user feel.
+     ============================================================ -->
+<section id="option-c" class="pt-8">
+  <div class="mb-8">
+    <h2 class="text-3xl font-extrabold text-white">Option C — <span class="text-info">Command Center</span></h2>
+    <p class="text-text-secondary text-sm mt-1">Dense, data-rich, power-user aesthetic. Everything visible at once. Monospace accents.</p>
+  </div>
+
+  <!-- Top bar: key metrics inline -->
+  <div class="rounded-xl bg-surface border border-border px-5 py-3 mb-6 flex flex-wrap items-center gap-x-6 gap-y-2">
+    <div class="flex items-center gap-2">
+      <span class="text-xs text-text-disabled font-mono">STREAK</span>
+      <span class="text-sm font-black text-warning">7w</span>
+    </div>
+    <div class="w-px h-4 bg-border"></div>
+    <div class="flex items-center gap-2">
+      <span class="text-xs text-text-disabled font-mono">WEEK</span>
+      <span class="text-sm font-black text-violet">6/8</span>
+    </div>
+    <div class="w-px h-4 bg-border"></div>
+    <div class="flex items-center gap-2">
+      <span class="text-xs text-text-disabled font-mono">SESSIONS</span>
+      <span class="text-sm font-black text-white">3/5</span>
+      <div class="flex gap-0.5">
+        <div class="w-3 h-1.5 rounded-full bg-violet"></div>
+        <div class="w-3 h-1.5 rounded-full bg-violet"></div>
+        <div class="w-3 h-1.5 rounded-full bg-violet"></div>
+        <div class="w-3 h-1.5 rounded-full bg-surface-2"></div>
+        <div class="w-3 h-1.5 rounded-full bg-surface-2"></div>
+      </div>
+    </div>
+    <div class="w-px h-4 bg-border"></div>
+    <div class="flex items-center gap-2">
+      <span class="text-xs text-text-disabled font-mono">BW</span>
+      <span class="text-sm font-black text-white">82.4kg</span>
+      <span class="text-xs text-success">↓0.6</span>
+    </div>
+    <div class="w-px h-4 bg-border"></div>
+    <div class="flex items-center gap-2">
+      <span class="text-xs text-text-disabled font-mono">PRs</span>
+      <span class="text-sm font-black text-warning">3</span>
+    </div>
+  </div>
+
+  <!-- Two-column layout -->
+  <div class="grid grid-cols-1 lg:grid-cols-5 gap-4">
+
+    <!-- Left column (3/5) — Program + Workouts -->
+    <div class="lg:col-span-3 space-y-4">
+
+      <!-- Program block -->
+      <div class="rounded-xl bg-surface border border-border p-5">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-mono text-info bg-info/10 px-2 py-0.5 rounded">PROGRAM</span>
+            <span class="text-sm font-bold text-white">Upper/Lower Hypertrophy</span>
+          </div>
+          <span class="text-xs text-text-disabled font-mono">auto-repeat · deload W8</span>
+        </div>
+        <!-- Compact day list -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <div class="flex items-center gap-3 px-3 py-2 rounded-lg bg-success/5 border border-success/20">
+            <span class="text-xs font-mono text-success w-5">D1</span>
+            <span class="text-sm text-white flex-1">Upper Push</span>
+            <span class="text-xs text-success">✓</span>
+          </div>
+          <div class="flex items-center gap-3 px-3 py-2 rounded-lg bg-success/5 border border-success/20">
+            <span class="text-xs font-mono text-success w-5">D2</span>
+            <span class="text-sm text-white flex-1">Lower</span>
+            <span class="text-xs text-success">✓</span>
+          </div>
+          <div class="flex items-center gap-3 px-3 py-2 rounded-lg bg-violet/10 border border-violet/30">
+            <span class="text-xs font-mono text-violet w-5">D3</span>
+            <span class="text-sm text-white flex-1">Upper Pull</span>
+            <span class="text-xs text-violet font-semibold">NEXT</span>
+          </div>
+          <div class="flex items-center gap-3 px-3 py-2 rounded-lg bg-surface-2 border border-border">
+            <span class="text-xs font-mono text-text-disabled w-5">D4</span>
+            <span class="text-sm text-text-secondary flex-1">Lower + Arms</span>
+            <span class="text-xs text-text-disabled">—</span>
+          </div>
+          <div class="flex items-center gap-3 px-3 py-2 rounded-lg bg-surface-2 border border-border">
+            <span class="text-xs font-mono text-text-disabled w-5">D5</span>
+            <span class="text-sm text-text-secondary flex-1">Full Body</span>
+            <span class="text-xs text-text-disabled">—</span>
+          </div>
+        </div>
+        <!-- Meso progress -->
+        <div class="mt-3 flex items-center gap-2">
+          <div class="flex-1 h-1.5 bg-surface-2 rounded-full overflow-hidden">
+            <div class="h-full bg-violet rounded-full" style="width:75%"></div>
+          </div>
+          <span class="text-[10px] text-text-disabled font-mono">75%</span>
+        </div>
+      </div>
+
+      <!-- Workout log — compact table -->
+      <div class="rounded-xl bg-surface border border-border p-5">
+        <div class="text-xs font-mono text-text-disabled mb-3">RECENT SESSIONS</div>
+        <div class="space-y-1.5">
+          <div class="flex items-center gap-3 text-sm">
+            <span class="text-xs font-mono text-text-disabled w-16">Today</span>
+            <span class="text-white flex-1">Upper Pull</span>
+            <span class="text-text-secondary text-xs">5ex · 18s</span>
+            <span class="text-text-secondary text-xs">52m</span>
+            <span class="text-xs px-1.5 py-0.5 rounded bg-success/15 text-success">4/5</span>
+          </div>
+          <div class="flex items-center gap-3 text-sm">
+            <span class="text-xs font-mono text-text-disabled w-16">Yest.</span>
+            <span class="text-white flex-1">Lower</span>
+            <span class="text-text-secondary text-xs">6ex · 22s</span>
+            <span class="text-text-secondary text-xs">61m</span>
+            <span class="text-xs px-1.5 py-0.5 rounded bg-warning/15 text-warning">3/5</span>
+          </div>
+          <div class="flex items-center gap-3 text-sm">
+            <span class="text-xs font-mono text-text-disabled w-16">Mon</span>
+            <span class="text-white flex-1">Upper Push</span>
+            <span class="text-text-secondary text-xs">5ex · 16s</span>
+            <span class="text-text-secondary text-xs">48m</span>
+            <span class="text-xs px-1.5 py-0.5 rounded bg-success/15 text-success">4/5</span>
+          </div>
+          <div class="flex items-center gap-3 text-sm">
+            <span class="text-xs font-mono text-text-disabled w-16">Sat</span>
+            <span class="text-white flex-1">Lower</span>
+            <span class="text-text-secondary text-xs">6ex · 20s</span>
+            <span class="text-text-secondary text-xs">55m</span>
+            <span class="text-xs px-1.5 py-0.5 rounded bg-success/15 text-success">5/5</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right column (2/5) — Volume + PRs -->
+    <div class="lg:col-span-2 space-y-4">
+
+      <!-- Volume status — compact pills -->
+      <div class="rounded-xl bg-surface border border-border p-5">
+        <div class="text-xs font-mono text-text-disabled mb-3">VOLUME STATUS</div>
+        <div class="space-y-2">
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-text-secondary w-16 truncate">Chest</span>
+            <div class="flex-1 h-1.5 bg-surface-2 rounded-full"><div class="h-full bg-success rounded-full" style="width:70%"></div></div>
+            <span class="text-[10px] font-mono text-success">MAV</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-text-secondary w-16 truncate">Back</span>
+            <div class="flex-1 h-1.5 bg-surface-2 rounded-full"><div class="h-full bg-success rounded-full" style="width:80%"></div></div>
+            <span class="text-[10px] font-mono text-success">MAV</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-text-secondary w-16 truncate">Quads</span>
+            <div class="flex-1 h-1.5 bg-surface-2 rounded-full"><div class="h-full bg-error rounded-full" style="width:95%"></div></div>
+            <span class="text-[10px] font-mono text-error">MRV!</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-text-secondary w-16 truncate">Delts</span>
+            <div class="flex-1 h-1.5 bg-surface-2 rounded-full"><div class="h-full bg-info rounded-full" style="width:25%"></div></div>
+            <span class="text-[10px] font-mono text-info">&lt;MEV</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-text-secondary w-16 truncate">Hams</span>
+            <div class="flex-1 h-1.5 bg-surface-2 rounded-full"><div class="h-full bg-success rounded-full" style="width:55%"></div></div>
+            <span class="text-[10px] font-mono text-success">MAV</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-text-secondary w-16 truncate">Biceps</span>
+            <div class="flex-1 h-1.5 bg-surface-2 rounded-full"><div class="h-full bg-success rounded-full" style="width:60%"></div></div>
+            <span class="text-[10px] font-mono text-success">MAV</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-text-secondary w-16 truncate">Triceps</span>
+            <div class="flex-1 h-1.5 bg-surface-2 rounded-full"><div class="h-full bg-warning rounded-full" style="width:82%"></div></div>
+            <span class="text-[10px] font-mono text-warning">~MRV</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- PRs — compact list -->
+      <div class="rounded-xl bg-surface border border-border p-5">
+        <div class="text-xs font-mono text-text-disabled mb-3">TOP LIFTS (e1RM)</div>
+        <div class="space-y-2.5">
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-white">Bench Press</span>
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-bold text-white font-mono">102.5</span>
+              <span class="text-[10px] text-success bg-success/10 px-1.5 py-0.5 rounded">+2.5</span>
+            </div>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-white">Squat</span>
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-bold text-white font-mono">145.0</span>
+              <span class="text-[10px] text-success bg-success/10 px-1.5 py-0.5 rounded">+5.0</span>
+            </div>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-white">Deadlift</span>
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-bold text-white font-mono">180.0</span>
+              <span class="text-[10px] text-warning bg-warning/10 px-1.5 py-0.5 rounded">plateau</span>
+            </div>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-white">OHP</span>
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-bold text-white font-mono">67.5</span>
+              <span class="text-[10px] text-success bg-success/10 px-1.5 py-0.5 rounded">+2.5</span>
+            </div>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-white">Barbell Row</span>
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-bold text-white font-mono">95.0</span>
+              <span class="text-[10px] text-text-disabled bg-surface-2 px-1.5 py-0.5 rounded">=</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Consistency mini-heatmap -->
+      <div class="rounded-xl bg-surface border border-border p-5">
+        <div class="text-xs font-mono text-text-disabled mb-3">12-WEEK CONSISTENCY</div>
+        <div class="grid grid-cols-12 gap-1">
+          <div class="h-6 rounded bg-violet/20 flex items-center justify-center text-[9px] text-text-disabled">3</div>
+          <div class="h-6 rounded bg-violet/40 flex items-center justify-center text-[9px] text-white/70">4</div>
+          <div class="h-6 rounded bg-violet/60 flex items-center justify-center text-[9px] text-white/80">5</div>
+          <div class="h-6 rounded bg-violet/40 flex items-center justify-center text-[9px] text-white/70">4</div>
+          <div class="h-6 rounded bg-violet/60 flex items-center justify-center text-[9px] text-white/80">5</div>
+          <div class="h-6 rounded bg-violet/80 flex items-center justify-center text-[9px] text-white">5</div>
+          <div class="h-6 rounded bg-violet/60 flex items-center justify-center text-[9px] text-white/80">5</div>
+          <div class="h-6 rounded bg-violet flex items-center justify-center text-[9px] text-white font-bold">5</div>
+          <div class="h-6 rounded bg-violet/80 flex items-center justify-center text-[9px] text-white">5</div>
+          <div class="h-6 rounded bg-violet flex items-center justify-center text-[9px] text-white font-bold">5</div>
+          <div class="h-6 rounded bg-violet flex items-center justify-center text-[9px] text-white font-bold">5</div>
+          <div class="h-6 rounded bg-violet/40 flex items-center justify-center text-[9px] text-white/70">3</div>
+        </div>
+        <div class="flex justify-between mt-1 text-[9px] text-text-disabled font-mono">
+          <span>12w ago</span>
+          <span>now</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div><!-- end max-w container -->
+</body>
+</html>

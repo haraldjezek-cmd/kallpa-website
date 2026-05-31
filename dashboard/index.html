@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Kallpa Dashboard — Training stats, profile, and program builder" />
+  <meta name="theme-color" content="#0F0F12" />
+  <title>Kallpa — Dashboard</title>
+  <link rel="icon" type="image/png" href="../favicon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            bg: '#0F0F12', surface: '#1C1C21', 'surface-2': '#242429',
+            violet: { DEFAULT: '#A855F7', dark: '#7C3AED', subtle: '#6D28D9', muted: 'rgba(168,85,247,0.12)' },
+            success: '#22C55E', warning: '#EAB308', error: '#EF4444', info: '#3B82F6',
+            'text-primary': '#FAFAFA', 'text-secondary': '#9CA3AF', 'text-disabled': '#6B7280',
+            border: '#2E2E35', divider: '#1E1E24',
+          },
+          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+        },
+      },
+    };
+  </script>
+  <style>
+    * { box-sizing: border-box; }
+    body { background: #0F0F12; color: #FAFAFA; font-family: 'Inter', system-ui, sans-serif; -webkit-font-smoothing: antialiased; margin: 0; }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }
+    .nav-blur { background: rgba(15,15,18,0.88); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(168,85,247,0.1); }
+    .glass { background: rgba(28,28,33,0.85); border: 1px solid #2E2E35; border-radius: 16px; backdrop-filter: blur(8px); transition: border-color 0.2s; }
+    .glass:hover { border-color: rgba(168,85,247,0.25); }
+    .gradient-text { background: linear-gradient(135deg, #c084fc, #A855F7, #7C3AED); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .form-input { background: #1C1C21; border: 1px solid #2E2E35; color: #FAFAFA; border-radius: 10px; padding: 10px 14px; font-size: 13px; width: 100%; outline: none; transition: border-color 0.2s; }
+    .form-input:focus { border-color: #A855F7; }
+    .form-input::placeholder { color: #6B7280; }
+    .edit-input { background: #2E2E35; border: 1px solid #A855F7; color: #FFFFFF; border-radius: 6px; padding: 4px 6px; font-size: 12px; text-align: right; outline: none; -moz-appearance: textfield; }
+    .edit-input::-webkit-inner-spin-button, .edit-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+    .edit-input:focus { border-color: #c084fc; background: #3a3a42; }
+    .btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 6px; background: linear-gradient(135deg, #A855F7, #7C3AED); color: #fff; font-weight: 600; font-size: 13px; padding: 10px 20px; border-radius: 10px; border: none; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 16px rgba(168,85,247,0.25); }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(168,85,247,0.35); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .btn-ghost { display: inline-flex; align-items: center; justify-content: center; gap: 6px; background: transparent; color: #A855F7; font-weight: 600; font-size: 13px; padding: 10px 20px; border-radius: 10px; border: 1px solid rgba(168,85,247,0.3); cursor: pointer; transition: all 0.2s; }
+    .btn-ghost:hover { background: rgba(168,85,247,0.08); border-color: #A855F7; }
+    .chip { display: inline-flex; align-items: center; padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 500; border: 1px solid #2E2E35; background: #1C1C21; color: #9CA3AF; cursor: pointer; transition: all 0.15s; user-select: none; }
+    .chip:hover { border-color: rgba(168,85,247,0.4); color: #FAFAFA; }
+    .chip.active { background: rgba(168,85,247,0.12); border-color: #A855F7; color: #A855F7; font-weight: 600; }
+    .sidebar-link { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 10px; font-size: 13px; font-weight: 500; color: #9CA3AF; text-decoration: none; transition: all 0.15s; }
+    .sidebar-link:hover { background: rgba(168,85,247,0.08); color: #FAFAFA; }
+    .sidebar-link.active { background: rgba(168,85,247,0.12); color: #A855F7; font-weight: 600; }
+    .toggle-track { width: 40px; height: 22px; border-radius: 11px; background: #2E2E35; position: relative; cursor: pointer; transition: background 0.2s; }
+    .toggle-track.on { background: #A855F7; }
+    .toggle-thumb { width: 16px; height: 16px; border-radius: 50%; background: #FAFAFA; position: absolute; top: 3px; left: 3px; transition: transform 0.2s; }
+    .toggle-track.on .toggle-thumb { transform: translateX(18px); }
+    .toast { position: fixed; bottom: 24px; right: 24px; padding: 12px 18px; border-radius: 10px; font-size: 13px; font-weight: 500; z-index: 1000; transform: translateY(80px); opacity: 0; transition: all 0.3s; }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.success { background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.3); color: #22C55E; }
+    .toast.error { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: #EF4444; }
+    .page-section { display: none; }
+    .page-section.active { display: block; }
+    .login-overlay { position: fixed; inset: 0; background: #0F0F12; display: flex; align-items: center; justify-content: center; z-index: 9999; }
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: #0F0F12; }
+    ::-webkit-scrollbar-thumb { background: rgba(168,85,247,0.3); border-radius: 3px; }
+    :focus-visible { outline: 2px solid #A855F7; outline-offset: 2px; border-radius: 4px; }
+    .select-tile { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 10px; border: 1px solid #2E2E35; background: #1C1C21; cursor: pointer; transition: all 0.15s; }
+    .select-tile:hover { border-color: rgba(168,85,247,0.3); }
+    .select-tile.active { border-color: #A855F7; background: rgba(168,85,247,0.08); }
+  </style>
+</head>
+<body>
+<!-- LOGIN -->
+<div id="login-overlay" class="login-overlay">
+  <div class="text-center max-w-sm px-6">
+    <img src="../Kallpa3.png" alt="Kallpa" class="h-14 w-auto mx-auto mb-5" />
+    <h1 class="text-xl font-bold text-white mb-1">Welcome back</h1>
+    <p class="text-text-secondary text-sm mb-6">Sign in to your dashboard</p>
+    <div class="space-y-3">
+      <input id="login-email" type="email" class="form-input" placeholder="your@email.com" autocomplete="email" onkeydown="if(event.key==='Enter')document.getElementById('login-password').focus()" />
+      <input id="login-password" type="password" class="form-input" placeholder="Password" autocomplete="current-password" onkeydown="if(event.key==='Enter')handleLogin()" />
+      <button id="login-btn" type="button" class="btn-primary w-full" onclick="handleLogin()">Sign In</button>
+      <div class="relative my-3"><div class="absolute inset-0 flex items-center"><div class="w-full border-t border-border"></div></div><div class="relative flex justify-center"><span class="bg-bg px-3 text-xs text-text-disabled">or</span></div></div>
+      <button id="google-btn" type="button" class="btn-ghost w-full" onclick="handleGoogleLogin()">
+        <svg class="w-4 h-4" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+        Continue with Google
+      </button>
+    </div>
+    <p id="login-error" class="text-error text-sm mt-3 hidden"></p>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app-layout" class="hidden min-h-screen">
+  <!-- Nav -->
+  <header class="nav-blur fixed top-0 left-0 right-0 z-50">
+    <nav class="max-w-7xl mx-auto px-4 sm:px-6 h-13 flex items-center justify-between">
+      <a href="https://kallpa.co" class="flex items-center gap-2"><img src="../Kallpa3.png" alt="" class="h-7" /><img src="../Kallpa2.png" alt="Kallpa" class="h-4" /></a>
+      <div class="flex items-center gap-3">
+        <span id="nav-user-name" class="text-xs text-text-secondary hidden sm:inline"></span>
+        <button onclick="handleLogout()" class="text-xs text-text-secondary hover:text-white px-2 py-1 rounded-lg hover:bg-surface transition-colors">Sign out</button>
+      </div>
+    </nav>
+  </header>
+
+  <div class="flex pt-13">
+    <!-- Sidebar -->
+    <aside class="hidden lg:flex flex-col w-52 fixed top-13 bottom-0 left-0 border-r border-border px-3 py-5 overflow-y-auto">
+      <nav class="space-y-0.5">
+        <a href="#" class="sidebar-link active" data-page="overview" onclick="showPage('overview')"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Overview</a>
+        <a href="#" class="sidebar-link" data-page="program" onclick="showPage('program')"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>Programs</a>
+        <a href="#" class="sidebar-link" data-page="profile" onclick="showPage('profile')"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Profile</a>
+        <a href="#" class="sidebar-link" data-page="settings" onclick="showPage('settings')"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Settings</a>
+      </nav>
+      <div class="mt-auto pt-4 border-t border-border">
+        <a href="https://kallpa.co" class="sidebar-link text-xs"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>kallpa.co</a>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="flex-1 lg:ml-52 px-4 sm:px-6 lg:px-8 py-6 max-w-6xl">
+      <!-- Mobile tabs -->
+      <div class="lg:hidden flex gap-1 mb-5 overflow-x-auto pb-1 -mx-4 px-4">
+        <button class="chip active" data-page="overview" onclick="showPage('overview')">Overview</button>
+        <button class="chip" data-page="program" onclick="showPage('program')">Programs</button>
+        <button class="chip" data-page="profile" onclick="showPage('profile')">Profile</button>
+        <button class="chip" data-page="settings" onclick="showPage('settings')">Settings</button>
+      </div>
+
+      <!-- ═══════ OVERVIEW ═══════ -->
+      <section id="page-overview" class="page-section active">
+        <!-- Greeting bento -->
+        <div class="grid grid-cols-12 gap-3 mb-3">
+          <div class="col-span-12 lg:col-span-8 rounded-2xl bg-gradient-to-br from-violet-dark/15 via-surface to-surface border border-violet/10 p-5 relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-48 h-48 bg-violet/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4"></div>
+            <p class="text-text-secondary text-xs" id="ov-greeting">Good evening,</p>
+            <h1 class="text-2xl font-extrabold text-white mt-0.5" id="ov-name">Lifter</h1>
+            <p class="text-text-secondary text-xs mt-1.5" id="ov-context">—</p>
+            <div class="flex gap-1.5 mt-3" id="ov-week-bars"></div>
+          </div>
+          <div class="col-span-12 lg:col-span-4 rounded-2xl bg-surface border border-border p-5 flex flex-col items-center justify-center text-center">
+            <div class="text-3xl mb-0.5">🔥</div>
+            <div class="text-3xl font-black text-warning" id="ov-streak">—</div>
+            <div class="text-[10px] text-text-secondary font-medium uppercase tracking-wide mt-0.5">Week Streak</div>
+            <div class="text-[10px] text-text-disabled mt-0.5" id="ov-streak-best"></div>
+          </div>
+        </div>
+        <!-- Stats row -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
+          <div class="rounded-2xl bg-surface border border-border p-4"><div class="text-[10px] text-text-disabled uppercase tracking-wide font-semibold">Workouts</div><div class="text-2xl font-black text-white mt-1" id="ov-workouts">—</div></div>
+          <div class="rounded-2xl bg-surface border border-border p-4"><div class="text-[10px] text-text-disabled uppercase tracking-wide font-semibold">Sets This Week</div><div class="text-2xl font-black text-white mt-1" id="ov-sets-week">—</div></div>
+          <div class="rounded-2xl bg-surface border border-border p-4"><div class="text-[10px] text-text-disabled uppercase tracking-wide font-semibold">PRs This Month</div><div class="text-2xl font-black text-warning mt-1" id="ov-prs">—</div></div>
+          <div class="rounded-2xl bg-surface border border-border p-4"><div class="text-[10px] text-text-disabled uppercase tracking-wide font-semibold">Bodyweight</div><div class="text-2xl font-black text-white mt-1" id="ov-bw">—</div></div>
+        </div>
+        <!-- Program + Volume -->
+        <div class="grid grid-cols-12 gap-3 mb-3">
+          <div class="col-span-12 lg:col-span-7 glass p-5" id="ov-program-card">
+            <div class="flex items-center justify-between mb-3">
+              <div><div class="text-[10px] text-violet font-bold uppercase tracking-wide">Active Program</div><h3 class="text-lg font-bold text-white mt-0.5" id="ov-prog-name">—</h3></div>
+              <span class="text-xs bg-violet/10 text-violet px-2 py-0.5 rounded-full font-semibold" id="ov-prog-week">—</span>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2" id="ov-prog-days"></div>
+            <div class="mt-4"><div class="flex justify-between text-[10px] text-text-disabled mb-1"><span>Mesocycle</span><span id="ov-meso-label">—</span></div><div class="h-1.5 bg-surface-2 rounded-full overflow-hidden"><div class="h-full bg-gradient-to-r from-violet-dark to-violet rounded-full" id="ov-meso-bar" style="width:0%"></div></div></div>
+          </div>
+          <div class="col-span-12 lg:col-span-5 glass p-5">
+            <div class="text-[10px] text-violet font-bold uppercase tracking-wide mb-3">Weekly Volume (Sets)</div>
+            <div id="ov-volume-bars" class="space-y-2"><p class="text-text-secondary text-xs">Loading...</p></div>
+          </div>
+        </div>
+        <!-- PRs + Recent workouts -->
+        <div class="grid grid-cols-12 gap-3">
+          <div class="col-span-12 lg:col-span-5 glass p-5">
+            <div class="flex items-center justify-between mb-3">
+              <div class="text-[10px] text-warning font-bold uppercase tracking-wide">⭐ Personal Records</div>
+              <button class="text-[10px] text-violet font-semibold hover:underline" onclick="showPRPicker()">+ Track</button>
+            </div>
+            <div id="ov-prs-list" class="space-y-2 max-h-80 overflow-y-auto pr-1"><p class="text-text-secondary text-xs">Loading...</p></div>
+          </div>
+          <div class="col-span-12 lg:col-span-7 glass p-5">
+            <div class="text-[10px] text-text-disabled font-bold uppercase tracking-wide mb-3">Workouts</div>
+            <div id="ov-workouts-list" class="space-y-1 max-h-80 overflow-y-auto pr-1"><p class="text-text-secondary text-xs">Loading...</p></div>
+          </div>
+        </div>
+        <!-- 12-week consistency -->
+        <div class="glass p-5 mt-3">
+          <div class="text-[10px] text-success font-bold uppercase tracking-wide mb-3">12-Week Consistency</div>
+          <div id="ov-heatmap" class="grid grid-cols-12 gap-1"></div>
+          <div class="flex justify-between mt-2 text-[9px] text-text-disabled"><span>12w ago</span><span>This week</span></div>
+        </div>
+      </section>
+
+      <!-- ═══════ PROGRAMS ═══════ -->
+      <section id="page-program" class="page-section">
+        <!-- Program list view -->
+        <div id="program-list-view">
+          <div class="flex items-center justify-between mb-5">
+            <div><h1 class="text-xl font-bold text-white">Programs</h1><p class="text-text-secondary text-xs mt-0.5">Design and manage your training programs</p></div>
+            <button class="btn-primary text-xs" onclick="showProgramBuilder()">+ New Program</button>
+          </div>
+          <div id="program-list" class="space-y-2"><p class="text-text-secondary text-sm">Loading...</p></div>
+        </div>
+
+        <!-- Program builder/editor view -->
+        <div id="program-builder" class="hidden">
+          <!-- Top bar: back + title + save -->
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-3">
+              <button class="text-text-secondary hover:text-white text-xs flex items-center gap-1" onclick="hideProgramBuilder()">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>Back
+              </button>
+              <h2 class="text-base font-bold text-white" id="builder-title">New Program</h2>
+            </div>
+            <button class="btn-primary text-xs" onclick="saveProgram()">Save Program</button>
+          </div>
+
+          <!-- Program settings: horizontal bar -->
+          <div class="glass p-3 mb-4 flex flex-wrap items-center gap-x-5 gap-y-2">
+            <div class="flex items-center gap-2">
+              <label class="text-[10px] text-text-disabled font-semibold uppercase">Name</label>
+              <input id="pb-name" class="form-input text-xs py-1.5 w-44" placeholder="Program name" />
+            </div>
+            <div class="flex items-center gap-2">
+              <label class="text-[10px] text-text-disabled font-semibold uppercase">Goal</label>
+              <div class="flex gap-1" id="pb-goal-group">
+                <button type="button" class="chip active" data-goal="hypertrophy" onclick="setPbGoal('hypertrophy')">Hypertrophy</button>
+                <button type="button" class="chip" data-goal="strength" onclick="setPbGoal('strength')">Strength</button>
+                <button type="button" class="chip" data-goal="general" onclick="setPbGoal('general')">General</button>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <label class="text-[10px] text-text-disabled font-semibold uppercase">Meso</label>
+              <div class="flex gap-1" id="pb-meso-group">
+                <button type="button" class="chip" data-meso="4" onclick="setPbMeso(4)">4w</button>
+                <button type="button" class="chip" data-meso="6" onclick="setPbMeso(6)">6w</button>
+                <button type="button" class="chip active" data-meso="8" onclick="setPbMeso(8)">8w</button>
+                <button type="button" class="chip" data-meso="10" onclick="setPbMeso(10)">10w</button>
+                <button type="button" class="chip" data-meso="12" onclick="setPbMeso(12)">12w</button>
+              </div>
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="flex items-center gap-1.5"><span class="text-[10px] text-text-disabled">Deload</span><div id="pb-deload" class="toggle-track on" onclick="this.classList.toggle('on')"><div class="toggle-thumb"></div></div></div>
+              <div class="flex items-center gap-1.5"><span class="text-[10px] text-text-disabled">Repeat</span><div id="pb-repeat" class="toggle-track" onclick="this.classList.toggle('on')"><div class="toggle-thumb"></div></div></div>
+            </div>
+          </div>
+
+          <!-- Day columns: full width, side-by-side -->
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-[10px] text-text-secondary font-semibold uppercase tracking-wide">Training Days</span>
+            <button class="text-[10px] text-violet font-semibold hover:underline" onclick="addDay()">+ Add Day</button>
+          </div>
+          <div id="pb-days" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+            <!-- Day columns rendered by JS -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══════ PROFILE ═══════ -->
+      <section id="page-profile" class="page-section">
+        <div class="mb-6"><h1 class="text-xl font-bold text-white">Profile</h1><p class="text-text-secondary text-xs mt-0.5">Edit your training profile — syncs to the app</p></div>
+        <form id="profile-form" class="space-y-6 max-w-2xl" onsubmit="return false;">
+          <div class="glass p-5 space-y-4">
+            <div class="text-[10px] text-text-disabled font-bold uppercase tracking-wide">Personal</div>
+            <div class="grid sm:grid-cols-2 gap-3">
+              <div><label class="text-[10px] text-text-secondary mb-1 block">Display Name</label><input id="pf-name" class="form-input" placeholder="Your name" /></div>
+              <div><label class="text-[10px] text-text-secondary mb-1 block">Email</label><input id="pf-email" class="form-input opacity-50" disabled /></div>
+            </div>
+            <div class="grid sm:grid-cols-3 gap-3">
+              <div><label class="text-[10px] text-text-secondary mb-1 block">Bodyweight</label><div class="flex gap-1.5"><input id="pf-weight" type="number" step="0.1" class="form-input flex-1" /><div class="flex gap-1" id="pf-unit-group"><button type="button" class="chip active" data-unit="kg" onclick="setPfUnit('kg')">kg</button><button type="button" class="chip" data-unit="lb" onclick="setPfUnit('lb')">lb</button></div></div></div>
+              <div><label class="text-[10px] text-text-secondary mb-1 block">Date of Birth</label><input id="pf-dob" type="date" class="form-input" /></div>
+              <div><label class="text-[10px] text-text-secondary mb-1 block">Sex</label><div class="flex gap-1" id="pf-sex-group"><button type="button" class="chip" data-sex="male" onclick="setPfSex('male')">M</button><button type="button" class="chip" data-sex="female" onclick="setPfSex('female')">F</button><button type="button" class="chip" data-sex="prefer_not_to_say" onclick="setPfSex('prefer_not_to_say')">—</button></div></div>
+            </div>
+          </div>
+          <div class="glass p-5 space-y-3">
+            <div class="text-[10px] text-text-disabled font-bold uppercase tracking-wide">Training</div>
+            <div><label class="text-[10px] text-text-secondary mb-1 block">Environment</label><div class="grid grid-cols-2 gap-2" id="pf-env-group"><div class="select-tile" data-env="commercial_gym" onclick="setPfEnv('commercial_gym')"><span class="text-xs text-white">Commercial Gym</span></div><div class="select-tile" data-env="home_gym" onclick="setPfEnv('home_gym')"><span class="text-xs text-white">Home Gym</span></div><div class="select-tile" data-env="dumbbells_only" onclick="setPfEnv('dumbbells_only')"><span class="text-xs text-white">Dumbbells Only</span></div><div class="select-tile" data-env="bodyweight" onclick="setPfEnv('bodyweight')"><span class="text-xs text-white">Bodyweight</span></div></div></div>
+            <div><label class="text-[10px] text-text-secondary mb-1 block">Level</label><div class="flex gap-1.5" id="pf-level-group"><button type="button" class="chip" data-level="beginner" onclick="setPfLevel('beginner')">Beginner</button><button type="button" class="chip" data-level="intermediate" onclick="setPfLevel('intermediate')">Intermediate</button><button type="button" class="chip" data-level="advanced" onclick="setPfLevel('advanced')">Advanced</button></div></div>
+            <div><label class="text-[10px] text-text-secondary mb-1 block">Days/Week</label><div class="flex gap-1" id="pf-days-group"><button type="button" class="chip" data-days="1" onclick="setPfDays(1)">1</button><button type="button" class="chip" data-days="2" onclick="setPfDays(2)">2</button><button type="button" class="chip" data-days="3" onclick="setPfDays(3)">3</button><button type="button" class="chip" data-days="4" onclick="setPfDays(4)">4</button><button type="button" class="chip" data-days="5" onclick="setPfDays(5)">5</button><button type="button" class="chip" data-days="6" onclick="setPfDays(6)">6</button><button type="button" class="chip" data-days="7" onclick="setPfDays(7)">7</button></div></div>
+            <div><label class="text-[10px] text-text-secondary mb-1 block">Special Care</label><div class="flex flex-wrap gap-1.5" id="pf-injuries-group"><button type="button" class="chip" data-injury="lower_back" onclick="togglePfInjury('lower_back')">Lower Back</button><button type="button" class="chip" data-injury="knees" onclick="togglePfInjury('knees')">Knees</button><button type="button" class="chip" data-injury="shoulders" onclick="togglePfInjury('shoulders')">Shoulders</button><button type="button" class="chip" data-injury="wrists" onclick="togglePfInjury('wrists')">Wrists</button><button type="button" class="chip" data-injury="elbows" onclick="togglePfInjury('elbows')">Elbows</button></div></div>
+          </div>
+          <button type="button" class="btn-primary" onclick="saveProfile()">Save Profile</button>
+        </form>
+      </section>
+
+      <!-- ═══════ SETTINGS ═══════ -->
+      <section id="page-settings" class="page-section">
+        <div class="mb-6"><h1 class="text-xl font-bold text-white">Settings</h1><p class="text-text-secondary text-xs mt-0.5">Preferences and AI coaching</p></div>
+        <div class="space-y-4 max-w-2xl">
+          <div class="glass p-5"><div class="text-[10px] text-text-disabled font-bold uppercase tracking-wide mb-3">Language</div><div class="flex gap-1.5" id="st-locale-group"><button type="button" class="chip active" data-locale="en" onclick="setStLocale('en')">🇺🇸 English</button><button type="button" class="chip" data-locale="es" onclick="setStLocale('es')">🇲🇽 Español</button></div></div>
+          <div class="glass p-5 space-y-4">
+            <div class="text-[10px] text-text-disabled font-bold uppercase tracking-wide">AI Coach</div>
+            <div class="flex items-center justify-between"><div><p class="text-xs font-medium text-white">AI Coaching</p><p class="text-[10px] text-text-secondary">Personalized insights from your data</p></div><div id="toggle-ai" class="toggle-track" onclick="this.classList.toggle('on')"><div class="toggle-thumb"></div></div></div>
+            <div><p class="text-xs text-white mb-1.5">Frequency</p><div class="flex gap-1.5" id="st-freq-group"><button type="button" class="chip" data-freq="low" onclick="setStFreq('low')">Low</button><button type="button" class="chip active" data-freq="medium" onclick="setStFreq('medium')">Medium</button><button type="button" class="chip" data-freq="high" onclick="setStFreq('high')">High</button></div></div>
+            <div><p class="text-xs text-white mb-1.5">Style</p><div class="flex gap-1.5" id="st-style-group"><button type="button" class="chip" data-style="supportive" onclick="setStStyle('supportive')">Supportive</button><button type="button" class="chip active" data-style="balanced" onclick="setStStyle('balanced')">Balanced</button><button type="button" class="chip" data-style="intense" onclick="setStStyle('intense')">Intense</button></div></div>
+          </div>
+          <div class="glass p-5"><div class="flex items-center justify-between"><div><p class="text-xs font-medium text-white">Falling Behind Alert</p><p class="text-[10px] text-text-secondary">Notify when training less than planned</p></div><div id="toggle-notify" class="toggle-track" onclick="this.classList.toggle('on')"><div class="toggle-thumb"></div></div></div></div>
+          <button type="button" class="btn-primary" onclick="saveSettings()">Save Settings</button>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+<div id="toast" class="toast"></div>
+<!-- Global modals -->
+<div id="pr-picker-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+  <div class="bg-surface border border-border rounded-2xl w-full max-w-lg max-h-[80vh] overflow-hidden flex flex-col mx-4">
+    <div class="p-4 border-b border-border flex items-center justify-between">
+      <h3 class="text-sm font-bold text-white">Track Exercises</h3>
+      <button class="text-text-secondary hover:text-white text-xs" onclick="hidePRPicker()">✕ Close</button>
+    </div>
+    <div class="p-3 border-b border-border"><input id="pr-picker-search" class="form-input text-xs" placeholder="Search exercises..." oninput="filterPRPicker(this.value)" /></div>
+    <div id="pr-picker-list" class="flex-1 overflow-y-auto p-3 space-y-1"></div>
+  </div>
+</div>
+<div id="e1rm-detail-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+  <div class="bg-surface border border-border rounded-2xl w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col mx-4">
+    <div class="p-4 border-b border-border flex items-center justify-between">
+      <h3 class="text-sm font-bold text-white" id="e1rm-detail-title">—</h3>
+      <button class="text-text-secondary hover:text-white text-xs" onclick="hideE1rmDetail()">✕ Close</button>
+    </div>
+    <div id="e1rm-detail-content" class="flex-1 overflow-y-auto p-5"></div>
+  </div>
+</div>
+<div id="workout-detail-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+  <div class="bg-surface border border-border rounded-2xl w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col mx-4">
+    <div class="p-4 border-b border-border flex items-center justify-between">
+      <h3 class="text-sm font-bold text-white" id="workout-detail-title">Workout Detail</h3>
+      <div class="flex items-center gap-2">
+        <button id="workout-edit-btn" class="text-violet hover:text-violet/80 text-xs font-semibold" onclick="toggleWorkoutEdit()">Edit</button>
+        <button class="text-text-secondary hover:text-white text-xs" onclick="hideWorkoutDetail()">✕ Close</button>
+      </div>
+    </div>
+    <div id="workout-detail-content" class="flex-1 overflow-y-auto p-5"></div>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="../config.js"></script>
+<script src="dashboard-config.js" onerror=""></script>
+<script src="app.js?v=194"></script>
+</body>
+</html>
