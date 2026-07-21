@@ -1,6 +1,9 @@
 /**
  * Shared waitlist + Supabase config for index.html and es.html.
  * Load after config.js (optional). Exposes window.initKallpaWaitlist({ locale }).
+ *
+ * KALLPA_CONFIG.ALPHA_SIGNUPS_OPEN — when false, hides Android alpha CTA
+ * (notify / launch waitlist still works). Flip after ~15 Play testers.
  */
 (function () {
   function readConfig() {
@@ -13,7 +16,8 @@
       url.includes('YOUR_PROJECT') ||
       !key ||
       key.includes('YOUR_SUPABASE');
-    return { url, key, ready: !placeholder };
+    const alphaOpen = cfg.ALPHA_SIGNUPS_OPEN !== false;
+    return { url, key, ready: !placeholder, alphaOpen };
   }
 
   function setMessage(el, text, isError) {
@@ -24,7 +28,8 @@
 
   window.initKallpaWaitlist = function initKallpaWaitlist(options) {
     const locale = options.locale || 'en';
-    const { url: SUPABASE_URL, key: SUPABASE_ANON_KEY, ready } = readConfig();
+    const { url: SUPABASE_URL, key: SUPABASE_ANON_KEY, ready, alphaOpen } =
+      readConfig();
 
     const form = document.getElementById('waitlist-form');
     const emailInput = document.getElementById('email-input');
@@ -37,6 +42,9 @@
     const optionBtns = document.querySelectorAll('.signup-option-btn');
     const platformBtns = document.querySelectorAll('.platform-btn');
     const setupNotice = document.getElementById('waitlist-setup-notice');
+    const alphaClosedNotice = document.getElementById('alpha-closed-notice');
+    const betaBtn = document.getElementById('btn-beta');
+    const playEmailHint = document.getElementById('play-email-hint');
 
     let selectedPlatform = null;
 
@@ -53,8 +61,23 @@
 
     if (setupNotice) setupNotice.classList.add('hidden');
 
+    if (!alphaOpen) {
+      if (betaBtn) betaBtn.classList.add('hidden');
+      if (alphaClosedNotice) alphaClosedNotice.classList.remove('hidden');
+    } else if (alphaClosedNotice) {
+      alphaClosedNotice.classList.add('hidden');
+    }
+
     function isValidEmail(email) {
       return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+    }
+
+    function updatePlayHint() {
+      if (!playEmailHint) return;
+      const show =
+        alphaOpen &&
+        (selectedPlatform === 'android' || selectedPlatform === 'both');
+      playEmailHint.classList.toggle('hidden', !show);
     }
 
     // Platform button toggle
@@ -63,10 +86,19 @@
         selectedPlatform = btn.dataset.platform;
         platformBtns.forEach((b) => {
           b.classList.remove('border-[#7c3aed]', 'bg-[rgba(124,58,237,0.15)]', 'text-white');
-          b.classList.add('border-[rgba(124,58,237,0.25)]', 'bg-[rgba(124,58,237,0.05)]', 'text-[#9999b8]');
+          b.classList.add(
+            'border-[rgba(124,58,237,0.25)]',
+            'bg-[rgba(124,58,237,0.05)]',
+            'text-[#9999b8]'
+          );
         });
-        btn.classList.remove('border-[rgba(124,58,237,0.25)]', 'bg-[rgba(124,58,237,0.05)]', 'text-[#9999b8]');
+        btn.classList.remove(
+          'border-[rgba(124,58,237,0.25)]',
+          'bg-[rgba(124,58,237,0.05)]',
+          'text-[#9999b8]'
+        );
         btn.classList.add('border-[#7c3aed]', 'bg-[rgba(124,58,237,0.15)]', 'text-white');
+        updatePlayHint();
       });
     });
 
@@ -93,7 +125,6 @@
       setMessage(formMessage, '', false);
       step1.classList.add('hidden');
       step2.classList.remove('hidden');
-      // Fire ViewContent when user shows signup intent
       if (typeof fbq === 'function') {
         fbq('track', 'ViewContent', { content_name: 'waitlist_step2' });
       }
@@ -114,11 +145,47 @@
       const signupType = clickedBtn?.dataset?.type;
       if (!signupType) return;
 
+      if (signupType === 'beta' && !alphaOpen) {
+        setMessage(
+          formMessage,
+          locale === 'es'
+            ? 'El alpha de Android está cerrado por ahora. Únete a “Notificarme”.'
+            : 'Android alpha is closed for now. Choose “Notify me” instead.',
+          true
+        );
+        return;
+      }
+
       const email = emailInput.value.trim();
       if (!isValidEmail(email)) {
         setMessage(
           formMessage,
           locale === 'es' ? 'Correo no válido.' : 'Invalid email. Please go back and re-enter.',
+          true
+        );
+        return;
+      }
+
+      if (!selectedPlatform) {
+        setMessage(
+          formMessage,
+          locale === 'es'
+            ? 'Elige una plataforma (Android, Apple o ambas).'
+            : 'Please choose a platform (Android, Apple, or both).',
+          true
+        );
+        return;
+      }
+
+      if (
+        signupType === 'beta' &&
+        selectedPlatform === 'ios'
+      ) {
+        setMessage(
+          formMessage,
+          locale === 'es'
+            ? 'El alpha abierto es solo Android por ahora. Elige Android o “Notificarme” para iOS.'
+            : 'Open alpha is Android-only for now. Choose Android, or “Notify me” for iOS.',
           true
         );
         return;
@@ -140,51 +207,46 @@
             Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
             Prefer: 'return=minimal',
           },
-          body: JSON.stringify({ email, locale, signup_type: signupType, platform: selectedPlatform || 'android' }),
+          body: JSON.stringify({
+            email,
+            locale,
+            signup_type: signupType,
+            platform: selectedPlatform,
+          }),
         });
 
-        if (response.ok || response.status === 201) {
-          // Fire Meta Pixel Lead event with email for advanced matching
+        if (response.ok || response.status === 201 || response.status === 409) {
           if (typeof fbq === 'function') {
             fbq('track', 'Lead', {
               content_name: signupType,
-              content_category: selectedPlatform || 'android',
-              email: email.toLowerCase().trim()
+              content_category: selectedPlatform,
+              email: email.toLowerCase().trim(),
             });
           }
           const msg =
-            signupType === 'beta'
+            response.status === 409
               ? locale === 'es'
-                ? '¡Solicitud de beta enviada! Te contactaremos pronto.'
-                : "You've applied for beta access! We'll be in touch soon."
-              : locale === 'es'
-                ? '¡Estás en la lista! Te avisaremos en el lanzamiento.'
-                : "You're on the list! We'll notify you at launch.";
+                ? '¡Ya estás en la lista!'
+                : "You're already on the list!"
+              : signupType === 'beta'
+                ? locale === 'es'
+                  ? '¡Solicitud de alpha enviada! Te enviaremos el enlace de Google Play pronto.'
+                  : "You're in for Android alpha! We'll email your Google Play invite soon."
+                : locale === 'es'
+                  ? '¡Estás en la lista! Te avisaremos en el lanzamiento.'
+                  : "You're on the list! We'll notify you at launch.";
           setMessage(formMessage, msg, false);
           step2.classList.add('hidden');
           step1.classList.add('hidden');
           form.reset();
-          // Redirect to thank-you page
           setTimeout(() => {
-            window.location.href = locale === 'es' ? 'gracias.html' : 'thank-you.html';
-          }, 300);
-        } else if (response.status === 409) {
-          // Already signed up — still fire Lead for audience building
-          if (typeof fbq === 'function') {
-            fbq('track', 'Lead', {
-              content_name: signupType,
-              content_category: selectedPlatform || 'android',
-              email: email.toLowerCase().trim()
-            });
-          }
-          setMessage(
-            formMessage,
-            locale === 'es' ? '¡Ya estás en la lista!' : "You're already on the list!",
-            false
-          );
-          // Redirect to thank-you page even for existing users
-          setTimeout(() => {
-            window.location.href = locale === 'es' ? 'gracias.html' : 'thank-you.html';
+            const page = locale === 'es' ? 'gracias.html' : 'thank-you.html';
+            window.location.href =
+              page +
+              '?type=' +
+              encodeURIComponent(signupType) +
+              '&platform=' +
+              encodeURIComponent(selectedPlatform);
           }, 300);
         } else {
           const errorData = await response.json().catch(() => ({}));

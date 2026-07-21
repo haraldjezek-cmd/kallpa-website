@@ -98,18 +98,18 @@
     </div>
 
     <!-- Heading -->
-    <h1 class="fade-up text-3xl sm:text-4xl font-extrabold text-white mb-4">
+    <h1 id="ty-title" class="fade-up text-3xl sm:text-4xl font-extrabold text-white mb-4">
       You're on the list!
     </h1>
 
-    <p class="fade-up-delay text-lg text-[#9999b8] mb-8 max-w-md mx-auto">
+    <p id="ty-lead" class="fade-up-delay text-lg text-[#9999b8] mb-8 max-w-md mx-auto">
       Thanks for joining the Kallpa waitlist. We'll notify you as soon as the app is ready for download.
     </p>
 
     <!-- What's next card -->
     <div class="fade-up-delay-2 bg-[#13131a] border border-[rgba(124,58,237,0.2)] rounded-2xl p-6 mb-8 text-left">
       <h2 class="text-white font-semibold text-lg mb-4">What happens next?</h2>
-      <ul class="space-y-3 text-[#9999b8] text-sm">
+      <ul id="ty-steps" class="space-y-3 text-[#9999b8] text-sm">
         <li class="flex items-start gap-3">
           <span class="w-6 h-6 rounded-full bg-[rgba(124,58,237,0.15)] flex items-center justify-center flex-shrink-0 mt-0.5">
             <span class="text-[#a78bfa] text-xs font-bold">1</span>
@@ -126,7 +126,7 @@
           <span class="w-6 h-6 rounded-full bg-[rgba(124,58,237,0.15)] flex items-center justify-center flex-shrink-0 mt-0.5">
             <span class="text-[#a78bfa] text-xs font-bold">3</span>
           </span>
-          <span>Beta testers will hear from us even sooner</span>
+          <span>Android alpha testers get a Play invite after we add your email</span>
         </li>
       </ul>
     </div>
@@ -141,6 +141,25 @@
     </a>
 
   </div>
+
+  <script>
+    (function () {
+      const params = new URLSearchParams(window.location.search);
+      const type = params.get('type') || 'notify';
+      const title = document.getElementById('ty-title');
+      const lead = document.getElementById('ty-lead');
+      const steps = document.getElementById('ty-steps');
+      if (type === 'beta') {
+        title.textContent = "You're in for Android alpha!";
+        lead.textContent =
+          "We'll add your Google Play account to closed testing and email the invite link. Use the same account on your phone.";
+        steps.innerHTML =
+          '<li class="flex items-start gap-3"><span class="w-6 h-6 rounded-full bg-[rgba(124,58,237,0.15)] flex items-center justify-center flex-shrink-0 mt-0.5"><span class="text-[#a78bfa] text-xs font-bold">1</span></span><span>We add your email to the Play Console tester list</span></li>' +
+          '<li class="flex items-start gap-3"><span class="w-6 h-6 rounded-full bg-[rgba(124,58,237,0.15)] flex items-center justify-center flex-shrink-0 mt-0.5"><span class="text-[#a78bfa] text-xs font-bold">2</span></span><span>You get an email with the Android opt-in link</span></li>' +
+          '<li class="flex items-start gap-3"><span class="w-6 h-6 rounded-full bg-[rgba(124,58,237,0.15)] flex items-center justify-center flex-shrink-0 mt-0.5"><span class="text-[#a78bfa] text-xs font-bold">3</span></span><span>Open the link on your Android phone, accept, then install from Play</span></li>';
+      }
+    })();
+  </script>
 
 </body>
 </html>

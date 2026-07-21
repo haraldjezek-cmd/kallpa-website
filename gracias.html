@@ -98,18 +98,18 @@
     </div>
 
     <!-- Heading -->
-    <h1 class="fade-up text-3xl sm:text-4xl font-extrabold text-white mb-4">
+    <h1 id="ty-title" class="fade-up text-3xl sm:text-4xl font-extrabold text-white mb-4">
       ¡Estás en la lista!
     </h1>
 
-    <p class="fade-up-delay text-lg text-[#9999b8] mb-8 max-w-md mx-auto">
+    <p id="ty-lead" class="fade-up-delay text-lg text-[#9999b8] mb-8 max-w-md mx-auto">
       Gracias por unirte a la lista de espera de Kallpa. Te avisaremos en cuanto la app esté lista para descargar.
     </p>
 
     <!-- What's next card -->
     <div class="fade-up-delay-2 bg-[#13131a] border border-[rgba(124,58,237,0.2)] rounded-2xl p-6 mb-8 text-left">
       <h2 class="text-white font-semibold text-lg mb-4">¿Qué sigue?</h2>
-      <ul class="space-y-3 text-[#9999b8] text-sm">
+      <ul id="ty-steps" class="space-y-3 text-[#9999b8] text-sm">
         <li class="flex items-start gap-3">
           <span class="w-6 h-6 rounded-full bg-[rgba(124,58,237,0.15)] flex items-center justify-center flex-shrink-0 mt-0.5">
             <span class="text-[#a78bfa] text-xs font-bold">1</span>
@@ -126,7 +126,7 @@
           <span class="w-6 h-6 rounded-full bg-[rgba(124,58,237,0.15)] flex items-center justify-center flex-shrink-0 mt-0.5">
             <span class="text-[#a78bfa] text-xs font-bold">3</span>
           </span>
-          <span>Los beta testers recibirán noticias aún antes</span>
+          <span>Los testers del alpha Android reciben el enlace de Play después de agregar su correo</span>
         </li>
       </ul>
     </div>
@@ -141,6 +141,25 @@
     </a>
 
   </div>
+
+  <script>
+    (function () {
+      const params = new URLSearchParams(window.location.search);
+      const type = params.get('type') || 'notify';
+      const title = document.getElementById('ty-title');
+      const lead = document.getElementById('ty-lead');
+      const steps = document.getElementById('ty-steps');
+      if (type === 'beta') {
+        title.textContent = '¡Estás en el alpha Android!';
+        lead.textContent =
+          'Agregaremos tu cuenta de Google Play a la prueba cerrada y te enviaremos el enlace. Usa la misma cuenta en tu teléfono.';
+        steps.innerHTML =
+          '<li class="flex items-start gap-3"><span class="w-6 h-6 rounded-full bg-[rgba(124,58,237,0.15)] flex items-center justify-center flex-shrink-0 mt-0.5"><span class="text-[#a78bfa] text-xs font-bold">1</span></span><span>Agregamos tu correo a la lista de testers en Play Console</span></li>' +
+          '<li class="flex items-start gap-3"><span class="w-6 h-6 rounded-full bg-[rgba(124,58,237,0.15)] flex items-center justify-center flex-shrink-0 mt-0.5"><span class="text-[#a78bfa] text-xs font-bold">2</span></span><span>Recibes un correo con el enlace de opt-in de Android</span></li>' +
+          '<li class="flex items-start gap-3"><span class="w-6 h-6 rounded-full bg-[rgba(124,58,237,0.15)] flex items-center justify-center flex-shrink-0 mt-0.5"><span class="text-[#a78bfa] text-xs font-bold">3</span></span><span>Abre el enlace en tu Android, acepta e instala desde Play</span></li>';
+      }
+    })();
+  </script>
 
 </body>
 </html>

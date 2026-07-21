@@ -3,4 +3,6 @@
 window.KALLPA_CONFIG = {
   SUPABASE_URL: 'https://vgphpiyjkyvcszkateqq.supabase.co',
   SUPABASE_ANON_KEY: 'sb_publishable_QYEhc0tYWiKvREJnMYod5g_kt11JLaK',
+  // Set false when Android alpha is full (~15 testers) to hide the alpha CTA.
+  ALPHA_SIGNUPS_OPEN: true,
 };
