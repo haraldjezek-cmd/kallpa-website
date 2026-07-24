@@ -126,7 +126,7 @@
           <span class="w-6 h-6 rounded-full bg-[rgba(124,58,237,0.15)] flex items-center justify-center flex-shrink-0 mt-0.5">
             <span class="text-[#a78bfa] text-xs font-bold">3</span>
           </span>
-          <span>Los testers del alpha Android reciben el enlace de Play después de agregar su correo</span>
+          <span>Los testers del beta cerrado reciben una invitación de Play o TestFlight después de agregar tu correo</span>
         </li>
       </ul>
     </div>
@@ -146,17 +146,36 @@
     (function () {
       const params = new URLSearchParams(window.location.search);
       const type = params.get('type') || 'notify';
+      const platform = params.get('platform') || 'android';
       const title = document.getElementById('ty-title');
       const lead = document.getElementById('ty-lead');
       const steps = document.getElementById('ty-steps');
       if (type === 'beta') {
-        title.textContent = '¡Estás en el alpha Android!';
-        lead.textContent =
-          'Agregaremos tu cuenta de Google Play a la prueba cerrada y te enviaremos el enlace. Usa la misma cuenta en tu teléfono.';
-        steps.innerHTML =
-          '<li class="flex items-start gap-3"><span class="w-6 h-6 rounded-full bg-[rgba(124,58,237,0.15)] flex items-center justify-center flex-shrink-0 mt-0.5"><span class="text-[#a78bfa] text-xs font-bold">1</span></span><span>Agregamos tu correo a la lista de testers en Play Console</span></li>' +
-          '<li class="flex items-start gap-3"><span class="w-6 h-6 rounded-full bg-[rgba(124,58,237,0.15)] flex items-center justify-center flex-shrink-0 mt-0.5"><span class="text-[#a78bfa] text-xs font-bold">2</span></span><span>Recibes un correo con el enlace de opt-in de Android</span></li>' +
-          '<li class="flex items-start gap-3"><span class="w-6 h-6 rounded-full bg-[rgba(124,58,237,0.15)] flex items-center justify-center flex-shrink-0 mt-0.5"><span class="text-[#a78bfa] text-xs font-bold">3</span></span><span>Abre el enlace en tu Android, acepta e instala desde Play</span></li>';
+        if (platform === 'ios') {
+          title.textContent = '¡Estás en el beta de iPhone!';
+          lead.textContent =
+            'Te enviaremos una invitación de TestFlight. Ábrela en tu iPhone, instala TestFlight si hace falta, luego Aceptar e Instalar.';
+          steps.innerHTML =
+            '<li class="flex items-start gap-3"><span class="w-6 h-6 rounded-full bg-[rgba(124,58,237,0.15)] flex items-center justify-center flex-shrink-0 mt-0.5"><span class="text-[#a78bfa] text-xs font-bold">1</span></span><span>Te agregamos al grupo de TestFlight</span></li>' +
+            '<li class="flex items-start gap-3"><span class="w-6 h-6 rounded-full bg-[rgba(124,58,237,0.15)] flex items-center justify-center flex-shrink-0 mt-0.5"><span class="text-[#a78bfa] text-xs font-bold">2</span></span><span>Recibes un correo o un enlace público de invitación</span></li>' +
+            '<li class="flex items-start gap-3"><span class="w-6 h-6 rounded-full bg-[rgba(124,58,237,0.15)] flex items-center justify-center flex-shrink-0 mt-0.5"><span class="text-[#a78bfa] text-xs font-bold">3</span></span><span>Ábrelo en tu iPhone → TestFlight → Aceptar → Instalar</span></li>';
+        } else if (platform === 'both') {
+          title.textContent = '¡Estás en el beta cerrado!';
+          lead.textContent =
+            'Te enviaremos invitaciones de Google Play (Android) y TestFlight (iPhone) según las plataformas que elegiste.';
+          steps.innerHTML =
+            '<li class="flex items-start gap-3"><span class="w-6 h-6 rounded-full bg-[rgba(124,58,237,0.15)] flex items-center justify-center flex-shrink-0 mt-0.5"><span class="text-[#a78bfa] text-xs font-bold">1</span></span><span>Agregamos tu correo a la prueba cerrada de Play y/o a TestFlight</span></li>' +
+            '<li class="flex items-start gap-3"><span class="w-6 h-6 rounded-full bg-[rgba(124,58,237,0.15)] flex items-center justify-center flex-shrink-0 mt-0.5"><span class="text-[#a78bfa] text-xs font-bold">2</span></span><span>Recibes correo(s) con los enlaces de opt-in</span></li>' +
+            '<li class="flex items-start gap-3"><span class="w-6 h-6 rounded-full bg-[rgba(124,58,237,0.15)] flex items-center justify-center flex-shrink-0 mt-0.5"><span class="text-[#a78bfa] text-xs font-bold">3</span></span><span>Abre cada enlace en el teléfono correspondiente e instala</span></li>';
+        } else {
+          title.textContent = '¡Estás en el beta de Android!';
+          lead.textContent =
+            'Agregaremos tu cuenta de Google Play a la prueba cerrada y te enviaremos el enlace. Usa la misma cuenta en tu teléfono.';
+          steps.innerHTML =
+            '<li class="flex items-start gap-3"><span class="w-6 h-6 rounded-full bg-[rgba(124,58,237,0.15)] flex items-center justify-center flex-shrink-0 mt-0.5"><span class="text-[#a78bfa] text-xs font-bold">1</span></span><span>Agregamos tu correo a la lista de testers en Play Console</span></li>' +
+            '<li class="flex items-start gap-3"><span class="w-6 h-6 rounded-full bg-[rgba(124,58,237,0.15)] flex items-center justify-center flex-shrink-0 mt-0.5"><span class="text-[#a78bfa] text-xs font-bold">2</span></span><span>Recibes un correo con el enlace de opt-in de Android</span></li>' +
+            '<li class="flex items-start gap-3"><span class="w-6 h-6 rounded-full bg-[rgba(124,58,237,0.15)] flex items-center justify-center flex-shrink-0 mt-0.5"><span class="text-[#a78bfa] text-xs font-bold">3</span></span><span>Abre el enlace en tu Android, acepta e instala desde Play</span></li>';
+        }
       }
     })();
   </script>

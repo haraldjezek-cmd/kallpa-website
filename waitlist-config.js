@@ -2,8 +2,8 @@
  * Shared waitlist + Supabase config for index.html and es.html.
  * Load after config.js (optional). Exposes window.initKallpaWaitlist({ locale }).
  *
- * KALLPA_CONFIG.ALPHA_SIGNUPS_OPEN — when false, hides Android alpha CTA
- * (notify / launch waitlist still works). Flip after ~15 Play testers.
+ * KALLPA_CONFIG.ALPHA_SIGNUPS_OPEN — when false, hides closed-beta CTA
+ * (notify / launch waitlist still works). Key name kept for live config.js compat.
  */
 (function () {
   function readConfig() {
@@ -24,6 +24,25 @@
     el.textContent = text;
     el.className =
       'min-h-[24px] text-sm font-medium ' + (isError ? 'text-red-400' : 'text-[#34d399]');
+  }
+
+  function betaSuccessMessage(locale, platform) {
+    if (locale === 'es') {
+      if (platform === 'ios') {
+        return '¡Solicitud de beta enviada! Te enviaremos la invitación de TestFlight pronto.';
+      }
+      if (platform === 'both') {
+        return '¡Solicitud de beta enviada! Te enviaremos los enlaces de Play y TestFlight pronto.';
+      }
+      return '¡Solicitud de beta enviada! Te enviaremos el enlace de Google Play pronto.';
+    }
+    if (platform === 'ios') {
+      return "You're in for the iPhone beta! We'll email your TestFlight invite soon.";
+    }
+    if (platform === 'both') {
+      return "You're in for the closed beta! We'll email Play and TestFlight invites soon.";
+    }
+    return "You're in for the Android beta! We'll email your Google Play invite soon.";
   }
 
   window.initKallpaWaitlist = function initKallpaWaitlist(options) {
@@ -74,10 +93,8 @@
 
     function updatePlayHint() {
       if (!playEmailHint) return;
-      const show =
-        alphaOpen &&
-        (selectedPlatform === 'android' || selectedPlatform === 'both');
-      playEmailHint.classList.toggle('hidden', !show);
+      // Show whenever a platform is chosen (Android Google / iPhone Apple ID tips).
+      playEmailHint.classList.toggle('hidden', !selectedPlatform);
     }
 
     // Platform button toggle
@@ -149,8 +166,8 @@
         setMessage(
           formMessage,
           locale === 'es'
-            ? 'El alpha de Android está cerrado por ahora. Únete a “Notificarme”.'
-            : 'Android alpha is closed for now. Choose “Notify me” instead.',
+            ? 'El beta cerrado está lleno por ahora. Únete a “Notificarme”.'
+            : 'Closed beta is full for now. Choose “Notify me” instead.',
           true
         );
         return;
@@ -172,20 +189,6 @@
           locale === 'es'
             ? 'Elige una plataforma (Android, Apple o ambas).'
             : 'Please choose a platform (Android, Apple, or both).',
-          true
-        );
-        return;
-      }
-
-      if (
-        signupType === 'beta' &&
-        selectedPlatform === 'ios'
-      ) {
-        setMessage(
-          formMessage,
-          locale === 'es'
-            ? 'El alpha abierto es solo Android por ahora. Elige Android o “Notificarme” para iOS.'
-            : 'Open alpha is Android-only for now. Choose Android, or “Notify me” for iOS.',
           true
         );
         return;
@@ -229,9 +232,7 @@
                 ? '¡Ya estás en la lista!'
                 : "You're already on the list!"
               : signupType === 'beta'
-                ? locale === 'es'
-                  ? '¡Solicitud de alpha enviada! Te enviaremos el enlace de Google Play pronto.'
-                  : "You're in for Android alpha! We'll email your Google Play invite soon."
+                ? betaSuccessMessage(locale, selectedPlatform)
                 : locale === 'es'
                   ? '¡Estás en la lista! Te avisaremos en el lanzamiento.'
                   : "You're on the list! We'll notify you at launch.";

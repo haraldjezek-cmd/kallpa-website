@@ -4,9 +4,24 @@ Static marketing site (EN + ES). **Not** the Flutter web build — deploy only t
 
 ## What’s in the site
 
-- `index.html` / `es.html` — Tailwind via CDN, two-step waitlist (notify / beta)
+- `index.html` / `es.html` — Tailwind via CDN; closed beta (Android + iPhone) + launch waitlist (notify / beta)
 - Screenshots: `Homescreen.jpeg`, `LoggingSet.jpeg`, `WorkoutHistory.jpeg`, `PRs.jpeg` (+ `_ES` variants in `es.html` if used)
-- Waitlist → Supabase `waitlist` table via anon REST API
+- Waitlist → Supabase `waitlist` table via anon REST API (`signup_type`: `notify` | `beta`; `platform`: `android` | `ios` | `both`)
+- Close beta CTA when full: set `ALPHA_SIGNUPS_OPEN: false` in `config.js` (see `config.example.js`; key name kept for live compat)
+
+## Closed beta ops (Play + TestFlight)
+
+1. Query new beta applicants:
+   ```sql
+   SELECT email, platform, locale, created_at
+   FROM waitlist
+   WHERE signup_type = 'beta'
+   ORDER BY created_at DESC;
+   ```
+2. **Android:** add email to Play Console closed-testing list (+ Google OAuth test users if they use Google sign-in); email the Play opt-in link.
+3. **iPhone:** add to TestFlight group (or share public link); email invite / notify as needed. Join link (ops only — not on marketing site): see `KALLPA/App testing.md`.
+4. When closed beta is full: set `ALPHA_SIGNUPS_OPEN: false` in production `config.js` and redeploy (hides “Join the beta”; notify still works).
+5. Do **not** put public TestFlight / Play opt-in URLs on the marketing site — keep waitlist → manual invite.
 
 ## Go-live checklist
 
@@ -55,7 +70,26 @@ python -m http.server 8080
 
 ### Phase C — `kallpa.co` (domain owned ✅)
 
-**Repo:** `haraldjezek-cmd/repwise` · **Pages CNAME target:** `haraldjezek-cmd.github.io` · **`web/CNAME`:** `kallpa.co`
+**Live deploy repo:** `haraldjezek-cmd/kallpa-website` (public; serves `https://kallpa.co`) · **Pages target:** `haraldjezek-cmd.github.io` · **`web/CNAME`:** `kallpa.co`
+
+**Monorepo source:** edit `repWise/web/`, then copy changed files into `kallpa-website` before push (see Phase D).
+
+**Sync landing → `kallpa-website` (PowerShell, from any directory):**
+
+```powershell
+$src = "C:\repWise\web"
+$dst = "C:\kallpa-website"
+@(
+  "index.html", "es.html", "privacy.html", "privacy-es.html", "terms.html", "terms-es.html",
+  "thank-you.html", "gracias.html", "waitlist-config.js", "config.example.js", "CNAME", "favicon.png"
+) | ForEach-Object { Copy-Item -Force "$src\$_" "$dst\$_" -ErrorAction SilentlyContinue }
+# Images/assets: copy Kallpa*.png, *.jpeg, etc. when those change too
+cd $dst
+git add privacy.html privacy-es.html terms.html terms-es.html privacy terms terms-es privacy-es index.html es.html
+git status
+git commit -m "Your message"
+git push origin main
+```
 
 1. **GitHub** → repo **Settings → Pages**
    - Custom domain: `kallpa.co`
@@ -85,11 +119,28 @@ If you prefer `kallpa-website` as its own repo:
 2. Enable Pages from `main` / root.
 3. Inject `config.js` at deploy time (same secrets) or commit `config.js` only in that private repo.
 
-## CI workflow
+## CI workflow (optional — monorepo deploy)
 
-`.github/workflows/deploy-landing.yml` deploys **`web/`** on push to `main` when `web/**` changes.
+**Production today:** `https://kallpa.co` is served from the public repo **`haraldjezek-cmd/kallpa-website`**, not from this monorepo. You do **not** need the monorepo workflow for the live site.
 
-It generates `config.js` from secrets — **do not commit** real keys to git.
+**Monorepo workflow:** [`.github/workflows/deploy-landing.yml`](../.github/workflows/deploy-landing.yml) is **disabled** (manual `workflow_dispatch` only). Production deploy stays **`kallpa-website`**; do not enable push deploy on repWise unless you retire the public repo and enable Pages here.
+
+| Use monorepo CI when… | Skip it when… |
+|------------------------|----------------|
+| You want one repo (`repWise`) as the only source of truth and auto-deploy on every `web/` push | You keep deploying via **`kallpa-website`** (manual copy or CI in that repo) |
+| **repWise** is **public** (or GitHub plan allows Pages on private repos) | **repWise** stays private on free GitHub — Pages from this repo will not work |
+| You add repo secrets `LANDING_SUPABASE_URL`, `LANDING_SUPABASE_ANON_KEY` and set Pages → **GitHub Actions** | Waitlist `config.js` is already maintained in `kallpa-website` |
+
+**To enable later:**
+
+1. Commit `.github/workflows/deploy-landing.yml` (push requires a PAT with **`workflow`** scope, or use GitHub Desktop / `gh auth login`).
+2. **Settings → Secrets and variables → Actions** → `LANDING_SUPABASE_URL`, `LANDING_SUPABASE_ANON_KEY`.
+3. **Settings → Pages** → Source: **GitHub Actions**.
+4. Point `kallpa.co` DNS at that Pages site *or* retire `kallpa-website` and use one repo only.
+
+**Alternative:** Copy the same workflow into **`kallpa-website`** — that matches the current live setup without enabling Pages on the private monorepo.
+
+Secrets generate `web/config.js` at build time — **do not commit** real keys to git (see `.gitignore`: `web/config.js`).
 
 ## Security notes
 
@@ -108,4 +159,5 @@ It generates `config.js` from secrets — **do not commit** real keys to git.
 | Images 404 on Pages | Paths are relative; ensure deploy artifact is `web/` root |
 | GitHub “Domain’s DNS record could not be retrieved” | CNAME `@` → `haraldjezek-cmd.github.io`, grey-cloud / DNS only; wait up to 24h |
 | HTTPS cert pending on GitHub Pages | DNS must resolve first; disable Cloudflare proxy on `@` and `www` |
+| Clean URL `/privacy` (no `.html`) | Use `privacy/index.html` in repo (GitHub Pages). **Do not** rely on Cloudflare Redirect Rules while `@` is **grey-cloud** (DNS only) — HTTP does not pass through Cloudflare, so redirects never run. You may pre-create a rule in Cloudflare for later, but it only works if you proxy (orange cloud), which breaks GitHub Pages SSL. |
 | `hello@kallpa.co` bounces | Cloudflare Email Routing not enabled or MX records missing |
