@@ -186,6 +186,32 @@
       background: transparent;
     }
     button.add-day:hover { background: #15251c; }
+    .logo-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-top: 0.35rem;
+    }
+    .logo-preview {
+      width: 72px;
+      height: 72px;
+      object-fit: contain;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 4px;
+    }
+    .logo-preview.placeholder {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      font-size: 0.7rem;
+      text-align: center;
+      background: var(--input);
+    }
+    .logo-hint { font-size: 0.8rem; color: var(--muted); margin: 0.25rem 0 0; }
     .day-head { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; }
     .ex {
       border-top: 1px solid var(--border);
@@ -284,6 +310,20 @@
         font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
         font-size: 10.5pt;
         line-height: 1.4;
+      }
+      .print-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 1rem;
+        margin-bottom: 0.35rem;
+      }
+      .print-header-text { flex: 1; min-width: 0; }
+      .print-logo {
+        max-height: 64px;
+        max-width: 160px;
+        object-fit: contain;
+        flex-shrink: 0;
       }
       .print-brand {
         font-size: 11pt;
@@ -477,6 +517,13 @@
       printColOrder: '#',
       printColExercise: 'Exercise',
       printColNotes: 'Notes',
+      coachLogo: 'Your logo (optional)',
+      coachLogoHint: 'Shown on the printed program. PNG or JPG, up to ~150 KB after resize.',
+      coachLogoChoose: 'Choose logo',
+      coachLogoRemove: 'Remove logo',
+      coachLogoNone: 'No logo',
+      coachLogoTooBig: 'Logo is too large. Try a smaller image.',
+      coachLogoBadType: 'Please use a PNG or JPG image.',
       dayN: 'Day {n}',
       removeDay: 'Remove day',
       label: 'Label',
@@ -592,6 +639,13 @@
       printColOrder: '#',
       printColExercise: 'Ejercicio',
       printColNotes: 'Notas',
+      coachLogo: 'Tu logo (opcional)',
+      coachLogoHint: 'Se muestra en el programa impreso. PNG o JPG, máx. ~150 KB tras redimensionar.',
+      coachLogoChoose: 'Elegir logo',
+      coachLogoRemove: 'Quitar logo',
+      coachLogoNone: 'Sin logo',
+      coachLogoTooBig: 'El logo es demasiado grande. Prueba con una imagen más pequeña.',
+      coachLogoBadType: 'Usa una imagen PNG o JPG.',
       dayN: 'Día {n}',
       removeDay: 'Quitar día',
       label: 'Etiqueta',
@@ -743,6 +797,7 @@
     status: '',
     athlete: '',
     coach_label: '',
+    coach_logo: '',
     program_name: '',
     goal: 'hypertrophy',
     program_notes: '',
@@ -790,6 +845,54 @@
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;');
+  }
+
+  const LOGO_MAX_CHARS = 180000;
+
+  function compressLogo(file) {
+    return new Promise((resolve, reject) => {
+      const type = (file.type || '').toLowerCase();
+      if (!['image/png', 'image/jpeg', 'image/jpg', 'image/webp'].includes(type)) {
+        reject(new Error(t('coachLogoBadType')));
+        return;
+      }
+      const reader = new FileReader();
+      reader.onerror = () => reject(new Error(t('coachLogoBadType')));
+      reader.onload = () => {
+        const img = new Image();
+        img.onload = () => {
+          const maxSide = 480;
+          let w = img.width;
+          let h = img.height;
+          if (w > maxSide || h > maxSide) {
+            const scale = maxSide / Math.max(w, h);
+            w = Math.round(w * scale);
+            h = Math.round(h * scale);
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, w, h);
+          ctx.drawImage(img, 0, 0, w, h);
+          let quality = 0.85;
+          let dataUrl = canvas.toDataURL('image/jpeg', quality);
+          while (dataUrl.length > LOGO_MAX_CHARS && quality > 0.45) {
+            quality -= 0.1;
+            dataUrl = canvas.toDataURL('image/jpeg', quality);
+          }
+          if (dataUrl.length > LOGO_MAX_CHARS) {
+            reject(new Error(t('coachLogoTooBig')));
+            return;
+          }
+          resolve(dataUrl);
+        };
+        img.onerror = () => reject(new Error(t('coachLogoBadType')));
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    });
   }
 
   async function fn(path, opts = {}) {
@@ -851,6 +954,9 @@
       state.athlete = data.athlete_display || t('yourAthlete');
       state.coach_label = data.coach_label || '';
       const meta = data.program_meta || {};
+      state.coach_logo = (typeof meta.coach_logo === 'string' && meta.coach_logo.startsWith('data:image/'))
+        ? meta.coach_logo
+        : '';
       state.program_name = meta.name || '';
       state.goal = meta.goal || 'hypertrophy';
       state.program_notes = data.program_notes || (data.structure && data.structure.program_notes) || '';
@@ -910,6 +1016,7 @@
       token: state.token,
       draft: !!asDraft,
       coach_label: state.coach_label,
+      coach_logo: state.coach_logo || null,
       program_name: state.program_name,
       goal: state.goal,
       program_notes: state.program_notes,
@@ -1038,8 +1145,15 @@
     }).join('');
 
     sheet.innerHTML = `
-      <div class="print-brand">Kallpa</div>
-      <h1>${escapeHtml(programTitle)}</h1>
+      <div class="print-header">
+        <div class="print-header-text">
+          <div class="print-brand">Kallpa</div>
+          <h1>${escapeHtml(programTitle)}</h1>
+        </div>
+        ${state.coach_logo && state.coach_logo.startsWith('data:image/')
+          ? `<img class="print-logo" src="${state.coach_logo}" alt="" />`
+          : ''}
+      </div>
       <dl class="print-meta">
         <div>
           <dt>${escapeHtml(t('printPreparedFor'))}</dt>
@@ -1203,6 +1317,20 @@
         <h2>${escapeHtml(t('programDetails'))}</h2>
         <label>${escapeHtml(t('coachName'))}</label>
         <input id="coach_label" ${ro} value="${escapeHtml(state.coach_label)}" placeholder="${escapeHtml(t('coachNamePh'))}" />
+        <label>${escapeHtml(t('coachLogo'))}</label>
+        <div class="logo-row no-print">
+          ${state.coach_logo
+            ? `<img class="logo-preview" id="logo_preview" src="${state.coach_logo}" alt="" />`
+            : `<div class="logo-preview placeholder" id="logo_preview">${escapeHtml(t('coachLogoNone'))}</div>`}
+          ${state.editable ? `
+            <div>
+              <input type="file" id="logo_file" accept="image/png,image/jpeg,image/webp" hidden />
+              <button type="button" class="btn-action" id="logo_choose">${escapeHtml(t('coachLogoChoose'))}</button>
+              ${state.coach_logo ? `<button type="button" class="ghost" id="logo_remove" style="margin-left:0.35rem">${escapeHtml(t('coachLogoRemove'))}</button>` : ''}
+            </div>
+          ` : ''}
+        </div>
+        ${state.coach_logo && !state.editable ? '' : `<p class="logo-hint no-print">${escapeHtml(t('coachLogoHint'))}</p>`}
         <label>${escapeHtml(t('programName'))}</label>
         <input id="program_name" ${ro} value="${escapeHtml(state.program_name)}" placeholder="${escapeHtml(t('programNamePh'))}" />
         <label>${escapeHtml(t('goal'))}</label>
@@ -1310,6 +1438,29 @@
     };
     const g = (id) => app.querySelector(id);
     if (g('#coach_label')) g('#coach_label').oninput = (e) => { state.coach_label = e.target.value; };
+    const logoChoose = app.querySelector('#logo_choose');
+    const logoFile = app.querySelector('#logo_file');
+    const logoRemove = app.querySelector('#logo_remove');
+    if (logoChoose && logoFile) {
+      logoChoose.onclick = () => logoFile.click();
+      logoFile.onchange = async () => {
+        const file = logoFile.files && logoFile.files[0];
+        if (!file) return;
+        try {
+          state.coach_logo = await compressLogo(file);
+          clearActionFeedback();
+          render();
+        } catch (err) {
+          showActionErr(err.message || t('coachLogoBadType'));
+        }
+      };
+    }
+    if (logoRemove) {
+      logoRemove.onclick = () => {
+        state.coach_logo = '';
+        render();
+      };
+    }
     if (g('#program_name')) g('#program_name').oninput = (e) => { state.program_name = e.target.value; };
     if (g('#goal')) g('#goal').onchange = (e) => { state.goal = e.target.value; };
     if (g('#program_notes')) g('#program_notes').oninput = (e) => { state.program_notes = e.target.value; };
