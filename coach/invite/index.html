@@ -540,6 +540,7 @@
     const headers = {
       apikey: ANON,
       'Content-Type': 'application/json',
+      'Accept-Language': lang === 'es' ? 'es' : 'en',
       ...(opts.headers || {}),
     };
     const r = await fetch(`${SUPABASE_URL}/functions/v1/${path}`, {
@@ -748,6 +749,20 @@
     }
   }
 
+  function normalizeNameI18n(raw) {
+    let value = raw;
+    if (typeof value === 'string') {
+      try { value = JSON.parse(value); } catch { return {}; }
+    }
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+    const out = {};
+    Object.keys(value).forEach((k) => {
+      const v = value[k];
+      if (typeof v === 'string' && v.trim()) out[k] = v.trim();
+    });
+    return out;
+  }
+
   function exerciseDisplayName(ex) {
     if (ex.custom) {
       if (lang === 'es') {
@@ -755,7 +770,7 @@
       }
       return (ex.custom.name_en || ex.custom.name_es || t('customExercise'));
     }
-    const i18n = ex.name_i18n || {};
+    const i18n = normalizeNameI18n(ex.name_i18n);
     if (lang === 'es') {
       return (i18n.es || i18n.en || ex.exercise_name || t('exercise'));
     }
@@ -781,10 +796,13 @@
         return;
       }
       resultEl.innerHTML = list.map((ex) => {
-        const i18n = ex.name_i18n || {};
-        const nameEn = i18n.en || ex.name || '';
+        const i18n = normalizeNameI18n(ex.name_i18n);
+        const nameEn = i18n.en || '';
         const nameEs = i18n.es || '';
-        return `<button type="button" data-id="${escapeHtml(ex.id)}" data-name-en="${escapeHtml(nameEn)}" data-name-es="${escapeHtml(nameEs)}">${escapeHtml(ex.name)} <span class="muted">${escapeHtml((ex.muscles_primary || []).slice(0, 2).map((m) => t('m_' + m) || m).join(', '))}</span></button>`;
+        const label = lang === 'es'
+          ? (nameEs || nameEn || ex.name || t('exercise'))
+          : (nameEn || nameEs || ex.name || t('exercise'));
+        return `<button type="button" data-id="${escapeHtml(ex.id)}" data-name-en="${escapeHtml(nameEn)}" data-name-es="${escapeHtml(nameEs)}">${escapeHtml(label)} <span class="muted">${escapeHtml((ex.muscles_primary || []).slice(0, 2).map((m) => t('m_' + m) || m).join(', '))}</span></button>`;
       }).join('');
       resultEl.querySelectorAll('button[data-id]').forEach((btn) => {
         btn.addEventListener('click', () => {
