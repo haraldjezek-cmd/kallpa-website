@@ -110,6 +110,19 @@
     .actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1rem; }
     .actions-stack { display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1rem; }
     .actions-stack .actions { margin-top: 0; }
+    .actions-stack > .actions:not(.actions-build) {
+      flex-wrap: nowrap;
+      gap: 0.4rem;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 0.15rem;
+    }
+    .actions-stack > .actions:not(.actions-build) button {
+      flex: 0 0 auto;
+      white-space: nowrap;
+      padding: 0.45rem 0.7rem;
+      font-size: 0.875rem;
+    }
     .actions-build {
       padding-bottom: 0.75rem;
       border-bottom: 1px dashed var(--border);
@@ -270,8 +283,8 @@
       programNotesPh: 'Overall focus, constraints…',
       howto: 'How-to / general instructions',
       howtoPh: 'Warm-up, filming, progression rules…',
-      print: 'Print / Save PDF',
-      csv: 'Download CSV (Excel / Sheets)',
+      print: 'Print / PDF',
+      csv: 'Download CSV',
       addDay: 'Add day',
       saveDraft: 'Save draft',
       submit: 'Submit to athlete',
@@ -376,8 +389,8 @@
       programNotesPh: 'Enfoque general, restricciones…',
       howto: 'Instrucciones generales',
       howtoPh: 'Calentamiento, filmación, progresión…',
-      print: 'Imprimir / Guardar PDF',
-      csv: 'Descargar CSV (Excel / Sheets)',
+      print: 'Imprimir / PDF',
+      csv: 'Descargar CSV',
       addDay: 'Añadir día',
       saveDraft: 'Guardar borrador',
       submit: 'Enviar al atleta',
