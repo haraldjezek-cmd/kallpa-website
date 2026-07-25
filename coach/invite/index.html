@@ -257,6 +257,8 @@
       alreadySubmitted: 'Already submitted. The athlete must accept this program in Kallpa.',
       readOnly: 'This invite is read-only.',
       saved: 'Saved',
+      draftSaved: 'Draft saved',
+      submittedOk: 'Submitted — athlete must accept in Kallpa',
       saveFailed: 'Save failed',
       programDetails: 'Program details',
       coachName: 'Your name (optional)',
@@ -361,6 +363,8 @@
       alreadySubmitted: 'Ya enviado. El atleta debe aceptar este programa en Kallpa.',
       readOnly: 'Esta invitación es de solo lectura.',
       saved: 'Guardado',
+      draftSaved: 'Borrador guardado',
+      submittedOk: 'Enviado — el atleta debe aceptarlo en Kallpa',
       saveFailed: 'Error al guardar',
       programDetails: 'Detalles del programa',
       coachName: 'Tu nombre (opcional)',
@@ -561,6 +565,15 @@
   }
   function clearActionFeedback() {
     actionFeedback.innerHTML = '';
+  }
+  function localizeActionError(msg) {
+    if (!msg) return '';
+    const m = String(msg);
+    if (/already submitted/i.test(m)) return t('alreadySubmitted');
+    if (/program name/i.test(m) || /nombre del programa/i.test(m)) return t('programNameRequired');
+    if (/Invite not available|not available/i.test(m)) return t('inviteUnavailable');
+    if (/Feature disabled|disabled/i.test(m)) return t('inviteUnavailable');
+    return m;
   }
   function escapeHtml(s) {
     return String(s)
@@ -779,9 +792,12 @@
         status: statusLabel(state.status),
       });
       render();
-      showActionOk(res.message || t('saved'));
+      const okMsg = (asDraft || res.status === 'draft')
+        ? t('draftSaved')
+        : t('submittedOk');
+      showActionOk(okMsg);
     } catch (e) {
-      showActionErr(e.message || t('saveFailed'));
+      showActionErr(localizeActionError(e.message) || t('saveFailed'));
     }
   }
 
