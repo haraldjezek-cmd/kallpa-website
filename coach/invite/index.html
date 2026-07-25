@@ -39,7 +39,34 @@
       padding: 1rem 1rem 4rem;
     }
     .wrap { max-width: 720px; margin: 0 auto; }
-    h1 { font-size: 1.35rem; font-weight: 650; margin: 0 0 0.25rem; }
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 0.75rem;
+      margin-bottom: 0.25rem;
+    }
+    h1 { font-size: 1.35rem; font-weight: 650; margin: 0; }
+    .lang-switch {
+      display: inline-flex;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .lang-switch button {
+      border: 0;
+      border-radius: 0;
+      padding: 0.35rem 0.65rem;
+      background: transparent;
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 0.8rem;
+    }
+    .lang-switch button.on {
+      background: var(--accent-dim);
+      color: #fff;
+    }
     .sub { color: var(--muted); font-size: 0.9rem; margin-bottom: 1.25rem; }
     .card {
       background: var(--card);
@@ -143,11 +170,10 @@
       user-select: none;
     }
     .chip.on { background: var(--accent-dim); border-color: var(--accent); color: #fff; }
-    .no-print { }
     @media print {
       :root { --bg: #fff; --card: #fff; --border: #ccc; --text: #111; --muted: #444; --input: #fff; }
       body { background: #fff; color: #111; padding: 0; }
-      .no-print, .search-results, button, .chip-row, [data-search], .badge { display: none !important; }
+      .no-print, .search-results, button, .chip-row, [data-search], .badge, .lang-switch { display: none !important; }
       .card { border: 1px solid #ccc; break-inside: avoid; box-shadow: none; }
       input, select, textarea {
         border: none !important;
@@ -164,7 +190,14 @@
 </head>
 <body>
   <div class="wrap">
-    <h1>Kallpa coach program</h1>
+    <div class="topbar no-print">
+      <h1 id="page_title">Kallpa coach program</h1>
+      <div class="lang-switch" role="group" aria-label="Language">
+        <button type="button" id="lang_en" data-lang="en">EN</button>
+        <button type="button" id="lang_es" data-lang="es">ES</button>
+      </div>
+    </div>
+    <h1 class="print-only" id="page_title_print">Kallpa coach program</h1>
     <p class="sub" id="subtitle">Loading invite…</p>
     <div id="banner" class="no-print"></div>
     <div id="app" class="hidden"></div>
@@ -188,11 +221,279 @@
   ];
   const GOALS = ['hypertrophy', 'strength', 'longevity', 'general'];
 
+  const I18N = {
+    en: {
+      title: 'Kallpa coach program',
+      loading: 'Loading invite…',
+      missingToken: 'Missing invite token',
+      missingTokenHint: 'Open this page from the invite link the athlete shared (URL must include the token).',
+      inviteUnavailable: 'Invite unavailable',
+      loadFailed: 'Could not load invite',
+      programFor: 'Program for {athlete} · status: {status}',
+      yourAthlete: 'your athlete',
+      alreadySubmitted: 'Already submitted. The athlete must accept this program in Kallpa.',
+      readOnly: 'This invite is read-only.',
+      saved: 'Saved',
+      saveFailed: 'Save failed',
+      programDetails: 'Program details',
+      coachName: 'Your name (optional)',
+      coachNamePh: 'Coach name',
+      programName: 'Program name',
+      programNamePh: 'e.g. 4-day hypertrophy',
+      goal: 'Goal',
+      programNotes: 'Program notes',
+      programNotesPh: 'Overall focus, constraints…',
+      howto: 'How-to / general instructions',
+      howtoPh: 'Warm-up, filming, progression rules…',
+      print: 'Print / Save PDF',
+      csv: 'Download CSV (Excel / Sheets)',
+      addDay: 'Add day',
+      saveDraft: 'Save draft',
+      submit: 'Submit to athlete',
+      dayN: 'Day {n}',
+      removeDay: 'Remove day',
+      label: 'Label',
+      dayNotes: 'Day notes',
+      addFromLibrary: 'Add from library',
+      searchPh: 'Search exercises (min 2 letters)',
+      addCustom: 'Add custom exercise',
+      customExercise: 'Custom exercise',
+      exercise: 'Exercise',
+      custom: 'custom',
+      library: 'library',
+      remove: 'Remove',
+      nameEn: 'Name (English)',
+      nameEs: 'Name (Spanish, optional)',
+      equipment: 'Equipment',
+      primaryMuscles: 'Primary muscles',
+      sets: 'Sets',
+      reps: 'Reps',
+      rir: 'RIR',
+      exNotes: 'Notes / how-to cues',
+      exNotesPh: 'Cues, tempo, substitutions…',
+      searching: 'Searching…',
+      noMatches: 'No matches',
+      searchFailed: 'Search failed',
+      programNameRequired: 'Program name is required to submit',
+      submitConfirm: 'Submit this program to the athlete? You will not be able to edit it afterward.',
+      csvDone: 'CSV downloaded — open in Excel or File → Import in Google Sheets.',
+      csvProgram: 'Program',
+      csvCoach: 'Coach',
+      csvAthlete: 'Athlete',
+      csvGoal: 'Goal',
+      csvProgramNotes: 'Program notes',
+      csvHowto: 'How-to',
+      csvDay: 'Day',
+      csvDayLabel: 'Day label',
+      csvDayNotes: 'Day notes',
+      csvOrder: 'Order',
+      csvExercise: 'Exercise',
+      csvType: 'Type',
+      csvSets: 'Sets',
+      csvReps: 'Reps',
+      csvRir: 'RIR',
+      csvExNotes: 'Exercise notes',
+      goal_hypertrophy: 'Hypertrophy',
+      goal_strength: 'Strength',
+      goal_longevity: 'Longevity',
+      goal_general: 'General',
+      eq_barbell: 'Barbell',
+      eq_dumbbell: 'Dumbbell',
+      eq_cable: 'Cable',
+      eq_machine: 'Machine',
+      eq_bodyweight: 'Bodyweight',
+      eq_kettlebell: 'Kettlebell',
+      eq_band: 'Band',
+      eq_other: 'Other',
+      m_chest: 'Chest',
+      m_quadriceps: 'Quadriceps',
+      m_hamstrings: 'Hamstrings',
+      m_glutes: 'Glutes',
+      m_back: 'Back',
+      m_traps: 'Traps',
+      m_biceps: 'Biceps',
+      m_triceps: 'Triceps',
+      m_anterior_deltoid: 'Anterior deltoid',
+      m_lateral_deltoid: 'Lateral deltoid',
+      m_rear_deltoid: 'Rear deltoid',
+      m_abs: 'Abs',
+      m_calves: 'Calves',
+      m_forearms: 'Forearms',
+      status_pending: 'pending',
+      status_draft: 'draft',
+      status_submitted: 'submitted',
+      status_accepted: 'accepted',
+      status_declined: 'declined',
+      status_expired: 'expired',
+    },
+    es: {
+      title: 'Kallpa — Programa del entrenador',
+      loading: 'Cargando invitación…',
+      missingToken: 'Falta el token de invitación',
+      missingTokenHint: 'Abre esta página desde el enlace que compartió el atleta (la URL debe incluir el token).',
+      inviteUnavailable: 'Invitación no disponible',
+      loadFailed: 'No se pudo cargar la invitación',
+      programFor: 'Programa para {athlete} · estado: {status}',
+      yourAthlete: 'tu atleta',
+      alreadySubmitted: 'Ya enviado. El atleta debe aceptar este programa en Kallpa.',
+      readOnly: 'Esta invitación es de solo lectura.',
+      saved: 'Guardado',
+      saveFailed: 'Error al guardar',
+      programDetails: 'Detalles del programa',
+      coachName: 'Tu nombre (opcional)',
+      coachNamePh: 'Nombre del entrenador',
+      programName: 'Nombre del programa',
+      programNamePh: 'p. ej. Hipertrofia 4 días',
+      goal: 'Objetivo',
+      programNotes: 'Notas del programa',
+      programNotesPh: 'Enfoque general, restricciones…',
+      howto: 'Instrucciones generales',
+      howtoPh: 'Calentamiento, filmación, progresión…',
+      print: 'Imprimir / Guardar PDF',
+      csv: 'Descargar CSV (Excel / Sheets)',
+      addDay: 'Añadir día',
+      saveDraft: 'Guardar borrador',
+      submit: 'Enviar al atleta',
+      dayN: 'Día {n}',
+      removeDay: 'Quitar día',
+      label: 'Etiqueta',
+      dayNotes: 'Notas del día',
+      addFromLibrary: 'Añadir de la biblioteca',
+      searchPh: 'Buscar ejercicios (mín. 2 letras)',
+      addCustom: 'Añadir ejercicio personalizado',
+      customExercise: 'Ejercicio personalizado',
+      exercise: 'Ejercicio',
+      custom: 'personalizado',
+      library: 'biblioteca',
+      remove: 'Quitar',
+      nameEn: 'Nombre (inglés)',
+      nameEs: 'Nombre (español, opcional)',
+      equipment: 'Equipamiento',
+      primaryMuscles: 'Músculos principales',
+      sets: 'Series',
+      reps: 'Reps',
+      rir: 'RIR',
+      exNotes: 'Notas / consignas',
+      exNotesPh: 'Consignas, tempo, sustituciones…',
+      searching: 'Buscando…',
+      noMatches: 'Sin resultados',
+      searchFailed: 'Error en la búsqueda',
+      programNameRequired: 'El nombre del programa es obligatorio para enviar',
+      submitConfirm: '¿Enviar este programa al atleta? No podrás editarlo después.',
+      csvDone: 'CSV descargado — ábrelo en Excel o Archivo → Importar en Google Sheets.',
+      csvProgram: 'Programa',
+      csvCoach: 'Entrenador',
+      csvAthlete: 'Atleta',
+      csvGoal: 'Objetivo',
+      csvProgramNotes: 'Notas del programa',
+      csvHowto: 'Instrucciones',
+      csvDay: 'Día',
+      csvDayLabel: 'Etiqueta del día',
+      csvDayNotes: 'Notas del día',
+      csvOrder: 'Orden',
+      csvExercise: 'Ejercicio',
+      csvType: 'Tipo',
+      csvSets: 'Series',
+      csvReps: 'Reps',
+      csvRir: 'RIR',
+      csvExNotes: 'Notas del ejercicio',
+      goal_hypertrophy: 'Hipertrofia',
+      goal_strength: 'Fuerza',
+      goal_longevity: 'Longevidad',
+      goal_general: 'General',
+      eq_barbell: 'Barra',
+      eq_dumbbell: 'Mancuerna',
+      eq_cable: 'Polea',
+      eq_machine: 'Máquina',
+      eq_bodyweight: 'Peso corporal',
+      eq_kettlebell: 'Pesa rusa',
+      eq_band: 'Banda',
+      eq_other: 'Otro',
+      m_chest: 'Pecho',
+      m_quadriceps: 'Cuádriceps',
+      m_hamstrings: 'Isquiotibiales',
+      m_glutes: 'Glúteos',
+      m_back: 'Espalda',
+      m_traps: 'Trapecios',
+      m_biceps: 'Bíceps',
+      m_triceps: 'Tríceps',
+      m_anterior_deltoid: 'Deltoides anterior',
+      m_lateral_deltoid: 'Deltoides lateral',
+      m_rear_deltoid: 'Deltoides posterior',
+      m_abs: 'Abdominales',
+      m_calves: 'Pantorrillas',
+      m_forearms: 'Antebrazos',
+      status_pending: 'pendiente',
+      status_draft: 'borrador',
+      status_submitted: 'enviado',
+      status_accepted: 'aceptado',
+      status_declined: 'rechazado',
+      status_expired: 'expirado',
+    },
+  };
+
+  function detectLang() {
+    const q = new URLSearchParams(location.search).get('lang');
+    if (q === 'es' || q === 'en') return q;
+    try {
+      const saved = localStorage.getItem('kallpa_coach_invite_lang');
+      if (saved === 'es' || saved === 'en') return saved;
+    } catch (_) {}
+    const nav = (navigator.language || '').toLowerCase();
+    return nav.startsWith('es') ? 'es' : 'en';
+  }
+
+  let lang = detectLang();
+
+  function t(key, vars) {
+    const dict = I18N[lang] || I18N.en;
+    let s = dict[key] ?? I18N.en[key] ?? key;
+    if (vars) {
+      Object.keys(vars).forEach((k) => {
+        s = s.replace(new RegExp('\\{' + k + '\\}', 'g'), vars[k]);
+      });
+    }
+    return s;
+  }
+
+  function statusLabel(status) {
+    return t('status_' + status) !== ('status_' + status) ? t('status_' + status) : status;
+  }
+
+  function setLang(next) {
+    if (next !== 'en' && next !== 'es') return;
+    lang = next;
+    try { localStorage.setItem('kallpa_coach_invite_lang', lang); } catch (_) {}
+    const url = new URL(location.href);
+    url.searchParams.set('lang', lang);
+    history.replaceState(null, '', url.toString());
+    document.documentElement.lang = lang;
+    applyChrome();
+    if (!app.classList.contains('hidden')) render();
+  }
+
+  function applyChrome() {
+    document.title = t('title');
+    const titleEl = document.getElementById('page_title');
+    const titlePrint = document.getElementById('page_title_print');
+    if (titleEl) titleEl.textContent = t('title');
+    if (titlePrint) titlePrint.textContent = t('title');
+    document.getElementById('lang_en').classList.toggle('on', lang === 'en');
+    document.getElementById('lang_es').classList.toggle('on', lang === 'es');
+    if (state.status) {
+      subtitle.textContent = t('programFor', {
+        athlete: state.athlete || t('yourAthlete'),
+        status: statusLabel(state.status),
+      });
+    } else if (!state.token) {
+      subtitle.textContent = t('missingToken');
+    }
+  }
+
   function tokenFromUrl() {
     const q = new URLSearchParams(location.search).get('token');
     if (q) return q.trim();
     const parts = location.pathname.split('/').filter(Boolean);
-    // .../coach/invite/<token> or .../invite/<token>
     const inviteIdx = parts.lastIndexOf('invite');
     if (inviteIdx >= 0 && parts[inviteIdx + 1] && parts[inviteIdx + 1] !== 'index.html') {
       return parts[inviteIdx + 1].trim();
@@ -216,6 +517,9 @@
   const banner = document.getElementById('banner');
   const app = document.getElementById('app');
   const subtitle = document.getElementById('subtitle');
+
+  document.getElementById('lang_en').onclick = () => setLang('en');
+  document.getElementById('lang_es').onclick = () => setLang('es');
 
   function showErr(msg) {
     banner.innerHTML = `<div class="err">${escapeHtml(msg)}</div>`;
@@ -254,7 +558,7 @@
   }
 
   function emptyDay(n) {
-    return { day_number: n, label: `Day ${n}`, notes: '', exercises: [] };
+    return { day_number: n, label: t('dayN', { n }), notes: '', exercises: [] };
   }
 
   function emptyCustom() {
@@ -275,16 +579,18 @@
   }
 
   async function boot() {
+    applyChrome();
     if (!state.token || state.token.length < 32) {
-      subtitle.textContent = 'Missing invite token';
-      showErr('Open this page from the invite link the athlete shared (URL must include the token).');
+      subtitle.textContent = t('missingToken');
+      showErr(t('missingTokenHint'));
       return;
     }
+    subtitle.textContent = t('loading');
     try {
       const data = await fn(`coach-invite-validate?token=${encodeURIComponent(state.token)}`);
       state.status = data.status;
       state.editable = !!data.editable;
-      state.athlete = data.athlete_display || 'your athlete';
+      state.athlete = data.athlete_display || t('yourAthlete');
       state.coach_label = data.coach_label || '';
       const meta = data.program_meta || {};
       state.program_name = meta.name || '';
@@ -293,23 +599,24 @@
       state.howto_instructions = data.howto_instructions || (data.structure && data.structure.howto_instructions) || '';
       const days = (data.structure && data.structure.days) || [];
       state.days = days.length ? JSON.parse(JSON.stringify(days)) : [emptyDay(1), emptyDay(2), emptyDay(3)];
-      subtitle.textContent = `Program for ${state.athlete} · status: ${state.status}`;
+      subtitle.textContent = t('programFor', {
+        athlete: state.athlete,
+        status: statusLabel(state.status),
+      });
       if (!state.editable) {
-        showOk(data.status === 'submitted'
-          ? 'Already submitted. The athlete must accept this program in Kallpa.'
-          : 'This invite is read-only.');
+        showOk(data.status === 'submitted' ? t('alreadySubmitted') : t('readOnly'));
       }
       render();
     } catch (e) {
-      subtitle.textContent = 'Invite unavailable';
-      showErr(e.message || 'Could not load invite');
+      subtitle.textContent = t('inviteUnavailable');
+      showErr(e.message || t('loadFailed'));
     }
   }
 
   function buildPayload(asDraft) {
     const days = state.days.map((d, i) => ({
       day_number: i + 1,
-      label: d.label || `Day ${i + 1}`,
+      label: d.label || t('dayN', { n: i + 1 }),
       notes: d.notes || null,
       exercises: (d.exercises || []).map((ex, j) => {
         if (ex.custom) {
@@ -364,18 +671,21 @@
 
   function downloadCsv() {
     const rows = [
-      ['Program', state.program_name || ''],
-      ['Coach', state.coach_label || ''],
-      ['Athlete', state.athlete || ''],
-      ['Goal', state.goal || ''],
-      ['Program notes', state.program_notes || ''],
-      ['How-to', state.howto_instructions || ''],
+      [t('csvProgram'), state.program_name || ''],
+      [t('csvCoach'), state.coach_label || ''],
+      [t('csvAthlete'), state.athlete || ''],
+      [t('csvGoal'), t('goal_' + state.goal) || state.goal || ''],
+      [t('csvProgramNotes'), state.program_notes || ''],
+      [t('csvHowto'), state.howto_instructions || ''],
       [],
-      ['Day', 'Day label', 'Day notes', 'Order', 'Exercise', 'Type', 'Sets', 'Reps', 'RIR', 'Exercise notes'],
+      [
+        t('csvDay'), t('csvDayLabel'), t('csvDayNotes'), t('csvOrder'),
+        t('csvExercise'), t('csvType'), t('csvSets'), t('csvReps'), t('csvRir'), t('csvExNotes'),
+      ],
     ];
     state.days.forEach((day, di) => {
       const dayNum = di + 1;
-      const label = day.label || `Day ${dayNum}`;
+      const label = day.label || t('dayN', { n: dayNum });
       const dayNotes = day.notes || '';
       const exercises = day.exercises || [];
       if (!exercises.length) {
@@ -385,15 +695,15 @@
       exercises.forEach((ex, ei) => {
         const isCustom = !!ex.custom;
         const name = isCustom
-          ? (ex.custom.name_en || 'Custom')
-          : (ex.exercise_name || 'Exercise');
+          ? (ex.custom.name_en || t('customExercise'))
+          : (ex.exercise_name || t('exercise'));
         rows.push([
           dayNum,
           label,
           dayNotes,
           ei + 1,
           name,
-          isCustom ? 'custom' : 'library',
+          isCustom ? t('custom') : t('library'),
           ex.sets ?? 3,
           ex.reps_target || '',
           ex.rir_target ?? '',
@@ -411,7 +721,7 @@
     a.download = `${safeName}.csv`;
     a.click();
     URL.revokeObjectURL(a.href);
-    showOk('CSV downloaded — open in Excel or File → Import in Google Sheets.');
+    showOk(t('csvDone'));
   }
 
   function printProgram() {
@@ -428,11 +738,14 @@
       state.status = res.status;
       state.editable = res.status === 'draft' || res.status === 'pending';
       if (res.status === 'submitted') state.editable = false;
-      showOk(res.message || 'Saved');
-      subtitle.textContent = `Program for ${state.athlete} · status: ${state.status}`;
+      showOk(res.message || t('saved'));
+      subtitle.textContent = t('programFor', {
+        athlete: state.athlete,
+        status: statusLabel(state.status),
+      });
       render();
     } catch (e) {
-      showErr(e.message || 'Save failed');
+      showErr(e.message || t('saveFailed'));
     }
   }
 
@@ -444,18 +757,18 @@
       return;
     }
     resultEl.style.display = 'block';
-    resultEl.innerHTML = '<button type="button" disabled>Searching…</button>';
+    resultEl.innerHTML = `<button type="button" disabled>${escapeHtml(t('searching'))}</button>`;
     try {
       const data = await fn(
         `coach-invite-exercises?token=${encodeURIComponent(state.token)}&q=${encodeURIComponent(q)}`,
       );
       const list = data.exercises || [];
       if (!list.length) {
-        resultEl.innerHTML = '<button type="button" disabled>No matches</button>';
+        resultEl.innerHTML = `<button type="button" disabled>${escapeHtml(t('noMatches'))}</button>`;
         return;
       }
       resultEl.innerHTML = list.map((ex) =>
-        `<button type="button" data-id="${escapeHtml(ex.id)}" data-name="${escapeHtml(ex.name)}">${escapeHtml(ex.name)} <span class="muted">${escapeHtml((ex.muscles_primary || []).slice(0, 2).join(', '))}</span></button>`
+        `<button type="button" data-id="${escapeHtml(ex.id)}" data-name="${escapeHtml(ex.name)}">${escapeHtml(ex.name)} <span class="muted">${escapeHtml((ex.muscles_primary || []).slice(0, 2).map((m) => t('m_' + m) || m).join(', '))}</span></button>`
       ).join('');
       resultEl.querySelectorAll('button[data-id]').forEach((btn) => {
         btn.addEventListener('click', () => {
@@ -472,7 +785,7 @@
         });
       });
     } catch (e) {
-      resultEl.innerHTML = `<button type="button" disabled>${escapeHtml(e.message || 'Search failed')}</button>`;
+      resultEl.innerHTML = `<button type="button" disabled>${escapeHtml(e.message || t('searchFailed'))}</button>`;
       console.error('[coach-invite search]', e);
     }
   }
@@ -481,31 +794,32 @@
     app.classList.remove('hidden');
     const disabled = state.editable ? '' : 'disabled';
     const ro = state.editable ? '' : 'readonly';
+    applyChrome();
 
     app.innerHTML = `
       <div class="card">
-        <h2>Program details</h2>
-        <label>Your name (optional)</label>
-        <input id="coach_label" ${ro} value="${escapeHtml(state.coach_label)}" placeholder="Coach name" />
-        <label>Program name</label>
-        <input id="program_name" ${ro} value="${escapeHtml(state.program_name)}" placeholder="e.g. 4-day hypertrophy" />
-        <label>Goal</label>
+        <h2>${escapeHtml(t('programDetails'))}</h2>
+        <label>${escapeHtml(t('coachName'))}</label>
+        <input id="coach_label" ${ro} value="${escapeHtml(state.coach_label)}" placeholder="${escapeHtml(t('coachNamePh'))}" />
+        <label>${escapeHtml(t('programName'))}</label>
+        <input id="program_name" ${ro} value="${escapeHtml(state.program_name)}" placeholder="${escapeHtml(t('programNamePh'))}" />
+        <label>${escapeHtml(t('goal'))}</label>
         <select id="goal" ${disabled}>
-          ${GOALS.map((g) => `<option value="${g}" ${state.goal === g ? 'selected' : ''}>${g}</option>`).join('')}
+          ${GOALS.map((g) => `<option value="${g}" ${state.goal === g ? 'selected' : ''}>${escapeHtml(t('goal_' + g))}</option>`).join('')}
         </select>
-        <label>Program notes</label>
-        <textarea id="program_notes" ${ro} placeholder="Overall focus, constraints…">${escapeHtml(state.program_notes)}</textarea>
-        <label>How-to / general instructions</label>
-        <textarea id="howto_instructions" ${ro} placeholder="Warm-up, filming, progression rules…">${escapeHtml(state.howto_instructions)}</textarea>
+        <label>${escapeHtml(t('programNotes'))}</label>
+        <textarea id="program_notes" ${ro} placeholder="${escapeHtml(t('programNotesPh'))}">${escapeHtml(state.program_notes)}</textarea>
+        <label>${escapeHtml(t('howto'))}</label>
+        <textarea id="howto_instructions" ${ro} placeholder="${escapeHtml(t('howtoPh'))}">${escapeHtml(state.howto_instructions)}</textarea>
       </div>
       <div id="days"></div>
       <div class="actions no-print">
-        <button type="button" id="print_btn">Print / Save PDF</button>
-        <button type="button" id="csv_btn">Download CSV (Excel / Sheets)</button>
+        <button type="button" id="print_btn">${escapeHtml(t('print'))}</button>
+        <button type="button" id="csv_btn">${escapeHtml(t('csv'))}</button>
         ${state.editable ? `
-          <button type="button" id="add_day">Add day</button>
-          <button type="button" id="save_draft">Save draft</button>
-          <button type="button" class="primary" id="submit_btn">Submit to athlete</button>
+          <button type="button" id="add_day">${escapeHtml(t('addDay'))}</button>
+          <button type="button" id="save_draft">${escapeHtml(t('saveDraft'))}</button>
+          <button type="button" class="primary" id="submit_btn">${escapeHtml(t('submit'))}</button>
         ` : ''}
       </div>
     `;
@@ -516,21 +830,21 @@
       dayCard.className = 'card';
       dayCard.innerHTML = `
         <div class="day-head">
-          <h2>Day ${di + 1}</h2>
-          ${state.editable ? `<button type="button" class="danger ghost" data-rm-day="${di}">Remove day</button>` : ''}
+          <h2>${escapeHtml(t('dayN', { n: di + 1 }))}</h2>
+          ${state.editable ? `<button type="button" class="danger ghost" data-rm-day="${di}">${escapeHtml(t('removeDay'))}</button>` : ''}
         </div>
-        <label>Label</label>
+        <label>${escapeHtml(t('label'))}</label>
         <input data-day-label="${di}" ${ro} value="${escapeHtml(day.label || '')}" />
-        <label>Day notes</label>
+        <label>${escapeHtml(t('dayNotes'))}</label>
         <textarea data-day-notes="${di}" ${ro}>${escapeHtml(day.notes || '')}</textarea>
         <div data-ex-list="${di}"></div>
         ${state.editable ? `
           <div class="no-print">
-            <label>Add from library</label>
-            <input data-search="${di}" placeholder="Search exercises (min 2 letters)" />
+            <label>${escapeHtml(t('addFromLibrary'))}</label>
+            <input data-search="${di}" placeholder="${escapeHtml(t('searchPh'))}" />
             <div class="search-results" data-search-results="${di}"></div>
             <div class="actions">
-              <button type="button" data-add-custom="${di}">Add custom exercise</button>
+              <button type="button" data-add-custom="${di}">${escapeHtml(t('addCustom'))}</button>
             </div>
           </div>
         ` : ''}
@@ -543,47 +857,46 @@
         block.className = 'ex';
         const isCustom = !!ex.custom;
         const title = isCustom
-          ? (ex.custom.name_en || 'Custom exercise')
-          : (ex.exercise_name || 'Exercise');
+          ? (ex.custom.name_en || t('customExercise'))
+          : (ex.exercise_name || t('exercise'));
         block.innerHTML = `
           <div class="ex-title">${escapeHtml(title)}
-            <span class="badge">${isCustom ? 'custom' : 'library'}</span>
-            ${state.editable ? `<button type="button" class="danger ghost" data-rm-ex="${di}:${ei}" style="float:right">Remove</button>` : ''}
+            <span class="badge">${escapeHtml(isCustom ? t('custom') : t('library'))}</span>
+            ${state.editable ? `<button type="button" class="danger ghost" data-rm-ex="${di}:${ei}" style="float:right">${escapeHtml(t('remove'))}</button>` : ''}
           </div>
           ${isCustom && state.editable ? `
-            <label>Name (English)</label>
+            <label>${escapeHtml(t('nameEn'))}</label>
             <input data-c-name="${di}:${ei}" value="${escapeHtml(ex.custom.name_en || '')}" />
-            <label>Name (Spanish, optional)</label>
+            <label>${escapeHtml(t('nameEs'))}</label>
             <input data-c-name-es="${di}:${ei}" value="${escapeHtml(ex.custom.name_es || '')}" />
-            <label>Equipment</label>
+            <label>${escapeHtml(t('equipment'))}</label>
             <select data-c-eq="${di}:${ei}">
-              ${EQUIPMENT.map((e) => `<option value="${e}" ${ex.custom.equipment === e ? 'selected' : ''}>${e}</option>`).join('')}
+              ${EQUIPMENT.map((e) => `<option value="${e}" ${ex.custom.equipment === e ? 'selected' : ''}>${escapeHtml(t('eq_' + e))}</option>`).join('')}
             </select>
-            <label>Primary muscles</label>
+            <label>${escapeHtml(t('primaryMuscles'))}</label>
             <div class="chip-row" data-c-mus="${di}:${ei}">
               ${MUSCLES.map((m) => {
                 const on = (ex.custom.muscles_primary || []).includes(m);
-                return `<span class="chip ${on ? 'on' : ''}" data-m="${m}">${m.replace(/_/g, ' ')}</span>`;
+                return `<span class="chip ${on ? 'on' : ''}" data-m="${m}">${escapeHtml(t('m_' + m))}</span>`;
               }).join('')}
             </div>
           ` : ''}
           <div class="row">
-            <div><label>Sets</label><input type="number" min="1" max="20" data-sets="${di}:${ei}" ${ro} value="${ex.sets ?? 3}" /></div>
-            <div><label>Reps</label><input data-reps="${di}:${ei}" ${ro} value="${escapeHtml(ex.reps_target || '8-12')}" /></div>
-            <div><label>RIR</label><input type="number" min="0" max="5" data-rir="${di}:${ei}" ${ro} value="${ex.rir_target ?? 2}" /></div>
+            <div><label>${escapeHtml(t('sets'))}</label><input type="number" min="1" max="20" data-sets="${di}:${ei}" ${ro} value="${ex.sets ?? 3}" /></div>
+            <div><label>${escapeHtml(t('reps'))}</label><input data-reps="${di}:${ei}" ${ro} value="${escapeHtml(ex.reps_target || '8-12')}" /></div>
+            <div><label>${escapeHtml(t('rir'))}</label><input type="number" min="0" max="5" data-rir="${di}:${ei}" ${ro} value="${ex.rir_target ?? 2}" /></div>
           </div>
-          <label>Notes / how-to cues</label>
-          <textarea data-ex-notes="${di}:${ei}" ${ro} placeholder="Cues, tempo, substitutions…">${escapeHtml(ex.notes || '')}</textarea>
+          <label>${escapeHtml(t('exNotes'))}</label>
+          <textarea data-ex-notes="${di}:${ei}" ${ro} placeholder="${escapeHtml(t('exNotesPh'))}">${escapeHtml(ex.notes || '')}</textarea>
         `;
         list.appendChild(block);
       });
     });
 
-    // Bind fields
-    const bind = (sel, fn) => {
+    const bind = (sel, fnBind) => {
       app.querySelectorAll(sel).forEach((el) => {
-        el.addEventListener('input', fn);
-        el.addEventListener('change', fn);
+        el.addEventListener('input', fnBind);
+        el.addEventListener('change', fnBind);
       });
     };
     const g = (id) => app.querySelector(id);
@@ -687,10 +1000,10 @@
     const submitBtn = app.querySelector('#submit_btn');
     if (submitBtn) submitBtn.onclick = () => {
       if (!state.program_name.trim()) {
-        showErr('Program name is required to submit');
+        showErr(t('programNameRequired'));
         return;
       }
-      if (!confirm('Submit this program to the athlete? You will not be able to edit it afterward.')) return;
+      if (!confirm(t('submitConfirm'))) return;
       save(false);
     };
     const printBtn = app.querySelector('#print_btn');

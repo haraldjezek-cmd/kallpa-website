@@ -26,7 +26,7 @@ Host under `https://kallpa.co/coach/invite/` (copy `web/coach/` into **kallpa-we
 
 **Invite URL shape (static GitHub Pages):**  
 `https://kallpa.co/coach/invite/?token=<TOKEN>`  
-(not `/coach/invite/<TOKEN>` — that path 404s on Pages)
+Optional: `&lang=es` or `&lang=en` (also EN/ES toggle on the page; defaults from browser language).
 
 Sync example:
 
