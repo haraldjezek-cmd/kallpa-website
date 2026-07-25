@@ -855,13 +855,13 @@
       </div>
       <div id="days"></div>
       <div class="actions no-print">
-        <button type="button" id="print_btn">${escapeHtml(t('print'))}</button>
-        <button type="button" id="csv_btn">${escapeHtml(t('csv'))}</button>
         ${state.editable ? `
           <button type="button" id="add_day">${escapeHtml(t('addDay'))}</button>
           <button type="button" id="save_draft">${escapeHtml(t('saveDraft'))}</button>
           <button type="button" class="primary" id="submit_btn">${escapeHtml(t('submit'))}</button>
         ` : ''}
+        <button type="button" id="print_btn">${escapeHtml(t('print'))}</button>
+        <button type="button" id="csv_btn">${escapeHtml(t('csv'))}</button>
       </div>
     `;
 
