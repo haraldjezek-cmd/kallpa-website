@@ -257,22 +257,150 @@
       user-select: none;
     }
     .chip.on { background: var(--accent-dim); border-color: var(--accent); color: #fff; }
+    .print-sheet { display: none; }
     @media print {
-      :root { --bg: #fff; --card: #fff; --border: #ccc; --text: #111; --muted: #444; --input: #fff; }
-      body { background: #fff; color: #111; padding: 0; }
-      .no-print, .search-results, button, .chip-row, [data-search], .badge, .lang-switch { display: none !important; }
-      .card { border: 1px solid #ccc; break-inside: avoid; box-shadow: none; }
-      input, select, textarea {
-        border: none !important;
-        background: transparent !important;
+      @page { margin: 14mm 12mm; }
+      html, body {
+        background: #fff !important;
         color: #111 !important;
-        padding: 0.15rem 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
       }
-      textarea { min-height: 0; }
-      a { color: #111; }
-      .print-only { display: block !important; }
+      .wrap { max-width: none; margin: 0; padding: 0; }
+      .no-print,
+      .topbar,
+      .lang-switch,
+      #banner,
+      #app,
+      #action_feedback,
+      #subtitle,
+      button,
+      .search-results {
+        display: none !important;
+      }
+      .print-sheet {
+        display: block !important;
+        color: #111;
+        font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+        font-size: 10.5pt;
+        line-height: 1.4;
+      }
+      .print-brand {
+        font-size: 11pt;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: #2d7350;
+        margin-bottom: 0.35rem;
+      }
+      .print-sheet h1 {
+        font-size: 20pt;
+        font-weight: 700;
+        margin: 0 0 0.55rem;
+        color: #111;
+        line-height: 1.2;
+      }
+      .print-meta {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.25rem 1.25rem;
+        padding: 0.65rem 0;
+        margin-bottom: 1rem;
+        border-top: 2px solid #2d7350;
+        border-bottom: 1px solid #ccc;
+        font-size: 9.5pt;
+      }
+      .print-meta dt {
+        margin: 0;
+        color: #666;
+        font-size: 8pt;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+      .print-meta dd {
+        margin: 0 0 0.4rem;
+        font-weight: 600;
+      }
+      .print-block { margin-bottom: 0.9rem; }
+      .print-block h2 {
+        font-size: 11pt;
+        margin: 0 0 0.3rem;
+        color: #2d7350;
+        border-bottom: 1px solid #ddd;
+        padding-bottom: 0.15rem;
+      }
+      .print-block p {
+        margin: 0;
+        white-space: pre-wrap;
+        color: #222;
+      }
+      .print-day {
+        break-inside: avoid;
+        margin: 1.1rem 0 0.8rem;
+      }
+      .print-day h2 {
+        font-size: 12pt;
+        margin: 0 0 0.45rem;
+        padding: 0.25rem 0;
+        border-bottom: 2px solid #111;
+      }
+      .print-day-notes {
+        margin: 0 0 0.45rem;
+        font-size: 9.5pt;
+        color: #444;
+        font-style: italic;
+      }
+      .print-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 9.5pt;
+      }
+      .print-table th,
+      .print-table td {
+        border: 1px solid #ccc;
+        padding: 0.35rem 0.45rem;
+        text-align: left;
+        vertical-align: top;
+      }
+      .print-table th {
+        background: #f2f4f6 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        font-size: 8pt;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        color: #333;
+      }
+      .print-table td.num {
+        text-align: center;
+        width: 2.2rem;
+        color: #555;
+      }
+      .print-table td.sets,
+      .print-table td.reps,
+      .print-table td.rir {
+        text-align: center;
+        white-space: nowrap;
+        width: 3.2rem;
+      }
+      .print-table .ex-name { font-weight: 600; }
+      .print-table .ex-notes { color: #444; font-size: 9pt; }
+      .print-empty {
+        color: #777;
+        font-style: italic;
+        margin: 0.25rem 0;
+      }
+      .print-footer {
+        margin-top: 1.4rem;
+        padding-top: 0.5rem;
+        border-top: 1px solid #ccc;
+        font-size: 8pt;
+        color: #777;
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+      }
     }
-    .print-only { display: none; }
   </style>
 </head>
 <body>
@@ -284,11 +412,11 @@
         <button type="button" id="lang_es" data-lang="es">ES</button>
       </div>
     </div>
-    <h1 class="print-only" id="page_title_print">Kallpa coach program</h1>
-    <p class="sub" id="subtitle">Loading invite…</p>
+    <p class="sub no-print" id="subtitle">Loading invite…</p>
     <div id="banner" class="no-print"></div>
     <div id="app" class="hidden"></div>
     <div id="action_feedback" class="no-print" aria-live="polite"></div>
+    <div id="print_sheet" class="print-sheet" aria-hidden="true"></div>
   </div>
 
   <script>
@@ -341,6 +469,14 @@
       saveDraft: 'Save draft',
       submit: 'Submit to athlete',
       scrollMore: 'Scroll sideways for more actions →',
+      printPreparedFor: 'Athlete',
+      printCoach: 'Coach',
+      printDate: 'Date',
+      printEmptyDay: 'No exercises yet',
+      printFooter: 'Prepared with Kallpa',
+      printColOrder: '#',
+      printColExercise: 'Exercise',
+      printColNotes: 'Notes',
       dayN: 'Day {n}',
       removeDay: 'Remove day',
       label: 'Label',
@@ -448,6 +584,14 @@
       saveDraft: 'Guardar borrador',
       submit: 'Enviar al atleta',
       scrollMore: 'Desliza horizontalmente para ver más →',
+      printPreparedFor: 'Atleta',
+      printCoach: 'Entrenador',
+      printDate: 'Fecha',
+      printEmptyDay: 'Sin ejercicios todavía',
+      printFooter: 'Preparado con Kallpa',
+      printColOrder: '#',
+      printColExercise: 'Ejercicio',
+      printColNotes: 'Notas',
       dayN: 'Día {n}',
       removeDay: 'Quitar día',
       label: 'Etiqueta',
@@ -569,9 +713,7 @@
   function applyChrome() {
     document.title = t('title');
     const titleEl = document.getElementById('page_title');
-    const titlePrint = document.getElementById('page_title_print');
     if (titleEl) titleEl.textContent = t('title');
-    if (titlePrint) titlePrint.textContent = t('title');
     document.getElementById('lang_en').classList.toggle('on', lang === 'en');
     document.getElementById('lang_es').classList.toggle('on', lang === 'es');
     if (state.status) {
@@ -839,9 +981,109 @@
     showActionOk(t('csvDone'));
   }
 
+  function buildPrintSheet() {
+    const sheet = document.getElementById('print_sheet');
+    if (!sheet) return;
+    const locale = lang === 'es' ? 'es' : 'en';
+    const dateStr = new Date().toLocaleDateString(locale, {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+    const programTitle = state.program_name.trim() || t('title');
+    const goalLabel = t('goal_' + state.goal) || state.goal;
+    const daysHtml = state.days.map((day, di) => {
+      const label = day.label || t('dayN', { n: di + 1 });
+      const heading = label.toLowerCase().startsWith('day ') || label.toLowerCase().startsWith('día ')
+        ? label
+        : `${t('dayN', { n: di + 1 })} — ${label}`;
+      const exercises = day.exercises || [];
+      let body;
+      if (!exercises.length) {
+        body = `<p class="print-empty">${escapeHtml(t('printEmptyDay'))}</p>`;
+      } else {
+        const rows = exercises.map((ex, ei) => `
+          <tr>
+            <td class="num">${ei + 1}</td>
+            <td class="ex-name">${escapeHtml(exerciseDisplayName(ex))}</td>
+            <td class="sets">${escapeHtml(String(ex.sets ?? 3))}</td>
+            <td class="reps">${escapeHtml(ex.reps_target || '—')}</td>
+            <td class="rir">${escapeHtml(String(ex.rir_target ?? '—'))}</td>
+            <td class="ex-notes">${escapeHtml(ex.notes || '')}</td>
+          </tr>
+        `).join('');
+        body = `
+          <table class="print-table">
+            <thead>
+              <tr>
+                <th>${escapeHtml(t('printColOrder'))}</th>
+                <th>${escapeHtml(t('printColExercise'))}</th>
+                <th>${escapeHtml(t('sets'))}</th>
+                <th>${escapeHtml(t('reps'))}</th>
+                <th>${escapeHtml(t('rir'))}</th>
+                <th>${escapeHtml(t('printColNotes'))}</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        `;
+      }
+      return `
+        <section class="print-day">
+          <h2>${escapeHtml(heading)}</h2>
+          ${day.notes ? `<p class="print-day-notes">${escapeHtml(day.notes)}</p>` : ''}
+          ${body}
+        </section>
+      `;
+    }).join('');
+
+    sheet.innerHTML = `
+      <div class="print-brand">Kallpa</div>
+      <h1>${escapeHtml(programTitle)}</h1>
+      <dl class="print-meta">
+        <div>
+          <dt>${escapeHtml(t('printPreparedFor'))}</dt>
+          <dd>${escapeHtml(state.athlete || t('yourAthlete'))}</dd>
+        </div>
+        <div>
+          <dt>${escapeHtml(t('printCoach'))}</dt>
+          <dd>${escapeHtml(state.coach_label || '—')}</dd>
+        </div>
+        <div>
+          <dt>${escapeHtml(t('goal'))}</dt>
+          <dd>${escapeHtml(goalLabel)}</dd>
+        </div>
+        <div>
+          <dt>${escapeHtml(t('printDate'))}</dt>
+          <dd>${escapeHtml(dateStr)}</dd>
+        </div>
+      </dl>
+      ${state.program_notes ? `
+        <div class="print-block">
+          <h2>${escapeHtml(t('programNotes'))}</h2>
+          <p>${escapeHtml(state.program_notes)}</p>
+        </div>
+      ` : ''}
+      ${state.howto_instructions ? `
+        <div class="print-block">
+          <h2>${escapeHtml(t('howto'))}</h2>
+          <p>${escapeHtml(state.howto_instructions)}</p>
+        </div>
+      ` : ''}
+      ${daysHtml}
+      <div class="print-footer">
+        <span>${escapeHtml(t('printFooter'))}</span>
+        <span>${escapeHtml(dateStr)}</span>
+      </div>
+    `;
+  }
+
   function printProgram() {
+    buildPrintSheet();
     window.print();
   }
+
+  window.addEventListener('beforeprint', () => buildPrintSheet());
 
   async function save(asDraft) {
     banner.innerHTML = '';
