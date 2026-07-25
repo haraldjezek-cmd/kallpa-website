@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kallpa — Coach program</title>
+  <script src="/config.js" onerror="void 0"></script>
+  <script src="config.js" onerror="void 0"></script>
+  <script>
+    // Prefer live site config.js (KALLPA_CONFIG) when hosted on kallpa.co
+    if (!window.COACH_INVITE_CONFIG && window.KALLPA_CONFIG) {
+      window.COACH_INVITE_CONFIG = {
+        SUPABASE_URL: window.KALLPA_CONFIG.SUPABASE_URL,
+        SUPABASE_ANON_KEY: window.KALLPA_CONFIG.SUPABASE_ANON_KEY,
+      };
+    }
+  </script>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --card: #1a222c;
+      --border: #2a3542;
+      --text: #e8eef4;
+      --muted: #8b9aab;
+      --accent: #3d9a6a;
+      --accent-dim: #2d7350;
+      --danger: #c45c5c;
+      --input: #121820;
+      --radius: 10px;
+      --font: "Segoe UI", system-ui, -apple-system, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.45;
+      padding: 1rem 1rem 4rem;
+    }
+    .wrap { max-width: 720px; margin: 0 auto; }
+    h1 { font-size: 1.35rem; font-weight: 650; margin: 0 0 0.25rem; }
+    .sub { color: var(--muted); font-size: 0.9rem; margin-bottom: 1.25rem; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+    .card h2 { font-size: 1rem; margin: 0 0 0.75rem; }
+    label { display: block; font-size: 0.8rem; color: var(--muted); margin: 0.6rem 0 0.25rem; }
+    input, select, textarea {
+      width: 100%;
+      background: var(--input);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      padding: 0.55rem 0.65rem;
+      font: inherit;
+    }
+    textarea { min-height: 72px; resize: vertical; }
+    .row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .row > * { flex: 1; min-width: 100px; }
+    button {
+      font: inherit;
+      cursor: pointer;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--input);
+      color: var(--text);
+      padding: 0.55rem 0.85rem;
+    }
+    button.primary {
+      background: var(--accent);
+      border-color: var(--accent-dim);
+      color: #fff;
+      font-weight: 600;
+    }
+    button.primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    button.danger { color: #f0c0c0; border-color: var(--danger); }
+    button.ghost { background: transparent; }
+    .actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1rem; }
+    .day-head { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; }
+    .ex {
+      border-top: 1px solid var(--border);
+      padding-top: 0.75rem;
+      margin-top: 0.75rem;
+    }
+    .ex-title { font-weight: 600; font-size: 0.95rem; }
+    .muted { color: var(--muted); font-size: 0.85rem; }
+    .err {
+      background: #2a1818;
+      border: 1px solid var(--danger);
+      color: #f0c0c0;
+      padding: 0.75rem 1rem;
+      border-radius: var(--radius);
+      margin-bottom: 1rem;
+    }
+    .ok {
+      background: #15251c;
+      border: 1px solid var(--accent-dim);
+      color: #b8e0c8;
+      padding: 0.75rem 1rem;
+      border-radius: var(--radius);
+      margin-bottom: 1rem;
+    }
+    .search-results {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      max-height: 180px;
+      overflow: auto;
+      margin-top: 0.35rem;
+      display: none;
+    }
+    .search-results button {
+      display: block;
+      width: 100%;
+      text-align: left;
+      border: 0;
+      border-bottom: 1px solid var(--border);
+      border-radius: 0;
+      background: var(--input);
+    }
+    .search-results button:hover { background: #1c2630; }
+    .badge {
+      display: inline-block;
+      font-size: 0.7rem;
+      padding: 0.15rem 0.4rem;
+      border-radius: 999px;
+      background: #243040;
+      color: var(--muted);
+      margin-left: 0.35rem;
+    }
+    .hidden { display: none !important; }
+    .chip-row { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.35rem; }
+    .chip {
+      font-size: 0.75rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      user-select: none;
+    }
+    .chip.on { background: var(--accent-dim); border-color: var(--accent); color: #fff; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Kallpa coach program</h1>
+    <p class="sub" id="subtitle">Loading invite…</p>
+    <div id="banner"></div>
+    <div id="app" class="hidden"></div>
+  </div>
+
+  <script>
+(function () {
+  const CFG = window.COACH_INVITE_CONFIG || {};
+  const SUPABASE_URL = (CFG.SUPABASE_URL || 'https://vgphpiyjkyvcszkateqq.supabase.co').replace(/\/$/, '');
+  const ANON = CFG.SUPABASE_ANON_KEY
+    || CFG.SUPABASE_PUBLISHABLE_KEY
+    || 'sb_publishable_QYEhc0tYWiKvREJnMYod5g_kt11JLaK';
+
+  const MUSCLES = [
+    'chest', 'quadriceps', 'hamstrings', 'glutes', 'back', 'traps',
+    'biceps', 'triceps', 'anterior_deltoid', 'lateral_deltoid',
+    'rear_deltoid', 'abs', 'calves', 'forearms',
+  ];
+  const EQUIPMENT = [
+    'barbell', 'dumbbell', 'cable', 'machine', 'bodyweight', 'kettlebell', 'band', 'other',
+  ];
+  const GOALS = ['hypertrophy', 'strength', 'longevity', 'general'];
+
+  function tokenFromUrl() {
+    const q = new URLSearchParams(location.search).get('token');
+    if (q) return q.trim();
+    const parts = location.pathname.split('/').filter(Boolean);
+    // .../coach/invite/<token> or .../invite/<token>
+    const inviteIdx = parts.lastIndexOf('invite');
+    if (inviteIdx >= 0 && parts[inviteIdx + 1] && parts[inviteIdx + 1] !== 'index.html') {
+      return parts[inviteIdx + 1].trim();
+    }
+    return '';
+  }
+
+  const state = {
+    token: tokenFromUrl(),
+    editable: false,
+    status: '',
+    athlete: '',
+    coach_label: '',
+    program_name: '',
+    goal: 'hypertrophy',
+    program_notes: '',
+    howto_instructions: '',
+    days: [],
+  };
+
+  const banner = document.getElementById('banner');
+  const app = document.getElementById('app');
+  const subtitle = document.getElementById('subtitle');
+
+  function showErr(msg) {
+    banner.innerHTML = `<div class="err">${escapeHtml(msg)}</div>`;
+  }
+  function showOk(msg) {
+    banner.innerHTML = `<div class="ok">${escapeHtml(msg)}</div>`;
+  }
+  function escapeHtml(s) {
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  async function fn(path, opts = {}) {
+    if (!ANON) throw new Error('Missing SUPABASE_ANON_KEY — copy config.example.js to config.js');
+    const headers = {
+      apikey: ANON,
+      'Content-Type': 'application/json',
+      ...(opts.headers || {}),
+    };
+    const r = await fetch(`${SUPABASE_URL}/functions/v1/${path}`, {
+      ...opts,
+      headers,
+    });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) {
+      const detail = data.detail ? ` (${data.detail})` : '';
+      const err = new Error((data.error || data.message || `HTTP ${r.status}`) + detail);
+      err.status = r.status;
+      err.data = data;
+      throw err;
+    }
+    return data;
+  }
+
+  function emptyDay(n) {
+    return { day_number: n, label: `Day ${n}`, notes: '', exercises: [] };
+  }
+
+  function emptyCustom() {
+    return {
+      exercise_id: null,
+      custom: {
+        name_en: '',
+        name_es: '',
+        equipment: 'dumbbell',
+        muscles_primary: [],
+      },
+      exercise_name: '',
+      sets: 3,
+      reps_target: '8-12',
+      rir_target: 2,
+      notes: '',
+    };
+  }
+
+  async function boot() {
+    if (!state.token || state.token.length < 32) {
+      subtitle.textContent = 'Missing invite token';
+      showErr('Open this page from the invite link the athlete shared (URL must include the token).');
+      return;
+    }
+    try {
+      const data = await fn(`coach-invite-validate?token=${encodeURIComponent(state.token)}`);
+      state.status = data.status;
+      state.editable = !!data.editable;
+      state.athlete = data.athlete_display || 'your athlete';
+      state.coach_label = data.coach_label || '';
+      const meta = data.program_meta || {};
+      state.program_name = meta.name || '';
+      state.goal = meta.goal || 'hypertrophy';
+      state.program_notes = data.program_notes || (data.structure && data.structure.program_notes) || '';
+      state.howto_instructions = data.howto_instructions || (data.structure && data.structure.howto_instructions) || '';
+      const days = (data.structure && data.structure.days) || [];
+      state.days = days.length ? JSON.parse(JSON.stringify(days)) : [emptyDay(1), emptyDay(2), emptyDay(3)];
+      subtitle.textContent = `Program for ${state.athlete} · status: ${state.status}`;
+      if (!state.editable) {
+        showOk(data.status === 'submitted'
+          ? 'Already submitted. The athlete must accept this program in Kallpa.'
+          : 'This invite is read-only.');
+      }
+      render();
+    } catch (e) {
+      subtitle.textContent = 'Invite unavailable';
+      showErr(e.message || 'Could not load invite');
+    }
+  }
+
+  function buildPayload(asDraft) {
+    const days = state.days.map((d, i) => ({
+      day_number: i + 1,
+      label: d.label || `Day ${i + 1}`,
+      notes: d.notes || null,
+      exercises: (d.exercises || []).map((ex, j) => {
+        if (ex.custom) {
+          return {
+            exercise_id: null,
+            custom: {
+              name_en: ex.custom.name_en,
+              name_es: ex.custom.name_es || null,
+              equipment: ex.custom.equipment || 'other',
+              muscles_primary: ex.custom.muscles_primary || [],
+            },
+            exercise_name: ex.custom.name_en,
+            set_order: j + 1,
+            sets: Number(ex.sets) || 3,
+            reps_target: ex.reps_target || '8-12',
+            rir_target: Number(ex.rir_target) || 2,
+            notes: ex.notes || null,
+          };
+        }
+        return {
+          exercise_id: ex.exercise_id,
+          exercise_name: ex.exercise_name,
+          set_order: j + 1,
+          sets: Number(ex.sets) || 3,
+          reps_target: ex.reps_target || '8-12',
+          rir_target: Number(ex.rir_target) || 2,
+          notes: ex.notes || null,
+        };
+      }),
+    }));
+    return {
+      token: state.token,
+      draft: !!asDraft,
+      coach_label: state.coach_label,
+      program_name: state.program_name,
+      goal: state.goal,
+      program_notes: state.program_notes,
+      howto_instructions: state.howto_instructions,
+      structure: {
+        program_notes: state.program_notes,
+        howto_instructions: state.howto_instructions,
+        days,
+      },
+    };
+  }
+
+  async function save(asDraft) {
+    banner.innerHTML = '';
+    try {
+      const res = await fn('coach-invite-submit', {
+        method: 'POST',
+        body: JSON.stringify(buildPayload(asDraft)),
+      });
+      state.status = res.status;
+      state.editable = res.status === 'draft' || res.status === 'pending';
+      if (res.status === 'submitted') state.editable = false;
+      showOk(res.message || 'Saved');
+      subtitle.textContent = `Program for ${state.athlete} · status: ${state.status}`;
+      render();
+    } catch (e) {
+      showErr(e.message || 'Save failed');
+    }
+  }
+
+  let searchTimer = null;
+  async function searchExercises(q, dayIdx, resultEl) {
+    if (!q || q.length < 2) {
+      resultEl.style.display = 'none';
+      resultEl.innerHTML = '';
+      return;
+    }
+    resultEl.style.display = 'block';
+    resultEl.innerHTML = '<button type="button" disabled>Searching…</button>';
+    try {
+      const data = await fn(
+        `coach-invite-exercises?token=${encodeURIComponent(state.token)}&q=${encodeURIComponent(q)}`,
+      );
+      const list = data.exercises || [];
+      if (!list.length) {
+        resultEl.innerHTML = '<button type="button" disabled>No matches</button>';
+        return;
+      }
+      resultEl.innerHTML = list.map((ex) =>
+        `<button type="button" data-id="${escapeHtml(ex.id)}" data-name="${escapeHtml(ex.name)}">${escapeHtml(ex.name)} <span class="muted">${escapeHtml((ex.muscles_primary || []).slice(0, 2).join(', '))}</span></button>`
+      ).join('');
+      resultEl.querySelectorAll('button[data-id]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          state.days[dayIdx].exercises.push({
+            exercise_id: btn.dataset.id,
+            exercise_name: btn.dataset.name,
+            sets: 3,
+            reps_target: '8-12',
+            rir_target: 2,
+            notes: '',
+          });
+          resultEl.style.display = 'none';
+          render();
+        });
+      });
+    } catch (e) {
+      resultEl.innerHTML = `<button type="button" disabled>${escapeHtml(e.message || 'Search failed')}</button>`;
+      console.error('[coach-invite search]', e);
+    }
+  }
+
+  function render() {
+    app.classList.remove('hidden');
+    const disabled = state.editable ? '' : 'disabled';
+    const ro = state.editable ? '' : 'readonly';
+
+    app.innerHTML = `
+      <div class="card">
+        <h2>Program details</h2>
+        <label>Your name (optional)</label>
+        <input id="coach_label" ${ro} value="${escapeHtml(state.coach_label)}" placeholder="Coach name" />
+        <label>Program name</label>
+        <input id="program_name" ${ro} value="${escapeHtml(state.program_name)}" placeholder="e.g. 4-day hypertrophy" />
+        <label>Goal</label>
+        <select id="goal" ${disabled}>
+          ${GOALS.map((g) => `<option value="${g}" ${state.goal === g ? 'selected' : ''}>${g}</option>`).join('')}
+        </select>
+        <label>Program notes</label>
+        <textarea id="program_notes" ${ro} placeholder="Overall focus, constraints…">${escapeHtml(state.program_notes)}</textarea>
+        <label>How-to / general instructions</label>
+        <textarea id="howto_instructions" ${ro} placeholder="Warm-up, filming, progression rules…">${escapeHtml(state.howto_instructions)}</textarea>
+      </div>
+      <div id="days"></div>
+      ${state.editable ? `
+        <div class="actions">
+          <button type="button" id="add_day">Add day</button>
+          <button type="button" id="save_draft">Save draft</button>
+          <button type="button" class="primary" id="submit_btn">Submit to athlete</button>
+        </div>
+      ` : ''}
+    `;
+
+    const daysEl = app.querySelector('#days');
+    state.days.forEach((day, di) => {
+      const dayCard = document.createElement('div');
+      dayCard.className = 'card';
+      dayCard.innerHTML = `
+        <div class="day-head">
+          <h2>Day ${di + 1}</h2>
+          ${state.editable ? `<button type="button" class="danger ghost" data-rm-day="${di}">Remove day</button>` : ''}
+        </div>
+        <label>Label</label>
+        <input data-day-label="${di}" ${ro} value="${escapeHtml(day.label || '')}" />
+        <label>Day notes</label>
+        <textarea data-day-notes="${di}" ${ro}>${escapeHtml(day.notes || '')}</textarea>
+        <div data-ex-list="${di}"></div>
+        ${state.editable ? `
+          <label>Add from library</label>
+          <input data-search="${di}" placeholder="Search exercises (min 2 letters)" />
+          <div class="search-results" data-search-results="${di}"></div>
+          <div class="actions">
+            <button type="button" data-add-custom="${di}">Add custom exercise</button>
+          </div>
+        ` : ''}
+      `;
+      daysEl.appendChild(dayCard);
+
+      const list = dayCard.querySelector(`[data-ex-list="${di}"]`);
+      (day.exercises || []).forEach((ex, ei) => {
+        const block = document.createElement('div');
+        block.className = 'ex';
+        const isCustom = !!ex.custom;
+        const title = isCustom
+          ? (ex.custom.name_en || 'Custom exercise')
+          : (ex.exercise_name || 'Exercise');
+        block.innerHTML = `
+          <div class="ex-title">${escapeHtml(title)}
+            <span class="badge">${isCustom ? 'custom' : 'library'}</span>
+            ${state.editable ? `<button type="button" class="danger ghost" data-rm-ex="${di}:${ei}" style="float:right">Remove</button>` : ''}
+          </div>
+          ${isCustom && state.editable ? `
+            <label>Name (English)</label>
+            <input data-c-name="${di}:${ei}" value="${escapeHtml(ex.custom.name_en || '')}" />
+            <label>Name (Spanish, optional)</label>
+            <input data-c-name-es="${di}:${ei}" value="${escapeHtml(ex.custom.name_es || '')}" />
+            <label>Equipment</label>
+            <select data-c-eq="${di}:${ei}">
+              ${EQUIPMENT.map((e) => `<option value="${e}" ${ex.custom.equipment === e ? 'selected' : ''}>${e}</option>`).join('')}
+            </select>
+            <label>Primary muscles</label>
+            <div class="chip-row" data-c-mus="${di}:${ei}">
+              ${MUSCLES.map((m) => {
+                const on = (ex.custom.muscles_primary || []).includes(m);
+                return `<span class="chip ${on ? 'on' : ''}" data-m="${m}">${m.replace(/_/g, ' ')}</span>`;
+              }).join('')}
+            </div>
+          ` : ''}
+          <div class="row">
+            <div><label>Sets</label><input type="number" min="1" max="20" data-sets="${di}:${ei}" ${ro} value="${ex.sets ?? 3}" /></div>
+            <div><label>Reps</label><input data-reps="${di}:${ei}" ${ro} value="${escapeHtml(ex.reps_target || '8-12')}" /></div>
+            <div><label>RIR</label><input type="number" min="0" max="5" data-rir="${di}:${ei}" ${ro} value="${ex.rir_target ?? 2}" /></div>
+          </div>
+          <label>Notes / how-to cues</label>
+          <textarea data-ex-notes="${di}:${ei}" ${ro} placeholder="Cues, tempo, substitutions…">${escapeHtml(ex.notes || '')}</textarea>
+        `;
+        list.appendChild(block);
+      });
+    });
+
+    // Bind fields
+    const bind = (sel, fn) => {
+      app.querySelectorAll(sel).forEach((el) => {
+        el.addEventListener('input', fn);
+        el.addEventListener('change', fn);
+      });
+    };
+    const g = (id) => app.querySelector(id);
+    if (g('#coach_label')) g('#coach_label').oninput = (e) => { state.coach_label = e.target.value; };
+    if (g('#program_name')) g('#program_name').oninput = (e) => { state.program_name = e.target.value; };
+    if (g('#goal')) g('#goal').onchange = (e) => { state.goal = e.target.value; };
+    if (g('#program_notes')) g('#program_notes').oninput = (e) => { state.program_notes = e.target.value; };
+    if (g('#howto_instructions')) g('#howto_instructions').oninput = (e) => { state.howto_instructions = e.target.value; };
+
+    bind('[data-day-label]', (e) => {
+      state.days[+e.target.dataset.dayLabel].label = e.target.value;
+    });
+    bind('[data-day-notes]', (e) => {
+      state.days[+e.target.dataset.dayNotes].notes = e.target.value;
+    });
+
+    const parseIdx = (v) => v.split(':').map(Number);
+    bind('[data-sets]', (e) => {
+      const [d, i] = parseIdx(e.target.dataset.sets);
+      state.days[d].exercises[i].sets = +e.target.value;
+    });
+    bind('[data-reps]', (e) => {
+      const [d, i] = parseIdx(e.target.dataset.reps);
+      state.days[d].exercises[i].reps_target = e.target.value;
+    });
+    bind('[data-rir]', (e) => {
+      const [d, i] = parseIdx(e.target.dataset.rir);
+      state.days[d].exercises[i].rir_target = +e.target.value;
+    });
+    bind('[data-ex-notes]', (e) => {
+      const [d, i] = parseIdx(e.target.dataset.exNotes);
+      state.days[d].exercises[i].notes = e.target.value;
+    });
+    bind('[data-c-name]', (e) => {
+      const [d, i] = parseIdx(e.target.dataset.cName);
+      state.days[d].exercises[i].custom.name_en = e.target.value;
+      state.days[d].exercises[i].exercise_name = e.target.value;
+    });
+    bind('[data-c-name-es]', (e) => {
+      const [d, i] = parseIdx(e.target.dataset.cNameEs);
+      state.days[d].exercises[i].custom.name_es = e.target.value;
+    });
+    bind('[data-c-eq]', (e) => {
+      const [d, i] = parseIdx(e.target.dataset.cEq);
+      state.days[d].exercises[i].custom.equipment = e.target.value;
+    });
+
+    app.querySelectorAll('[data-c-mus]').forEach((row) => {
+      const [d, i] = parseIdx(row.dataset.cMus);
+      row.querySelectorAll('.chip').forEach((chip) => {
+        chip.addEventListener('click', () => {
+          if (!state.editable) return;
+          const m = chip.dataset.m;
+          const arr = state.days[d].exercises[i].custom.muscles_primary || [];
+          const idx = arr.indexOf(m);
+          if (idx >= 0) arr.splice(idx, 1);
+          else arr.push(m);
+          state.days[d].exercises[i].custom.muscles_primary = arr;
+          render();
+        });
+      });
+    });
+
+    app.querySelectorAll('[data-rm-day]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const di = +btn.dataset.rmDay;
+        if (state.days.length <= 1) return;
+        state.days.splice(di, 1);
+        render();
+      });
+    });
+    app.querySelectorAll('[data-rm-ex]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const [d, i] = parseIdx(btn.dataset.rmEx);
+        state.days[d].exercises.splice(i, 1);
+        render();
+      });
+    });
+    app.querySelectorAll('[data-add-custom]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        state.days[+btn.dataset.addCustom].exercises.push(emptyCustom());
+        render();
+      });
+    });
+    app.querySelectorAll('[data-search]').forEach((input) => {
+      const di = +input.dataset.search;
+      const results = app.querySelector(`[data-search-results="${di}"]`);
+      input.addEventListener('input', () => {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(() => searchExercises(input.value.trim(), di, results), 250);
+      });
+    });
+
+    const addDay = app.querySelector('#add_day');
+    if (addDay) addDay.onclick = () => {
+      state.days.push(emptyDay(state.days.length + 1));
+      render();
+    };
+    const saveDraft = app.querySelector('#save_draft');
+    if (saveDraft) saveDraft.onclick = () => save(true);
+    const submitBtn = app.querySelector('#submit_btn');
+    if (submitBtn) submitBtn.onclick = () => {
+      if (!state.program_name.trim()) {
+        showErr('Program name is required to submit');
+        return;
+      }
+      if (!confirm('Submit this program to the athlete? You will not be able to edit it afterward.')) return;
+      save(false);
+    };
+  }
+
+  boot();
+})();
+  </script>
+</body>
+</html>
