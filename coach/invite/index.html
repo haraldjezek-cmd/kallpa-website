@@ -108,6 +108,19 @@
     button.danger { color: #f0c0c0; border-color: var(--danger); }
     button.ghost { background: transparent; }
     .actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1rem; }
+    .actions-stack { display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1rem; }
+    .actions-stack .actions { margin-top: 0; }
+    .actions-build {
+      padding-bottom: 0.75rem;
+      border-bottom: 1px dashed var(--border);
+    }
+    button.add-day {
+      border-style: dashed;
+      border-color: var(--accent-dim);
+      color: #b8e0c8;
+      background: transparent;
+    }
+    button.add-day:hover { background: #15251c; }
     .day-head { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; }
     .ex {
       border-top: 1px solid var(--border);
@@ -854,14 +867,20 @@
         <textarea id="howto_instructions" ${ro} placeholder="${escapeHtml(t('howtoPh'))}">${escapeHtml(state.howto_instructions)}</textarea>
       </div>
       <div id="days"></div>
-      <div class="actions no-print">
+      <div class="actions-stack no-print">
         ${state.editable ? `
-          <button type="button" id="add_day">${escapeHtml(t('addDay'))}</button>
-          <button type="button" id="save_draft">${escapeHtml(t('saveDraft'))}</button>
-          <button type="button" class="primary" id="submit_btn">${escapeHtml(t('submit'))}</button>
+          <div class="actions actions-build">
+            <button type="button" class="add-day" id="add_day">${escapeHtml(t('addDay'))}</button>
+          </div>
         ` : ''}
-        <button type="button" id="print_btn">${escapeHtml(t('print'))}</button>
-        <button type="button" id="csv_btn">${escapeHtml(t('csv'))}</button>
+        <div class="actions">
+          ${state.editable ? `
+            <button type="button" id="save_draft">${escapeHtml(t('saveDraft'))}</button>
+            <button type="button" class="primary" id="submit_btn">${escapeHtml(t('submit'))}</button>
+          ` : ''}
+          <button type="button" id="print_btn">${escapeHtml(t('print'))}</button>
+          <button type="button" id="csv_btn">${escapeHtml(t('csv'))}</button>
+        </div>
       </div>
     `;
 
