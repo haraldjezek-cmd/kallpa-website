@@ -145,6 +145,15 @@
       border-radius: var(--radius);
       margin-bottom: 1rem;
     }
+    #action_feedback {
+      margin-top: 0.75rem;
+      min-height: 0;
+    }
+    #action_feedback:empty { display: none; }
+    #action_feedback .ok,
+    #action_feedback .err {
+      margin-bottom: 0;
+    }
     .search-results {
       border: 1px solid var(--border);
       border-radius: 8px;
@@ -214,6 +223,7 @@
     <p class="sub" id="subtitle">Loading invite…</p>
     <div id="banner" class="no-print"></div>
     <div id="app" class="hidden"></div>
+    <div id="action_feedback" class="no-print" aria-live="polite"></div>
   </div>
 
   <script>
@@ -530,6 +540,7 @@
   const banner = document.getElementById('banner');
   const app = document.getElementById('app');
   const subtitle = document.getElementById('subtitle');
+  const actionFeedback = document.getElementById('action_feedback');
 
   document.getElementById('lang_en').onclick = () => setLang('en');
   document.getElementById('lang_es').onclick = () => setLang('es');
@@ -539,6 +550,17 @@
   }
   function showOk(msg) {
     banner.innerHTML = `<div class="ok">${escapeHtml(msg)}</div>`;
+  }
+  function showActionOk(msg) {
+    actionFeedback.innerHTML = `<div class="ok">${escapeHtml(msg)}</div>`;
+    actionFeedback.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+  function showActionErr(msg) {
+    actionFeedback.innerHTML = `<div class="err">${escapeHtml(msg)}</div>`;
+    actionFeedback.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+  function clearActionFeedback() {
+    actionFeedback.innerHTML = '';
   }
   function escapeHtml(s) {
     return String(s)
@@ -734,7 +756,7 @@
     a.download = `${safeName}.csv`;
     a.click();
     URL.revokeObjectURL(a.href);
-    showOk(t('csvDone'));
+    showActionOk(t('csvDone'));
   }
 
   function printProgram() {
@@ -743,6 +765,7 @@
 
   async function save(asDraft) {
     banner.innerHTML = '';
+    clearActionFeedback();
     try {
       const res = await fn('coach-invite-submit', {
         method: 'POST',
@@ -751,14 +774,14 @@
       state.status = res.status;
       state.editable = res.status === 'draft' || res.status === 'pending';
       if (res.status === 'submitted') state.editable = false;
-      showOk(res.message || t('saved'));
       subtitle.textContent = t('programFor', {
         athlete: state.athlete,
         status: statusLabel(state.status),
       });
       render();
+      showActionOk(res.message || t('saved'));
     } catch (e) {
-      showErr(e.message || t('saveFailed'));
+      showActionErr(e.message || t('saveFailed'));
     }
   }
 
@@ -1058,7 +1081,7 @@
     const submitBtn = app.querySelector('#submit_btn');
     if (submitBtn) submitBtn.onclick = () => {
       if (!state.program_name.trim()) {
-        showErr(t('programNameRequired'));
+        showActionErr(t('programNameRequired'));
         return;
       }
       if (!confirm(t('submitConfirm'))) return;
