@@ -311,20 +311,6 @@
         font-size: 10.5pt;
         line-height: 1.4;
       }
-      .print-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        gap: 1rem;
-        margin-bottom: 0.35rem;
-      }
-      .print-header-text { flex: 1; min-width: 0; }
-      .print-logo {
-        max-height: 64px;
-        max-width: 160px;
-        object-fit: contain;
-        flex-shrink: 0;
-      }
       .print-brand {
         font-size: 11pt;
         font-weight: 700;
@@ -360,6 +346,26 @@
       .print-meta dd {
         margin: 0 0 0.4rem;
         font-weight: 600;
+      }
+      .print-coach {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin: 0 0 0.4rem;
+        font-weight: 600;
+        min-height: 1.6rem;
+      }
+      .print-coach img {
+        display: block;
+        max-height: 32px;
+        max-width: 88px;
+        width: auto;
+        height: auto;
+        object-fit: contain;
+        flex-shrink: 0;
+      }
+      .print-coach span {
+        line-height: 1.2;
       }
       .print-block { margin-bottom: 0.9rem; }
       .print-block h2 {
@@ -1144,30 +1150,24 @@
       `;
     }).join('');
 
+    const coachName = state.coach_label || '—';
+    const coachLogo = (state.coach_logo && state.coach_logo.startsWith('data:image/'))
+      ? `<img src="${state.coach_logo}" alt="" />`
+      : '';
+
     sheet.innerHTML = `
-      <div class="print-header">
-        <div class="print-header-text">
-          <div class="print-brand">Kallpa</div>
-          <h1>${escapeHtml(programTitle)}</h1>
-        </div>
-        ${state.coach_logo && state.coach_logo.startsWith('data:image/')
-          ? `<img class="print-logo" src="${state.coach_logo}" alt="" />`
-          : ''}
-      </div>
+      <div class="print-brand">Kallpa</div>
+      <h1>${escapeHtml(programTitle)}</h1>
       <dl class="print-meta">
         <div>
           <dt>${escapeHtml(t('printPreparedFor'))}</dt>
           <dd>${escapeHtml(state.athlete || t('yourAthlete'))}</dd>
-        </div>
-        <div>
-          <dt>${escapeHtml(t('printCoach'))}</dt>
-          <dd>${escapeHtml(state.coach_label || '—')}</dd>
-        </div>
-        <div>
           <dt>${escapeHtml(t('goal'))}</dt>
           <dd>${escapeHtml(goalLabel)}</dd>
         </div>
         <div>
+          <dt>${escapeHtml(t('printCoach'))}</dt>
+          <dd class="print-coach">${coachLogo}<span>${escapeHtml(coachName)}</span></dd>
           <dt>${escapeHtml(t('printDate'))}</dt>
           <dd>${escapeHtml(dateStr)}</dd>
         </div>
