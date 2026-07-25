@@ -40,3 +40,5 @@ git push origin main
 ```
 
 Then redeploy/wait for Pages; open `https://kallpa.co/coach/invite/?token=...`
+
+<!-- pages bump 2026-07-25T12:24:37.8298985-06:00 -->
