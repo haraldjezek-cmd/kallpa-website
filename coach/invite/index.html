@@ -639,6 +639,7 @@
         return {
           exercise_id: ex.exercise_id,
           exercise_name: ex.exercise_name,
+          name_i18n: ex.name_i18n || undefined,
           set_order: j + 1,
           sets: Number(ex.sets) || 3,
           reps_target: ex.reps_target || '8-12',
@@ -694,9 +695,7 @@
       }
       exercises.forEach((ex, ei) => {
         const isCustom = !!ex.custom;
-        const name = isCustom
-          ? (ex.custom.name_en || t('customExercise'))
-          : (ex.exercise_name || t('exercise'));
+        const name = exerciseDisplayName(ex);
         rows.push([
           dayNum,
           label,
@@ -749,6 +748,20 @@
     }
   }
 
+  function exerciseDisplayName(ex) {
+    if (ex.custom) {
+      if (lang === 'es') {
+        return (ex.custom.name_es || ex.custom.name_en || t('customExercise'));
+      }
+      return (ex.custom.name_en || ex.custom.name_es || t('customExercise'));
+    }
+    const i18n = ex.name_i18n || {};
+    if (lang === 'es') {
+      return (i18n.es || i18n.en || ex.exercise_name || t('exercise'));
+    }
+    return (i18n.en || i18n.es || ex.exercise_name || t('exercise'));
+  }
+
   let searchTimer = null;
   async function searchExercises(q, dayIdx, resultEl) {
     if (!q || q.length < 2) {
@@ -760,21 +773,31 @@
     resultEl.innerHTML = `<button type="button" disabled>${escapeHtml(t('searching'))}</button>`;
     try {
       const data = await fn(
-        `coach-invite-exercises?token=${encodeURIComponent(state.token)}&q=${encodeURIComponent(q)}`,
+        `coach-invite-exercises?token=${encodeURIComponent(state.token)}&q=${encodeURIComponent(q)}&lang=${encodeURIComponent(lang)}`,
       );
       const list = data.exercises || [];
       if (!list.length) {
         resultEl.innerHTML = `<button type="button" disabled>${escapeHtml(t('noMatches'))}</button>`;
         return;
       }
-      resultEl.innerHTML = list.map((ex) =>
-        `<button type="button" data-id="${escapeHtml(ex.id)}" data-name="${escapeHtml(ex.name)}">${escapeHtml(ex.name)} <span class="muted">${escapeHtml((ex.muscles_primary || []).slice(0, 2).map((m) => t('m_' + m) || m).join(', '))}</span></button>`
-      ).join('');
+      resultEl.innerHTML = list.map((ex) => {
+        const i18n = ex.name_i18n || {};
+        const nameEn = i18n.en || ex.name || '';
+        const nameEs = i18n.es || '';
+        return `<button type="button" data-id="${escapeHtml(ex.id)}" data-name-en="${escapeHtml(nameEn)}" data-name-es="${escapeHtml(nameEs)}">${escapeHtml(ex.name)} <span class="muted">${escapeHtml((ex.muscles_primary || []).slice(0, 2).map((m) => t('m_' + m) || m).join(', '))}</span></button>`;
+      }).join('');
       resultEl.querySelectorAll('button[data-id]').forEach((btn) => {
         btn.addEventListener('click', () => {
+          const nameEn = btn.dataset.nameEn || '';
+          const nameEs = btn.dataset.nameEs || '';
           state.days[dayIdx].exercises.push({
             exercise_id: btn.dataset.id,
-            exercise_name: btn.dataset.name,
+            // Canonical EN snapshot for athlete accept / program rows
+            exercise_name: nameEn || nameEs,
+            name_i18n: {
+              ...(nameEn ? { en: nameEn } : {}),
+              ...(nameEs ? { es: nameEs } : {}),
+            },
             sets: 3,
             reps_target: '8-12',
             rir_target: 2,
@@ -856,9 +879,7 @@
         const block = document.createElement('div');
         block.className = 'ex';
         const isCustom = !!ex.custom;
-        const title = isCustom
-          ? (ex.custom.name_en || t('customExercise'))
-          : (ex.exercise_name || t('exercise'));
+        const title = exerciseDisplayName(ex);
         block.innerHTML = `
           <div class="ex-title">${escapeHtml(title)}
             <span class="badge">${escapeHtml(isCustom ? t('custom') : t('library'))}</span>
