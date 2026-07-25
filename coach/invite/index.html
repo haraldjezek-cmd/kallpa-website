@@ -143,13 +143,30 @@
       user-select: none;
     }
     .chip.on { background: var(--accent-dim); border-color: var(--accent); color: #fff; }
+    .no-print { }
+    @media print {
+      :root { --bg: #fff; --card: #fff; --border: #ccc; --text: #111; --muted: #444; --input: #fff; }
+      body { background: #fff; color: #111; padding: 0; }
+      .no-print, .search-results, button, .chip-row, [data-search], .badge { display: none !important; }
+      .card { border: 1px solid #ccc; break-inside: avoid; box-shadow: none; }
+      input, select, textarea {
+        border: none !important;
+        background: transparent !important;
+        color: #111 !important;
+        padding: 0.15rem 0 !important;
+      }
+      textarea { min-height: 0; }
+      a { color: #111; }
+      .print-only { display: block !important; }
+    }
+    .print-only { display: none; }
   </style>
 </head>
 <body>
   <div class="wrap">
     <h1>Kallpa coach program</h1>
     <p class="sub" id="subtitle">Loading invite…</p>
-    <div id="banner"></div>
+    <div id="banner" class="no-print"></div>
     <div id="app" class="hidden"></div>
   </div>
 
@@ -339,6 +356,68 @@
     };
   }
 
+  function csvEscape(v) {
+    const s = v == null ? '' : String(v);
+    if (/[",\n\r]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+    return s;
+  }
+
+  function downloadCsv() {
+    const rows = [
+      ['Program', state.program_name || ''],
+      ['Coach', state.coach_label || ''],
+      ['Athlete', state.athlete || ''],
+      ['Goal', state.goal || ''],
+      ['Program notes', state.program_notes || ''],
+      ['How-to', state.howto_instructions || ''],
+      [],
+      ['Day', 'Day label', 'Day notes', 'Order', 'Exercise', 'Type', 'Sets', 'Reps', 'RIR', 'Exercise notes'],
+    ];
+    state.days.forEach((day, di) => {
+      const dayNum = di + 1;
+      const label = day.label || `Day ${dayNum}`;
+      const dayNotes = day.notes || '';
+      const exercises = day.exercises || [];
+      if (!exercises.length) {
+        rows.push([dayNum, label, dayNotes, '', '', '', '', '', '', '']);
+        return;
+      }
+      exercises.forEach((ex, ei) => {
+        const isCustom = !!ex.custom;
+        const name = isCustom
+          ? (ex.custom.name_en || 'Custom')
+          : (ex.exercise_name || 'Exercise');
+        rows.push([
+          dayNum,
+          label,
+          dayNotes,
+          ei + 1,
+          name,
+          isCustom ? 'custom' : 'library',
+          ex.sets ?? 3,
+          ex.reps_target || '',
+          ex.rir_target ?? '',
+          ex.notes || '',
+        ]);
+      });
+    });
+    const csv = rows.map((r) => r.map(csvEscape).join(',')).join('\r\n');
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
+    const a = document.createElement('a');
+    const safeName = (state.program_name || 'kallpa-program')
+      .replace(/[^\w\-]+/g, '_')
+      .slice(0, 60);
+    a.href = URL.createObjectURL(blob);
+    a.download = `${safeName}.csv`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+    showOk('CSV downloaded — open in Excel or File → Import in Google Sheets.');
+  }
+
+  function printProgram() {
+    window.print();
+  }
+
   async function save(asDraft) {
     banner.innerHTML = '';
     try {
@@ -420,13 +499,15 @@
         <textarea id="howto_instructions" ${ro} placeholder="Warm-up, filming, progression rules…">${escapeHtml(state.howto_instructions)}</textarea>
       </div>
       <div id="days"></div>
-      ${state.editable ? `
-        <div class="actions">
+      <div class="actions no-print">
+        <button type="button" id="print_btn">Print / Save PDF</button>
+        <button type="button" id="csv_btn">Download CSV (Excel / Sheets)</button>
+        ${state.editable ? `
           <button type="button" id="add_day">Add day</button>
           <button type="button" id="save_draft">Save draft</button>
           <button type="button" class="primary" id="submit_btn">Submit to athlete</button>
-        </div>
-      ` : ''}
+        ` : ''}
+      </div>
     `;
 
     const daysEl = app.querySelector('#days');
@@ -444,11 +525,13 @@
         <textarea data-day-notes="${di}" ${ro}>${escapeHtml(day.notes || '')}</textarea>
         <div data-ex-list="${di}"></div>
         ${state.editable ? `
-          <label>Add from library</label>
-          <input data-search="${di}" placeholder="Search exercises (min 2 letters)" />
-          <div class="search-results" data-search-results="${di}"></div>
-          <div class="actions">
-            <button type="button" data-add-custom="${di}">Add custom exercise</button>
+          <div class="no-print">
+            <label>Add from library</label>
+            <input data-search="${di}" placeholder="Search exercises (min 2 letters)" />
+            <div class="search-results" data-search-results="${di}"></div>
+            <div class="actions">
+              <button type="button" data-add-custom="${di}">Add custom exercise</button>
+            </div>
           </div>
         ` : ''}
       `;
@@ -610,6 +693,10 @@
       if (!confirm('Submit this program to the athlete? You will not be able to edit it afterward.')) return;
       save(false);
     };
+    const printBtn = app.querySelector('#print_btn');
+    if (printBtn) printBtn.onclick = () => printProgram();
+    const csvBtn = app.querySelector('#csv_btn');
+    if (csvBtn) csvBtn.onclick = () => downloadCsv();
   }
 
   boot();
