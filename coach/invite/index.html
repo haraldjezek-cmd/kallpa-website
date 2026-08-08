@@ -89,6 +89,46 @@
     textarea { min-height: 72px; resize: vertical; }
     .row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
     .row > * { flex: 1; min-width: 100px; }
+    .hint { font-size: 0.75rem; color: var(--muted); margin: 0.25rem 0 0.5rem; line-height: 1.35; }
+    .week-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0.35rem 0 0.75rem; }
+    .week-chips button {
+      padding: 0.4rem 0.85rem;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--muted);
+    }
+    .week-chips button.on {
+      background: rgba(61, 154, 106, 0.18);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    .week-chips button:disabled { opacity: 0.55; cursor: not-allowed; }
+    .check-row {
+      display: flex;
+      gap: 0.65rem;
+      align-items: flex-start;
+      padding: 0.45rem 0;
+      cursor: pointer;
+    }
+    .check-row input {
+      width: auto;
+      margin-top: 0.2rem;
+      accent-color: var(--accent);
+    }
+    .check-row .check-copy strong {
+      display: block;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .check-row .check-copy span {
+      display: block;
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 0.15rem;
+      line-height: 1.35;
+    }
     button {
       font: inherit;
       cursor: pointer;
@@ -482,6 +522,7 @@
     'barbell', 'dumbbell', 'cable', 'machine', 'bodyweight', 'kettlebell', 'band', 'other',
   ];
   const GOALS = ['hypertrophy', 'strength', 'longevity', 'general'];
+  const MESO_WEEKS = [4, 6, 8, 12];
 
   const I18N = {
     en: {
@@ -494,6 +535,7 @@
       programFor: 'Program for {athlete} · status: {status}',
       yourAthlete: 'your athlete',
       alreadySubmitted: 'Already submitted. The athlete must accept this program in Kallpa.',
+      revisionBanner: 'Updating an existing program — changes apply when the athlete accepts.',
       readOnly: 'This invite is read-only.',
       saved: 'Saved',
       draftSaved: 'Draft saved',
@@ -505,6 +547,17 @@
       programName: 'Program name',
       programNamePh: 'e.g. 4-day hypertrophy',
       goal: 'Goal',
+      cycleSettings: 'Cycle settings',
+      blockLength: 'Training block length',
+      blockLengthHint: 'How many weeks in this cycle (including deload if enabled).',
+      weeksN: '{n} weeks',
+      deloadFinalWeek: 'Final week is a deload',
+      deloadFinalWeekSub: 'Shows deload targets for the athlete on the last week.',
+      mesoIncludingDeload: 'Example: 6 weeks = 5 training weeks + 1 deload week.',
+      repeatCycle: 'Repeat this cycle when it ends',
+      repeatCycleSub: 'Restarts at week 1 with the same program unless changed.',
+      aiSupport: 'Enable AI Progression Support',
+      aiSupportSub: 'Kallpa can adjust sets and RIR from the athlete’s logged performance.',
       programNotes: 'Program notes',
       programNotesPh: 'Overall focus, constraints…',
       howto: 'How-to / general instructions',
@@ -523,6 +576,12 @@
       printColOrder: '#',
       printColExercise: 'Exercise',
       printColNotes: 'Notes',
+      printBlockLength: 'Block length',
+      printDeload: 'Final week deload',
+      printRepeat: 'Auto-repeat cycle',
+      printAi: 'AI progression',
+      yes: 'Yes',
+      no: 'No',
       coachLogo: 'Your logo (optional)',
       coachLogoHint: 'Shown on the printed program. PNG or JPG, up to ~150 KB after resize.',
       coachLogoChoose: 'Choose logo',
@@ -555,7 +614,8 @@
       noMatches: 'No matches',
       searchFailed: 'Search failed',
       programNameRequired: 'Program name is required to submit',
-      submitConfirm: 'Submit this program to the athlete? You will not be able to edit it afterward.',
+      submitConfirm: 'Submit this program to the athlete?',
+      submitConfirmRevision: 'Submit this updated program? The athlete will accept it as a new version of their current program.',
       csvDone: 'CSV downloaded — open in Excel or File → Import in Google Sheets.',
       csvProgram: 'Program',
       csvCoach: 'Coach',
@@ -566,17 +626,51 @@
       csvDay: 'Day',
       csvDayLabel: 'Day label',
       csvDayNotes: 'Day notes',
+      csvLabel: 'Label',
       csvOrder: 'Order',
       csvExercise: 'Exercise',
+      csvSource: 'Source',
       csvType: 'Type',
       csvSets: 'Sets',
       csvReps: 'Reps',
       csvRir: 'RIR',
+      csvNotes: 'Notes',
       csvExNotes: 'Exercise notes',
+      csvMuscles: 'Muscles',
+      csvEquipment: 'Equipment',
       goal_hypertrophy: 'Hypertrophy',
       goal_strength: 'Strength',
       goal_longevity: 'Longevity',
       goal_general: 'General',
+      status_pending: 'pending',
+      status_draft: 'draft',
+      status_submitted: 'submitted',
+      status_accepted: 'accepted',
+      status_declined: 'declined',
+      status_expired: 'expired',
+      m_chest: 'Chest',
+      m_back: 'Back',
+      m_shoulders: 'Shoulders',
+      m_biceps: 'Biceps',
+      m_triceps: 'Triceps',
+      m_quads: 'Quads',
+      m_quadriceps: 'Quadriceps',
+      m_hamstrings: 'Hamstrings',
+      m_glutes: 'Glutes',
+      m_calves: 'Calves',
+      m_abs: 'Abs',
+      m_forearms: 'Forearms',
+      m_traps: 'Traps',
+      m_adductors: 'Adductors',
+      m_abductors: 'Abductors',
+      m_rear_delts: 'Rear delts',
+      m_rear_deltoid: 'Rear deltoid',
+      m_lats: 'Lats',
+      m_upper_back: 'Upper back',
+      m_front_delts: 'Front delts',
+      m_anterior_deltoid: 'Anterior deltoid',
+      m_side_delts: 'Side delts',
+      m_lateral_deltoid: 'Lateral deltoid',
       eq_barbell: 'Barbell',
       eq_dumbbell: 'Dumbbell',
       eq_cable: 'Cable',
@@ -585,29 +679,9 @@
       eq_kettlebell: 'Kettlebell',
       eq_band: 'Band',
       eq_other: 'Other',
-      m_chest: 'Chest',
-      m_quadriceps: 'Quadriceps',
-      m_hamstrings: 'Hamstrings',
-      m_glutes: 'Glutes',
-      m_back: 'Back',
-      m_traps: 'Traps',
-      m_biceps: 'Biceps',
-      m_triceps: 'Triceps',
-      m_anterior_deltoid: 'Anterior deltoid',
-      m_lateral_deltoid: 'Lateral deltoid',
-      m_rear_deltoid: 'Rear deltoid',
-      m_abs: 'Abs',
-      m_calves: 'Calves',
-      m_forearms: 'Forearms',
-      status_pending: 'pending',
-      status_draft: 'draft',
-      status_submitted: 'submitted',
-      status_accepted: 'accepted',
-      status_declined: 'declined',
-      status_expired: 'expired',
     },
     es: {
-      title: 'Kallpa — Programa del entrenador',
+      title: 'Programa de coach Kallpa',
       loading: 'Cargando invitación…',
       missingToken: 'Falta el token de invitación',
       missingTokenHint: 'Abre esta página desde el enlace que compartió el atleta (la URL debe incluir el token).',
@@ -616,49 +690,67 @@
       programFor: 'Programa para {athlete} · estado: {status}',
       yourAthlete: 'tu atleta',
       alreadySubmitted: 'Ya enviado. El atleta debe aceptar este programa en Kallpa.',
-      readOnly: 'Esta invitación es de solo lectura.',
+      revisionBanner: 'Actualizando un programa existente — los cambios se aplican cuando el atleta acepta.',
+      readOnly: 'Esta invitación es solo lectura.',
       saved: 'Guardado',
       draftSaved: 'Borrador guardado',
-      submittedOk: 'Enviado — el atleta debe aceptarlo en Kallpa',
+      submittedOk: 'Enviado — el atleta debe aceptar en Kallpa',
       saveFailed: 'Error al guardar',
       programDetails: 'Detalles del programa',
       coachName: 'Tu nombre (opcional)',
-      coachNamePh: 'Nombre del entrenador',
+      coachNamePh: 'Nombre del coach',
       programName: 'Nombre del programa',
       programNamePh: 'p. ej. Hipertrofia 4 días',
       goal: 'Objetivo',
+      cycleSettings: 'Ajustes del ciclo',
+      blockLength: 'Duración del bloque',
+      blockLengthHint: 'Cuántas semanas dura este ciclo (incluye descarga si está activada).',
+      weeksN: '{n} semanas',
+      deloadFinalWeek: 'La última semana es descarga',
+      deloadFinalWeekSub: 'Muestra objetivos de descarga en la última semana.',
+      mesoIncludingDeload: 'Ejemplo: 6 semanas = 5 de entrenamiento + 1 de descarga.',
+      repeatCycle: 'Repetir este ciclo al terminar',
+      repeatCycleSub: 'Reinicia en la semana 1 con el mismo programa salvo que se cambie.',
+      aiSupport: 'Activar apoyo de progresión con IA',
+      aiSupportSub: 'Kallpa puede ajustar series y RIR según el rendimiento registrado.',
       programNotes: 'Notas del programa',
       programNotesPh: 'Enfoque general, restricciones…',
       howto: 'Instrucciones generales',
-      howtoPh: 'Calentamiento, filmación, progresión…',
+      howtoPh: 'Calentamiento, filmación, reglas de progresión…',
       print: 'Imprimir / PDF',
       csv: 'Descargar CSV',
-      addDay: 'Añadir día',
+      addDay: 'Agregar día',
       saveDraft: 'Guardar borrador',
       submit: 'Enviar al atleta',
-      scrollMore: 'Desliza horizontalmente para ver más →',
+      scrollMore: 'Desliza para más acciones →',
       printPreparedFor: 'Atleta',
-      printCoach: 'Entrenador',
+      printCoach: 'Coach',
       printDate: 'Fecha',
-      printEmptyDay: 'Sin ejercicios todavía',
+      printEmptyDay: 'Sin ejercicios aún',
       printFooter: 'Preparado con Kallpa',
       printColOrder: '#',
       printColExercise: 'Ejercicio',
       printColNotes: 'Notas',
+      printBlockLength: 'Duración del bloque',
+      printDeload: 'Descarga final',
+      printRepeat: 'Repetir ciclo',
+      printAi: 'Progresión IA',
+      yes: 'Sí',
+      no: 'No',
       coachLogo: 'Tu logo (opcional)',
-      coachLogoHint: 'Se muestra en el programa impreso. PNG o JPG, máx. ~150 KB tras redimensionar.',
+      coachLogoHint: 'Se muestra en el programa impreso. PNG o JPG, hasta ~150 KB tras redimensionar.',
       coachLogoChoose: 'Elegir logo',
       coachLogoRemove: 'Quitar logo',
       coachLogoNone: 'Sin logo',
-      coachLogoTooBig: 'El logo es demasiado grande. Prueba con una imagen más pequeña.',
+      coachLogoTooBig: 'El logo es demasiado grande. Prueba una imagen más pequeña.',
       coachLogoBadType: 'Usa una imagen PNG o JPG.',
       dayN: 'Día {n}',
       removeDay: 'Quitar día',
       label: 'Etiqueta',
       dayNotes: 'Notas del día',
-      addFromLibrary: 'Añadir de la biblioteca',
+      addFromLibrary: 'Agregar de la biblioteca',
       searchPh: 'Buscar ejercicios (mín. 2 letras)',
-      addCustom: 'Añadir ejercicio personalizado',
+      addCustom: 'Agregar ejercicio personalizado',
       customExercise: 'Ejercicio personalizado',
       exercise: 'Ejercicio',
       custom: 'personalizado',
@@ -666,18 +758,19 @@
       remove: 'Quitar',
       nameEn: 'Nombre (inglés)',
       nameEs: 'Nombre (español, opcional)',
-      equipment: 'Equipamiento',
-      primaryMuscles: 'Músculos principales',
+      equipment: 'Equipo',
+      primaryMuscles: 'Músculos primarios',
       sets: 'Series',
       reps: 'Reps',
       rir: 'RIR',
-      exNotes: 'Notas / consignas',
-      exNotesPh: 'Consignas, tempo, sustituciones…',
+      exNotes: 'Notas / cues',
+      exNotesPh: 'Cues, tempo, sustituciones…',
       searching: 'Buscando…',
       noMatches: 'Sin resultados',
-      searchFailed: 'Error en la búsqueda',
+      searchFailed: 'Error de búsqueda',
       programNameRequired: 'El nombre del programa es obligatorio para enviar',
-      submitConfirm: '¿Enviar este programa al atleta? No podrás editarlo después.',
+      submitConfirm: '¿Enviar este programa al atleta?',
+      submitConfirmRevision: '¿Enviar este programa actualizado? El atleta lo aceptará como nueva versión de su programa actual.',
       csvDone: 'CSV descargado — ábrelo en Excel o Archivo → Importar en Google Sheets.',
       csvProgram: 'Programa',
       csvCoach: 'Entrenador',
@@ -688,17 +781,51 @@
       csvDay: 'Día',
       csvDayLabel: 'Etiqueta del día',
       csvDayNotes: 'Notas del día',
+      csvLabel: 'Etiqueta',
       csvOrder: 'Orden',
       csvExercise: 'Ejercicio',
+      csvSource: 'Fuente',
       csvType: 'Tipo',
       csvSets: 'Series',
       csvReps: 'Reps',
       csvRir: 'RIR',
+      csvNotes: 'Notas',
       csvExNotes: 'Notas del ejercicio',
+      csvMuscles: 'Músculos',
+      csvEquipment: 'Equipo',
       goal_hypertrophy: 'Hipertrofia',
       goal_strength: 'Fuerza',
       goal_longevity: 'Longevidad',
       goal_general: 'General',
+      status_pending: 'pendiente',
+      status_draft: 'borrador',
+      status_submitted: 'enviado',
+      status_accepted: 'aceptado',
+      status_declined: 'rechazado',
+      status_expired: 'expirado',
+      m_chest: 'Pecho',
+      m_back: 'Espalda',
+      m_shoulders: 'Hombros',
+      m_biceps: 'Bíceps',
+      m_triceps: 'Tríceps',
+      m_quads: 'Cuádriceps',
+      m_quadriceps: 'Cuádriceps',
+      m_hamstrings: 'Isquiotibiales',
+      m_glutes: 'Glúteos',
+      m_calves: 'Pantorrillas',
+      m_abs: 'Abdominales',
+      m_forearms: 'Antebrazos',
+      m_traps: 'Trapecios',
+      m_adductors: 'Aductores',
+      m_abductors: 'Abductores',
+      m_rear_delts: 'Deltoides posterior',
+      m_rear_deltoid: 'Deltoides posterior',
+      m_lats: 'Dorsales',
+      m_upper_back: 'Espalda alta',
+      m_front_delts: 'Deltoides anterior',
+      m_anterior_deltoid: 'Deltoides anterior',
+      m_side_delts: 'Deltoides lateral',
+      m_lateral_deltoid: 'Deltoides lateral',
       eq_barbell: 'Barra',
       eq_dumbbell: 'Mancuerna',
       eq_cable: 'Polea',
@@ -707,32 +834,13 @@
       eq_kettlebell: 'Pesa rusa',
       eq_band: 'Banda',
       eq_other: 'Otro',
-      m_chest: 'Pecho',
-      m_quadriceps: 'Cuádriceps',
-      m_hamstrings: 'Isquiotibiales',
-      m_glutes: 'Glúteos',
-      m_back: 'Espalda',
-      m_traps: 'Trapecios',
-      m_biceps: 'Bíceps',
-      m_triceps: 'Tríceps',
-      m_anterior_deltoid: 'Deltoides anterior',
-      m_lateral_deltoid: 'Deltoides lateral',
-      m_rear_deltoid: 'Deltoides posterior',
-      m_abs: 'Abdominales',
-      m_calves: 'Pantorrillas',
-      m_forearms: 'Antebrazos',
-      status_pending: 'pendiente',
-      status_draft: 'borrador',
-      status_submitted: 'enviado',
-      status_accepted: 'aceptado',
-      status_declined: 'rechazado',
-      status_expired: 'expirado',
     },
   };
 
-  function detectLang() {
+  function detectLang(invitePreferred) {
     const q = new URLSearchParams(location.search).get('lang');
     if (q === 'es' || q === 'en') return q;
+    if (invitePreferred === 'es' || invitePreferred === 'en') return invitePreferred;
     try {
       const saved = localStorage.getItem('kallpa_coach_invite_lang');
       if (saved === 'es' || saved === 'en') return saved;
@@ -806,9 +914,14 @@
     coach_logo: '',
     program_name: '',
     goal: 'hypertrophy',
+    mesocycle_length_weeks: 6,
+    final_week_is_deload: true,
+    auto_repeat_block: false,
+    ai_support_enabled: true,
     program_notes: '',
     howto_instructions: '',
     days: [],
+    is_revision: false,
   };
 
   const banner = document.getElementById('banner');
@@ -957,14 +1070,27 @@
       const data = await fn(`coach-invite-validate?token=${encodeURIComponent(state.token)}`);
       state.status = data.status;
       state.editable = !!data.editable;
+      state.is_revision = !!data.is_revision || !!data.base_program_id;
       state.athlete = data.athlete_display || t('yourAthlete');
       state.coach_label = data.coach_label || '';
       const meta = data.program_meta || {};
+      const preferred =
+        data.preferred_lang === 'es' || data.preferred_lang === 'en'
+          ? data.preferred_lang
+          : (meta.ui_lang === 'es' || meta.ui_lang === 'en' ? meta.ui_lang : null);
+      const nextLang = detectLang(preferred);
+      if (nextLang !== lang) setLang(nextLang);
+      else applyChrome();
       state.coach_logo = (typeof meta.coach_logo === 'string' && meta.coach_logo.startsWith('data:image/'))
         ? meta.coach_logo
         : '';
       state.program_name = meta.name || '';
       state.goal = meta.goal || 'hypertrophy';
+      const mesoRaw = Number(meta.mesocycle_length_weeks);
+      state.mesocycle_length_weeks = MESO_WEEKS.includes(mesoRaw) ? mesoRaw : 6;
+      state.final_week_is_deload = meta.final_week_is_deload !== false;
+      state.auto_repeat_block = meta.auto_repeat_block === true;
+      state.ai_support_enabled = meta.ai_support_enabled !== false;
       state.program_notes = data.program_notes || (data.structure && data.structure.program_notes) || '';
       state.howto_instructions = data.howto_instructions || (data.structure && data.structure.howto_instructions) || '';
       const days = (data.structure && data.structure.days) || [];
@@ -975,6 +1101,8 @@
       });
       if (!state.editable) {
         showOk(data.status === 'submitted' ? t('alreadySubmitted') : t('readOnly'));
+      } else if (state.is_revision) {
+        showOk(t('revisionBanner'));
       }
       render();
     } catch (e) {
@@ -1025,6 +1153,10 @@
       coach_logo: state.coach_logo || null,
       program_name: state.program_name,
       goal: state.goal,
+      mesocycle_length_weeks: state.mesocycle_length_weeks,
+      final_week_is_deload: !!state.final_week_is_deload,
+      auto_repeat_block: !!state.auto_repeat_block,
+      ai_support_enabled: !!state.ai_support_enabled,
       program_notes: state.program_notes,
       howto_instructions: state.howto_instructions,
       structure: {
@@ -1164,6 +1296,14 @@
           <dd>${escapeHtml(state.athlete || t('yourAthlete'))}</dd>
           <dt>${escapeHtml(t('goal'))}</dt>
           <dd>${escapeHtml(goalLabel)}</dd>
+          <dt>${escapeHtml(t('printBlockLength'))}</dt>
+          <dd>${escapeHtml(t('weeksN', { n: state.mesocycle_length_weeks }))}</dd>
+          <dt>${escapeHtml(t('printDeload'))}</dt>
+          <dd>${escapeHtml(state.final_week_is_deload ? t('yes') : t('no'))}</dd>
+          <dt>${escapeHtml(t('printRepeat'))}</dt>
+          <dd>${escapeHtml(state.auto_repeat_block ? t('yes') : t('no'))}</dd>
+          <dt>${escapeHtml(t('printAi'))}</dt>
+          <dd>${escapeHtml(state.ai_support_enabled ? t('yes') : t('no'))}</dd>
         </div>
         <div>
           <dt>${escapeHtml(t('printCoach'))}</dt>
@@ -1337,6 +1477,36 @@
         <select id="goal" ${disabled}>
           ${GOALS.map((g) => `<option value="${g}" ${state.goal === g ? 'selected' : ''}>${escapeHtml(t('goal_' + g))}</option>`).join('')}
         </select>
+        <h2 style="margin-top:1rem">${escapeHtml(t('cycleSettings'))}</h2>
+        <label>${escapeHtml(t('blockLength'))}</label>
+        <p class="hint">${escapeHtml(t('blockLengthHint'))}</p>
+        <div class="week-chips" id="meso_weeks">
+          ${MESO_WEEKS.map((w) => `
+            <button type="button" data-meso="${w}" class="${state.mesocycle_length_weeks === w ? 'on' : ''}" ${disabled}>${escapeHtml(t('weeksN', { n: w }))}</button>
+          `).join('')}
+        </div>
+        <p class="hint">${escapeHtml(t('mesoIncludingDeload'))}</p>
+        <label class="check-row">
+          <input type="checkbox" id="final_week_is_deload" ${state.final_week_is_deload ? 'checked' : ''} ${disabled} />
+          <span class="check-copy">
+            <strong>${escapeHtml(t('deloadFinalWeek'))}</strong>
+            <span>${escapeHtml(t('deloadFinalWeekSub'))}</span>
+          </span>
+        </label>
+        <label class="check-row">
+          <input type="checkbox" id="auto_repeat_block" ${state.auto_repeat_block ? 'checked' : ''} ${disabled} />
+          <span class="check-copy">
+            <strong>${escapeHtml(t('repeatCycle'))}</strong>
+            <span>${escapeHtml(t('repeatCycleSub'))}</span>
+          </span>
+        </label>
+        <label class="check-row">
+          <input type="checkbox" id="ai_support_enabled" ${state.ai_support_enabled ? 'checked' : ''} ${disabled} />
+          <span class="check-copy">
+            <strong>${escapeHtml(t('aiSupport'))}</strong>
+            <span>${escapeHtml(t('aiSupportSub'))}</span>
+          </span>
+        </label>
         <label>${escapeHtml(t('programNotes'))}</label>
         <textarea id="program_notes" ${ro} placeholder="${escapeHtml(t('programNotesPh'))}">${escapeHtml(state.program_notes)}</textarea>
         <label>${escapeHtml(t('howto'))}</label>
@@ -1463,6 +1633,28 @@
     }
     if (g('#program_name')) g('#program_name').oninput = (e) => { state.program_name = e.target.value; };
     if (g('#goal')) g('#goal').onchange = (e) => { state.goal = e.target.value; };
+    document.querySelectorAll('[data-meso]').forEach((btn) => {
+      btn.onclick = () => {
+        if (!state.editable) return;
+        state.mesocycle_length_weeks = Number(btn.dataset.meso) || 6;
+        render();
+      };
+    });
+    if (g('#final_week_is_deload')) {
+      g('#final_week_is_deload').onchange = (e) => {
+        state.final_week_is_deload = !!e.target.checked;
+      };
+    }
+    if (g('#auto_repeat_block')) {
+      g('#auto_repeat_block').onchange = (e) => {
+        state.auto_repeat_block = !!e.target.checked;
+      };
+    }
+    if (g('#ai_support_enabled')) {
+      g('#ai_support_enabled').onchange = (e) => {
+        state.ai_support_enabled = !!e.target.checked;
+      };
+    }
     if (g('#program_notes')) g('#program_notes').oninput = (e) => { state.program_notes = e.target.value; };
     if (g('#howto_instructions')) g('#howto_instructions').oninput = (e) => { state.howto_instructions = e.target.value; };
 
@@ -1563,7 +1755,7 @@
         showActionErr(t('programNameRequired'));
         return;
       }
-      if (!confirm(t('submitConfirm'))) return;
+      if (!confirm(t(state.is_revision ? 'submitConfirmRevision' : 'submitConfirm'))) return;
       save(false);
     };
     const printBtn = app.querySelector('#print_btn');
