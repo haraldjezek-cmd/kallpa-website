@@ -18,98 +18,147 @@
     :root {
       --bg: #0f1419; --card: #1a222c; --border: #2a3542;
       --text: #e8eef4; --muted: #8b9aab; --accent: #3d9a6a;
+      --accent-dim: #2d7350; --danger: #c45c5c;
       --radius: 10px; --font: "Segoe UI", system-ui, sans-serif;
     }
     * { box-sizing: border-box; }
-    body { margin: 0; font-family: var(--font); background: var(--bg); color: var(--text); padding: 1rem 1rem 3rem; }
-    .wrap { max-width: 900px; margin: 0 auto; }
+    body { margin: 0; font-family: var(--font); background: var(--bg); color: var(--text); padding: 1rem 1rem 3rem; line-height: 1.45; }
+    .wrap { max-width: 720px; margin: 0 auto; }
     h1 { font-size: 1.4rem; margin: 0 0 0.25rem; }
-    .sub { color: var(--muted); margin-bottom: 1.25rem; }
+    h2 { font-size: 1.05rem; margin: 0 0 0.5rem; }
+    h3 { font-size: 0.95rem; margin: 0 0 0.5rem; }
+    .sub { color: var(--muted); margin: 0 0 1rem; font-size: 0.92rem; }
     .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem; margin-bottom: 1rem; }
-    label { display: block; font-size: 0.8rem; color: var(--muted); margin: 0.5rem 0 0.25rem; }
+    label { display: block; font-size: 0.8rem; color: var(--muted); margin: 0.55rem 0 0.25rem; }
     input, select, textarea, button {
       font: inherit; border-radius: 8px; border: 1px solid var(--border);
       background: #121820; color: var(--text); padding: 0.55rem 0.7rem; width: 100%;
     }
-    button { background: var(--accent); border: 0; font-weight: 600; cursor: pointer; margin-top: 0.75rem; }
+    button { background: var(--accent); border: 0; font-weight: 600; cursor: pointer; margin-top: 0.65rem; }
+    button:disabled { opacity: 0.45; cursor: not-allowed; }
     button.secondary { background: transparent; border: 1px solid var(--border); }
-    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
-    @media (max-width: 640px) { .row { grid-template-columns: 1fr; } }
-    .muted { color: var(--muted); font-size: 0.9rem; }
-    .list item, .client { display: block; padding: 0.65rem 0; border-bottom: 1px solid var(--border); }
-    .err { color: #c45c5c; }
+    button.danger { background: transparent; border: 1px solid var(--danger); color: #f0a0a0; }
+    button.small { width: auto; display: inline-block; margin: 0.25rem 0.35rem 0.25rem 0; padding: 0.35rem 0.65rem; font-size: 0.85rem; }
+    .steps { display: flex; gap: 0.4rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    .steps button {
+      flex: 1; min-width: 5.5rem; margin-top: 0; background: transparent;
+      border: 1px solid var(--border); color: var(--muted); font-weight: 600;
+    }
+    .steps button.on { background: var(--accent-dim); border-color: var(--accent); color: #fff; }
+    .steps button .n { display: inline-block; width: 1.25rem; height: 1.25rem; border-radius: 50%;
+      background: #243041; margin-right: 0.35rem; font-size: 0.75rem; line-height: 1.25rem; text-align: center; }
+    .steps button.on .n { background: var(--accent); }
+    .client {
+      display: flex; align-items: center; gap: 0.65rem; padding: 0.7rem 0.6rem;
+      border: 1px solid var(--border); border-radius: 8px; margin-bottom: 0.5rem; cursor: pointer;
+    }
+    .client:hover { border-color: var(--accent); }
+    .client.selected { border-color: var(--accent); background: rgba(61,154,106,0.12); }
+    .client .meta { color: var(--muted); font-size: 0.82rem; }
+    .chip { display: inline-block; font-size: 0.72rem; padding: 0.15rem 0.45rem; border-radius: 6px;
+      background: #243041; color: var(--muted); margin-left: 0.35rem; }
+    .chip.ok { background: rgba(61,154,106,0.2); color: #8fd6b0; }
+    .err { color: var(--danger); }
     .ok { color: var(--accent); }
-    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-    th, td { text-align: left; padding: 0.45rem 0.25rem; border-bottom: 1px solid var(--border); }
+    .muted { color: var(--muted); font-size: 0.9rem; }
+    .day {
+      border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem; margin-bottom: 0.75rem;
+    }
+    .day-head { display: flex; gap: 0.5rem; align-items: end; margin-bottom: 0.5rem; }
+    .day-head input { flex: 1; }
+    .ex-row { display: grid; grid-template-columns: 1fr 4.5rem 4.5rem auto; gap: 0.4rem; margin-bottom: 0.4rem; align-items: center; }
+    @media (max-width: 560px) {
+      .ex-row { grid-template-columns: 1fr 1fr; }
+      .ex-row .span2 { grid-column: 1 / -1; }
+    }
+    .hint { background: #121820; border-left: 3px solid var(--accent); padding: 0.65rem 0.75rem; margin-bottom: 0.85rem; font-size: 0.88rem; color: var(--muted); }
+    .topbar { display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }
+    .hidden { display: none !important; }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <h1>Coach Admin</h1>
-    <p class="sub">Roster, schedule, documents, and basic fees. Sign in with your coach Kallpa account.</p>
+    <div class="topbar">
+      <div>
+        <h1>Coach Admin</h1>
+        <p class="sub" style="margin:0">Manage clients, sessions, and training programs.</p>
+      </div>
+      <button id="btnLogout" class="secondary small hidden" type="button">Sign out</button>
+    </div>
 
     <div class="card" id="authCard">
       <h2>Sign in</h2>
+      <p class="hint">Use the same email/password as your Kallpa coach account. Your role must be <strong>coach</strong>.</p>
       <label>Email</label>
       <input id="email" type="email" autocomplete="username" />
       <label>Password</label>
       <input id="password" type="password" autocomplete="current-password" />
-      <button id="btnLogin">Sign in</button>
+      <button id="btnLogin" type="button">Sign in</button>
       <p class="muted" id="authMsg"></p>
     </div>
 
-    <div id="app" hidden>
-      <div class="card">
-        <div class="row">
-          <div>
-            <h2>Roster</h2>
-            <div id="roster"></div>
-          </div>
-          <div>
-            <h2>Add client</h2>
-            <label>Name</label>
-            <input id="newName" />
-            <label>Email (optional)</label>
-            <input id="newEmail" type="email" />
-            <button id="btnOffline" class="secondary">Add offline</button>
-            <button id="btnInvite">Invite to Kallpa</button>
-            <p class="muted" id="addMsg"></p>
-          </div>
+    <div id="app" class="hidden">
+      <div class="steps" role="tablist">
+        <button type="button" class="on" data-step="clients"><span class="n">1</span>Clients</button>
+        <button type="button" data-step="schedule"><span class="n">2</span>Schedule</button>
+        <button type="button" data-step="program"><span class="n">3</span>Program</button>
+      </div>
+
+      <!-- 1 Clients -->
+      <section id="step-clients">
+        <div class="card">
+          <h2>Your clients</h2>
+          <p class="hint">Tap a client to select them for scheduling or building a program. Add offline clients (no app) or invite someone to Kallpa.</p>
+          <div id="roster"></div>
+          <p class="muted" id="selectedHint">No client selected yet.</p>
         </div>
-      </div>
+        <div class="card">
+          <h2>Add a client</h2>
+          <label>Name</label>
+          <input id="newName" placeholder="e.g. María" />
+          <label>Email (optional)</label>
+          <input id="newEmail" type="email" placeholder="for invites" />
+          <button id="btnOffline" class="secondary" type="button">Add offline client</button>
+          <button id="btnInvite" type="button">Invite to Kallpa app</button>
+          <p class="muted" id="addMsg"></p>
+        </div>
+      </section>
 
-      <div class="card">
-        <h2>Today’s schedule</h2>
-        <p class="muted">Overlapping / multi-client sessions are supported. Manage details in the app for the session sheet.</p>
-        <div id="schedule"></div>
-        <h3>New session</h3>
-        <label>Start (local)</label>
-        <input id="startAt" type="datetime-local" />
-        <label>End (local)</label>
-        <input id="endAt" type="datetime-local" />
-        <label>Client IDs (comma-separated from roster)</label>
-        <input id="clientIds" placeholder="uuid,uuid" />
-        <button id="btnSession">Create session</button>
-        <p class="muted" id="schedMsg"></p>
-      </div>
+      <!-- 2 Schedule -->
+      <section id="step-schedule" class="hidden">
+        <div class="card">
+          <h2>Today’s sessions</h2>
+          <p class="hint">You can put several clients in the same session (group / simultaneous training).</p>
+          <div id="schedule"></div>
+        </div>
+        <div class="card">
+          <h2>New session</h2>
+          <label>Start</label>
+          <input id="startAt" type="datetime-local" />
+          <label>End</label>
+          <input id="endAt" type="datetime-local" />
+          <label>Who is training?</label>
+          <div id="sessionClients"></div>
+          <button id="btnSession" type="button">Save session</button>
+          <p class="muted" id="schedMsg"></p>
+        </div>
+      </section>
 
-      <div class="card">
-        <h2>Program document</h2>
-        <label>Roster client id</label>
-        <input id="progClientId" />
-        <label>Program name</label>
-        <input id="progName" value="Program" />
-        <label>Structure JSON</label>
-        <textarea id="progJson" rows="10">{
-  "days": [
-    { "label": "Day 1", "exercises": [] }
-  ]
-}</textarea>
-        <button id="btnSaveProg">Save + get print link</button>
-        <p class="muted" id="progMsg"></p>
-      </div>
-
-      <button id="btnLogout" class="secondary">Sign out</button>
+      <!-- 3 Program -->
+      <section id="step-program" class="hidden">
+        <div class="card">
+          <h2>Build a program</h2>
+          <p class="hint">Select a client in step 1, then add training days and exercises here. No technical fields — just names, sets, and reps. Save to get a printable link, or push to the app if they use Kallpa.</p>
+          <p class="muted" id="progClientLabel">Select a client first.</p>
+          <label>Program name</label>
+          <input id="progName" value="Training program" />
+          <div id="days"></div>
+          <button id="btnAddDay" class="secondary" type="button">+ Add day</button>
+          <button id="btnSaveProg" type="button">Save program</button>
+          <button id="btnPrint" class="secondary" type="button" disabled>Open print / PDF</button>
+          <p class="muted" id="progMsg"></p>
+        </div>
+      </section>
     </div>
   </div>
 
@@ -118,23 +167,188 @@
     const url = cfg.SUPABASE_URL;
     const key = cfg.SUPABASE_ANON_KEY;
     if (!url || !key) {
-      document.getElementById('authMsg').textContent = 'Missing config.js (SUPABASE_URL / ANON_KEY).';
+      document.getElementById('authMsg').textContent = 'Missing site config (SUPABASE_URL / ANON_KEY).';
       document.getElementById('authMsg').className = 'err';
     }
 
     const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
-    const sb = createClient(url, key);
+    const sb = createClient(url || 'https://invalid.local', key || 'x');
 
-    const authCard = document.getElementById('authCard');
-    const app = document.getElementById('app');
+    let roster = [];
+    let selectedId = new URLSearchParams(location.search).get('client') || '';
+    let days = [{ label: 'Day 1', exercises: [{ name: '', sets: '3', reps: '8-12' }] }];
+    let lastDocToken = '';
+
+    const $ = (id) => document.getElementById(id);
+
+    function token() {
+      return [...crypto.getRandomValues(new Uint8Array(20))]
+        .map((b) => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    function selectedClient() {
+      return roster.find((c) => c.id === selectedId) || null;
+    }
+
+    function setStep(name) {
+      document.querySelectorAll('.steps button').forEach((b) => {
+        b.classList.toggle('on', b.dataset.step === name);
+      });
+      ['clients', 'schedule', 'program'].forEach((s) => {
+        $('step-' + s).classList.toggle('hidden', s !== name);
+      });
+      if (name === 'program') renderDays();
+      if (name === 'schedule') renderSessionPickers();
+    }
+
+    document.querySelectorAll('.steps button').forEach((b) => {
+      b.onclick = () => setStep(b.dataset.step);
+    });
+
+    function updateSelectedHint() {
+      const c = selectedClient();
+      $('selectedHint').textContent = c
+        ? `Selected: ${c.display_name}`
+        : 'No client selected yet.';
+      $('progClientLabel').textContent = c
+        ? `Editing program for ${c.display_name}`
+        : 'Select a client in step 1 first.';
+      $('btnSaveProg').disabled = !c;
+      $('btnAddDay').disabled = !c;
+    }
+
+    function renderRoster() {
+      const el = $('roster');
+      if (!roster.length) {
+        el.innerHTML = '<p class="muted">No clients yet. Add one below.</p>';
+        updateSelectedHint();
+        return;
+      }
+      el.innerHTML = roster.map((c) => {
+        const kind = c.client_user_id
+          ? '<span class="chip ok">Kallpa</span>'
+          : '<span class="chip">Offline</span>';
+        const pending = c.status === 'pending' ? '<span class="chip">Invite pending</span>' : '';
+        const sel = c.id === selectedId ? ' selected' : '';
+        return `<div class="client${sel}" data-id="${c.id}">
+          <div style="flex:1"><strong>${escapeHtml(c.display_name)}</strong>${kind}${pending}
+          <div class="meta">${escapeHtml(c.email || 'No email')}</div></div>
+        </div>`;
+      }).join('');
+      el.querySelectorAll('.client').forEach((node) => {
+        node.onclick = () => {
+          selectedId = node.dataset.id;
+          const u = new URL(location.href);
+          u.searchParams.set('client', selectedId);
+          history.replaceState(null, '', u);
+          renderRoster();
+          renderSessionPickers();
+          loadProgramForSelected();
+        };
+      });
+      updateSelectedHint();
+    }
+
+    function renderSessionPickers() {
+      const el = $('sessionClients');
+      if (!roster.length) {
+        el.innerHTML = '<p class="muted">Add clients first.</p>';
+        return;
+      }
+      el.innerHTML = roster.map((c) => `
+        <label style="display:flex;align-items:center;gap:0.5rem;margin:0.35rem 0;color:var(--text)">
+          <input type="checkbox" value="${c.id}" style="width:auto" ${c.id === selectedId ? 'checked' : ''}/>
+          ${escapeHtml(c.display_name)}
+        </label>`).join('');
+    }
+
+    function renderDays() {
+      const el = $('days');
+      el.innerHTML = days.map((d, di) => `
+        <div class="day" data-di="${di}">
+          <div class="day-head">
+            <div style="flex:1">
+              <label>Day name</label>
+              <input class="day-label" value="${escapeAttr(d.label || ('Day ' + (di + 1)))}" />
+            </div>
+            <button type="button" class="secondary small btn-del-day">Remove day</button>
+          </div>
+          ${(d.exercises || []).map((ex, ei) => `
+            <div class="ex-row" data-ei="${ei}">
+              <input class="ex-name span2" placeholder="Exercise name" value="${escapeAttr(ex.name || '')}" />
+              <input class="ex-sets" placeholder="Sets" value="${escapeAttr(String(ex.sets ?? '3'))}" />
+              <input class="ex-reps" placeholder="Reps" value="${escapeAttr(String(ex.reps ?? ''))}" />
+              <button type="button" class="danger small btn-del-ex">✕</button>
+            </div>`).join('')}
+          <button type="button" class="secondary small btn-add-ex">+ Exercise</button>
+        </div>`).join('');
+
+      el.querySelectorAll('.day').forEach((dayEl) => {
+        const di = +dayEl.dataset.di;
+        dayEl.querySelector('.day-label').oninput = (e) => { days[di].label = e.target.value; };
+        dayEl.querySelector('.btn-del-day').onclick = () => {
+          if (days.length <= 1) return;
+          days.splice(di, 1);
+          renderDays();
+        };
+        dayEl.querySelector('.btn-add-ex').onclick = () => {
+          days[di].exercises.push({ name: '', sets: '3', reps: '8-12' });
+          renderDays();
+        };
+        dayEl.querySelectorAll('.ex-row').forEach((row) => {
+          const ei = +row.dataset.ei;
+          row.querySelector('.ex-name').oninput = (e) => { days[di].exercises[ei].name = e.target.value; };
+          row.querySelector('.ex-sets').oninput = (e) => { days[di].exercises[ei].sets = e.target.value; };
+          row.querySelector('.ex-reps').oninput = (e) => { days[di].exercises[ei].reps = e.target.value; };
+          row.querySelector('.btn-del-ex').onclick = () => {
+            days[di].exercises.splice(ei, 1);
+            renderDays();
+          };
+        });
+      });
+    }
+
+    function structureFromDays() {
+      return {
+        days: days.map((d) => ({
+          label: (d.label || 'Day').trim() || 'Day',
+          exercises: (d.exercises || [])
+            .filter((ex) => (ex.name || '').trim())
+            .map((ex) => ({
+              name: ex.name.trim(),
+              sets: ex.sets,
+              reps: ex.reps,
+            })),
+        })),
+      };
+    }
+
+    function loadDaysFromStructure(structure) {
+      const raw = structure && Array.isArray(structure.days) ? structure.days : [];
+      if (!raw.length) {
+        days = [{ label: 'Day 1', exercises: [{ name: '', sets: '3', reps: '8-12' }] }];
+        return;
+      }
+      days = raw.map((d, i) => ({
+        label: d.label || `Day ${i + 1}`,
+        exercises: (d.exercises || []).map((ex) => ({
+          name: ex.name || ex.exercise_name || '',
+          sets: ex.sets != null ? String(ex.sets) : '3',
+          reps: ex.reps != null ? String(ex.reps) : (ex.rep_range || ''),
+        })),
+      }));
+      if (!days.length) {
+        days = [{ label: 'Day 1', exercises: [{ name: '', sets: '3', reps: '8-12' }] }];
+      }
+    }
 
     async function ensureCoach() {
       const { data: { user } } = await sb.auth.getUser();
       if (!user) return null;
       const { data } = await sb.from('users').select('role').eq('id', user.id).maybeSingle();
       if (data?.role !== 'coach') {
-        document.getElementById('authMsg').textContent = 'This account is not a coach.';
-        document.getElementById('authMsg').className = 'err';
+        $('authMsg').textContent = 'This account is not a coach. Ask an admin to set users.role = coach.';
+        $('authMsg').className = 'err';
         await sb.auth.signOut();
         return null;
       }
@@ -144,106 +358,191 @@
     async function refresh() {
       const user = await ensureCoach();
       if (!user) {
-        authCard.hidden = false;
-        app.hidden = true;
+        $('authCard').classList.remove('hidden');
+        $('app').classList.add('hidden');
+        $('btnLogout').classList.add('hidden');
         return;
       }
-      authCard.hidden = true;
-      app.hidden = false;
+      $('authCard').classList.add('hidden');
+      $('app').classList.remove('hidden');
+      $('btnLogout').classList.remove('hidden');
 
-      const { data: roster } = await sb
+      const { data } = await sb
         .from('coach_roster_clients')
         .select('id, display_name, status, client_user_id, email')
         .eq('coach_id', user.id)
         .neq('status', 'archived')
         .order('display_name');
+      roster = data || [];
+      if (selectedId && !roster.some((c) => c.id === selectedId)) selectedId = '';
+      if (!selectedId && roster.length === 1) selectedId = roster[0].id;
+      renderRoster();
+      renderSessionPickers();
+      await loadProgramForSelected();
+      await refreshSchedule(user.id);
 
-      const rosterEl = document.getElementById('roster');
-      rosterEl.innerHTML = (roster || []).map(c =>
-        `<div class="client"><strong>${c.display_name}</strong><br/><span class="muted">${c.id}<br/>${c.client_user_id ? 'Kallpa linked' : 'Offline'} · ${c.status}</span></div>`
-      ).join('') || '<p class="muted">No clients yet.</p>';
-
+      // Default datetime
       const start = new Date();
-      start.setHours(0,0,0,0);
-      const end = new Date(start); end.setDate(end.getDate()+1);
+      start.setMinutes(0, 0, 0);
+      start.setHours(start.getHours() + 1);
+      const end = new Date(start.getTime() + 60 * 60 * 1000);
+      const toLocal = (d) => {
+        const pad = (n) => String(n).padStart(2, '0');
+        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+      };
+      if (!$('startAt').value) $('startAt').value = toLocal(start);
+      if (!$('endAt').value) $('endAt').value = toLocal(end);
+    }
+
+    async function refreshSchedule(coachId) {
+      const start = new Date(); start.setHours(0, 0, 0, 0);
+      const end = new Date(start); end.setDate(end.getDate() + 1);
       const { data: appts } = await sb
         .from('coach_appointments')
-        .select('id, starts_at, ends_at, mode')
-        .eq('coach_id', user.id)
+        .select('id, starts_at, ends_at, mode, coach_appointment_clients(roster_client_id)')
+        .eq('coach_id', coachId)
         .gte('starts_at', start.toISOString())
         .lt('starts_at', end.toISOString())
         .order('starts_at');
-      document.getElementById('schedule').innerHTML =
-        `<table><tr><th>Time</th><th>Mode</th><th>Id</th></tr>` +
-        (appts || []).map(a => `<tr><td>${new Date(a.starts_at).toLocaleTimeString()} – ${new Date(a.ends_at).toLocaleTimeString()}</td><td>${a.mode}</td><td class="muted">${a.id}</td></tr>`).join('') +
-        `</table>`;
+      const byId = Object.fromEntries(roster.map((c) => [c.id, c.display_name]));
+      $('schedule').innerHTML = (appts || []).length
+        ? (appts || []).map((a) => {
+            const ids = (a.coach_appointment_clients || []).map((x) => x.roster_client_id);
+            const names = ids.map((id) => byId[id] || '—').join(', ');
+            const t = `${new Date(a.starts_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} – ${new Date(a.ends_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+            return `<div class="client" style="cursor:default"><div><strong>${t}</strong><div class="meta">${escapeHtml(names || 'No clients')}</div></div></div>`;
+          }).join('')
+        : '<p class="muted">No sessions today yet.</p>';
     }
 
-    document.getElementById('btnLogin').onclick = async () => {
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value;
+    async function loadProgramForSelected() {
+      const c = selectedClient();
+      lastDocToken = '';
+      $('btnPrint').disabled = true;
+      if (!c) {
+        loadDaysFromStructure(null);
+        renderDays();
+        return;
+      }
+      const { data: { user } } = await sb.auth.getUser();
+      const { data } = await sb
+        .from('coach_client_programs')
+        .select('name, structure, doc_token')
+        .eq('coach_id', user.id)
+        .eq('roster_client_id', c.id)
+        .eq('is_active', true)
+        .order('updated_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (data) {
+        $('progName').value = data.name || 'Training program';
+        loadDaysFromStructure(data.structure);
+        lastDocToken = data.doc_token || '';
+        $('btnPrint').disabled = !lastDocToken;
+      } else {
+        $('progName').value = `Program for ${c.display_name}`;
+        loadDaysFromStructure(null);
+      }
+      renderDays();
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+    function escapeAttr(s) {
+      return escapeHtml(s).replace(/\n/g, ' ');
+    }
+
+    $('btnLogin').onclick = async () => {
+      const email = $('email').value.trim();
+      const password = $('password').value;
       const { error } = await sb.auth.signInWithPassword({ email, password });
-      document.getElementById('authMsg').textContent = error ? error.message : '';
-      document.getElementById('authMsg').className = error ? 'err' : 'ok';
+      $('authMsg').textContent = error ? error.message : '';
+      $('authMsg').className = error ? 'err' : 'ok';
       await refresh();
     };
 
-    document.getElementById('btnLogout').onclick = async () => {
+    $('btnLogout').onclick = async () => {
       await sb.auth.signOut();
       await refresh();
     };
 
-    document.getElementById('btnOffline').onclick = async () => {
+    $('btnOffline').onclick = async () => {
       const { data: { user } } = await sb.auth.getUser();
-      const name = document.getElementById('newName').value.trim();
-      if (!user || !name) return;
-      const { error } = await sb.from('coach_roster_clients').insert({
+      const name = $('newName').value.trim();
+      if (!user || !name) {
+        $('addMsg').textContent = 'Enter a name.';
+        $('addMsg').className = 'err';
+        return;
+      }
+      const { data, error } = await sb.from('coach_roster_clients').insert({
         coach_id: user.id,
         display_name: name,
-        email: document.getElementById('newEmail').value.trim() || null,
+        email: $('newEmail').value.trim() || null,
         status: 'active',
         delivery_mode: 'document',
-      });
-      document.getElementById('addMsg').textContent = error ? error.message : 'Added.';
-      document.getElementById('addMsg').className = error ? 'err' : 'ok';
-      await refresh();
+      }).select('id').single();
+      $('addMsg').textContent = error ? error.message : 'Offline client added.';
+      $('addMsg').className = error ? 'err' : 'ok';
+      if (!error) {
+        selectedId = data.id;
+        $('newName').value = '';
+        $('newEmail').value = '';
+        await refresh();
+      }
     };
 
-    document.getElementById('btnInvite').onclick = async () => {
+    $('btnInvite').onclick = async () => {
       const { data: { user } } = await sb.auth.getUser();
-      const name = document.getElementById('newName').value.trim();
-      if (!user || !name) return;
-      const token = [...crypto.getRandomValues(new Uint8Array(24))]
-        .map(b => b.toString(16).padStart(2,'0')).join('');
-      const expires = new Date(); expires.setDate(expires.getDate()+14);
-      const { error } = await sb.from('coach_roster_clients').insert({
+      const name = $('newName').value.trim();
+      if (!user || !name) {
+        $('addMsg').textContent = 'Enter a name.';
+        $('addMsg').className = 'err';
+        return;
+      }
+      const inviteToken = token() + token();
+      const expires = new Date(); expires.setDate(expires.getDate() + 14);
+      const { data, error } = await sb.from('coach_roster_clients').insert({
         coach_id: user.id,
         display_name: name,
-        email: document.getElementById('newEmail').value.trim() || null,
+        email: $('newEmail').value.trim() || null,
         status: 'pending',
         delivery_mode: 'both',
-        invite_token: token,
+        invite_token: inviteToken,
         invite_expires_at: expires.toISOString(),
-      });
+      }).select('id').single();
       if (error) {
-        document.getElementById('addMsg').textContent = error.message;
-        document.getElementById('addMsg').className = 'err';
-      } else {
-        const link = `co.kallpa.app://coach-admin-accept?token=${token}`;
-        const web = `${location.origin}/coach/admin/accept.html?token=${token}`;
-        document.getElementById('addMsg').textContent = `Invite: ${web}`;
-        document.getElementById('addMsg').className = 'ok';
-        try { await navigator.clipboard.writeText(`${link}\n${web}`); } catch (_) {}
+        $('addMsg').textContent = error.message;
+        $('addMsg').className = 'err';
+        return;
       }
+      const deep = `co.kallpa.app://coach-admin-accept?token=${inviteToken}`;
+      const web = `${location.origin}/coach/admin/accept.html?token=${inviteToken}`;
+      $('addMsg').innerHTML = `Invite created. Share this link:<br/><code style="word-break:break-all">${web}</code>`;
+      $('addMsg').className = 'ok';
+      try { await navigator.clipboard.writeText(`${deep}\n${web}`); } catch (_) {}
+      selectedId = data.id;
+      $('newName').value = '';
+      $('newEmail').value = '';
       await refresh();
     };
 
-    document.getElementById('btnSession').onclick = async () => {
+    $('btnSession').onclick = async () => {
       const { data: { user } } = await sb.auth.getUser();
       if (!user) return;
-      const starts = new Date(document.getElementById('startAt').value);
-      const ends = new Date(document.getElementById('endAt').value);
-      const ids = document.getElementById('clientIds').value.split(',').map(s => s.trim()).filter(Boolean);
+      const starts = new Date($('startAt').value);
+      const ends = new Date($('endAt').value);
+      const ids = [...$('sessionClients').querySelectorAll('input[type=checkbox]:checked')].map((x) => x.value);
+      if (!ids.length) {
+        $('schedMsg').textContent = 'Pick at least one client.';
+        $('schedMsg').className = 'err';
+        return;
+      }
+      if (!(ends > starts)) {
+        $('schedMsg').textContent = 'End must be after start.';
+        $('schedMsg').className = 'err';
+        return;
+      }
       const { data: appt, error } = await sb.from('coach_appointments').insert({
         coach_id: user.id,
         starts_at: starts.toISOString(),
@@ -251,37 +550,42 @@
         mode: 'in_person',
       }).select('id').single();
       if (error) {
-        document.getElementById('schedMsg').textContent = error.message;
-        document.getElementById('schedMsg').className = 'err';
+        $('schedMsg').textContent = error.message;
+        $('schedMsg').className = 'err';
         return;
       }
-      if (ids.length) {
-        await sb.from('coach_appointment_clients').insert(
-          ids.map(id => ({ appointment_id: appt.id, roster_client_id: id }))
-        );
-      }
-      document.getElementById('schedMsg').textContent = 'Session created.';
-      document.getElementById('schedMsg').className = 'ok';
-      await refresh();
+      await sb.from('coach_appointment_clients').insert(
+        ids.map((id) => ({ appointment_id: appt.id, roster_client_id: id })),
+      );
+      $('schedMsg').textContent = 'Session saved.';
+      $('schedMsg').className = 'ok';
+      await refreshSchedule(user.id);
     };
 
-    document.getElementById('btnSaveProg').onclick = async () => {
+    $('btnAddDay').onclick = () => {
+      days.push({ label: `Day ${days.length + 1}`, exercises: [{ name: '', sets: '3', reps: '8-12' }] });
+      renderDays();
+    };
+
+    $('btnSaveProg').onclick = async () => {
+      const c = selectedClient();
       const { data: { user } } = await sb.auth.getUser();
-      if (!user) return;
-      let structure;
-      try { structure = JSON.parse(document.getElementById('progJson').value); }
-      catch (e) {
-        document.getElementById('progMsg').textContent = 'Invalid JSON';
-        document.getElementById('progMsg').className = 'err';
+      if (!user || !c) {
+        $('progMsg').textContent = 'Select a client first.';
+        $('progMsg').className = 'err';
         return;
       }
-      const rosterClientId = document.getElementById('progClientId').value.trim();
-      const name = document.getElementById('progName').value.trim() || 'Program';
-      const docToken = [...crypto.getRandomValues(new Uint8Array(20))]
-        .map(b => b.toString(16).padStart(2,'0')).join('');
+      const name = $('progName').value.trim() || 'Training program';
+      const structure = structureFromDays();
+      if (!structure.days.some((d) => (d.exercises || []).length)) {
+        $('progMsg').textContent = 'Add at least one exercise.';
+        $('progMsg').className = 'err';
+        return;
+      }
+      const docToken = lastDocToken || token();
       const { data: existing } = await sb.from('coach_client_programs')
         .select('id')
-        .eq('roster_client_id', rosterClientId)
+        .eq('roster_client_id', c.id)
         .eq('is_active', true)
         .limit(1)
         .maybeSingle();
@@ -294,22 +598,30 @@
       } else {
         ({ error } = await sb.from('coach_client_programs').insert({
           coach_id: user.id,
-          roster_client_id: rosterClientId,
+          roster_client_id: c.id,
           name, structure, program_meta: { name },
           doc_token: docToken, is_active: true,
         }));
       }
       if (error) {
-        document.getElementById('progMsg').textContent = error.message;
-        document.getElementById('progMsg').className = 'err';
-      } else {
-        const link = `${location.origin}/coach/admin/doc.html?token=${docToken}`;
-        document.getElementById('progMsg').textContent = `Print link: ${link}`;
-        document.getElementById('progMsg').className = 'ok';
+        $('progMsg').textContent = error.message;
+        $('progMsg').className = 'err';
+        return;
       }
+      lastDocToken = docToken;
+      $('btnPrint').disabled = false;
+      const link = `${location.origin}/coach/admin/doc.html?token=${docToken}`;
+      $('progMsg').innerHTML = `Saved. Printable link:<br/><code style="word-break:break-all">${link}</code>`;
+      $('progMsg').className = 'ok';
+    };
+
+    $('btnPrint').onclick = () => {
+      if (!lastDocToken) return;
+      window.open(`${location.origin}/coach/admin/doc.html?token=${lastDocToken}`, '_blank');
     };
 
     sb.auth.onAuthStateChange(() => refresh());
+    renderDays();
     refresh();
   </script>
 </body>

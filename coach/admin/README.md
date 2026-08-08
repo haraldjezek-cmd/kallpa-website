@@ -4,12 +4,12 @@ Companion UI for [`docs/coach-admin-module-spec.md`](../../../docs/coach-admin-m
 
 | Page | Purpose |
 |------|---------|
-| `index.html` | Coach sign-in, roster, schedule, save program + print link |
-| `doc.html?token=` | Professional print / Save PDF for offline (or dual) delivery |
+| `index.html` | Guided Coach Admin: **1 Clients → 2 Schedule → 3 Program** (day/exercise builder, no JSON) |
+| `doc.html?token=` | Professional print / Save PDF |
 | `accept.html?token=` | Landing for coach→athlete roster invite |
 
-Requires `config.js` / `KALLPA_CONFIG` with `SUPABASE_URL` and `SUPABASE_ANON_KEY` (same as invite builder).
+Requires root `config.js` / `KALLPA_CONFIG` with `SUPABASE_URL` and `SUPABASE_ANON_KEY`.
 
-**Deploy:** sync to `kallpa.co/coach/admin/` (mirror invite deploy path).
+**Deploy:** sync to `kallpa.co/coach/admin/`.
 
-**App:** Profile → Coach Admin (coach role + flags). Edges: `coach-admin-accept-invite`, `coach-admin-push-program`, `coach-admin-doc`.
+**App:** Profile → Coach Admin. Program editing opens this web UI (`?client=`).
