@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kallpa — Training program</title>
+  <script src="/config.js" onerror="void 0"></script>
+  <script src="config.js" onerror="void 0"></script>
+  <style>
+    :root {
+      --text: #111; --muted: #555; --border: #ccc; --accent: #2d7350;
+      --font: "Segoe UI", system-ui, sans-serif;
+    }
+    body { margin: 0; font-family: var(--font); color: var(--text); background: #fff; padding: 1.25rem; }
+    .wrap { max-width: 720px; margin: 0 auto; }
+    .actions { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+    button { font: inherit; padding: 0.5rem 0.9rem; border-radius: 8px; border: 1px solid var(--border); background: var(--accent); color: #fff; cursor: pointer; }
+    h1 { font-size: 1.5rem; margin: 0 0 0.25rem; }
+    .sub { color: var(--muted); margin-bottom: 1rem; }
+    .day { border-top: 2px solid #111; padding: 0.75rem 0; margin-top: 0.75rem; }
+    .day h2 { font-size: 1.1rem; margin: 0 0 0.5rem; }
+    .ex { margin: 0.35rem 0 0.35rem 0.5rem; }
+    .notes { white-space: pre-wrap; color: var(--muted); font-size: 0.95rem; margin: 0.75rem 0; }
+    .err { color: #a33; }
+    @media print {
+      .actions { display: none; }
+      body { padding: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="actions">
+      <button onclick="window.print()">Print / Save PDF</button>
+    </div>
+    <div id="root"><p class="sub">Loading…</p></div>
+  </div>
+  <script>
+    const params = new URLSearchParams(location.search);
+    const token = params.get('token') || '';
+    const cfg = window.KALLPA_CONFIG || window.COACH_ADMIN_CONFIG || {};
+    const base = (cfg.SUPABASE_URL || '').replace(/\/$/, '');
+
+    async function load() {
+      const root = document.getElementById('root');
+      if (!token || !base) {
+        root.innerHTML = '<p class="err">Missing token or config.</p>';
+        return;
+      }
+      const res = await fetch(`${base}/functions/v1/coach-admin-doc?token=${encodeURIComponent(token)}`, {
+        headers: { apikey: cfg.SUPABASE_ANON_KEY || '', Authorization: `Bearer ${cfg.SUPABASE_ANON_KEY || ''}` },
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.ok) {
+        root.innerHTML = `<p class="err">${data.error || 'Not found'}</p>`;
+        return;
+      }
+      const days = (data.structure && data.structure.days) || [];
+      let html = `<h1>${escapeHtml(data.name || 'Program')}</h1>`;
+      html += `<p class="sub">For ${escapeHtml(data.client_name || 'athlete')}</p>`;
+      if (data.program_notes) html += `<div class="notes"><strong>Notes</strong><br/>${escapeHtml(data.program_notes)}</div>`;
+      if (data.howto_instructions) html += `<div class="notes"><strong>How-to</strong><br/>${escapeHtml(data.howto_instructions)}</div>`;
+      days.forEach((d, i) => {
+        html += `<section class="day"><h2>${escapeHtml(d.label || ('Day ' + (i + 1)))}</h2>`;
+        (d.exercises || []).forEach(ex => {
+          const name = ex.name || ex.exercise_name || 'Exercise';
+          const sets = ex.sets != null ? ex.sets : '';
+          const reps = ex.reps != null ? ex.reps : (ex.rep_range || '');
+          html += `<div class="ex">• ${escapeHtml(name)} — ${escapeHtml(String(sets))} × ${escapeHtml(String(reps))}</div>`;
+          if (ex.notes) html += `<div class="notes" style="margin-left:1rem">${escapeHtml(ex.notes)}</div>`;
+        });
+        html += `</section>`;
+      });
+      root.innerHTML = html;
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+    load();
+  </script>
+</body>
+</html>

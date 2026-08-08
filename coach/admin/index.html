@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kallpa — Coach Admin</title>
+  <script src="/config.js" onerror="void 0"></script>
+  <script src="config.js" onerror="void 0"></script>
+  <script>
+    if (!window.COACH_ADMIN_CONFIG && window.KALLPA_CONFIG) {
+      window.COACH_ADMIN_CONFIG = {
+        SUPABASE_URL: window.KALLPA_CONFIG.SUPABASE_URL,
+        SUPABASE_ANON_KEY: window.KALLPA_CONFIG.SUPABASE_ANON_KEY,
+      };
+    }
+  </script>
+  <style>
+    :root {
+      --bg: #0f1419; --card: #1a222c; --border: #2a3542;
+      --text: #e8eef4; --muted: #8b9aab; --accent: #3d9a6a;
+      --radius: 10px; --font: "Segoe UI", system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: var(--font); background: var(--bg); color: var(--text); padding: 1rem 1rem 3rem; }
+    .wrap { max-width: 900px; margin: 0 auto; }
+    h1 { font-size: 1.4rem; margin: 0 0 0.25rem; }
+    .sub { color: var(--muted); margin-bottom: 1.25rem; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem; margin-bottom: 1rem; }
+    label { display: block; font-size: 0.8rem; color: var(--muted); margin: 0.5rem 0 0.25rem; }
+    input, select, textarea, button {
+      font: inherit; border-radius: 8px; border: 1px solid var(--border);
+      background: #121820; color: var(--text); padding: 0.55rem 0.7rem; width: 100%;
+    }
+    button { background: var(--accent); border: 0; font-weight: 600; cursor: pointer; margin-top: 0.75rem; }
+    button.secondary { background: transparent; border: 1px solid var(--border); }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    @media (max-width: 640px) { .row { grid-template-columns: 1fr; } }
+    .muted { color: var(--muted); font-size: 0.9rem; }
+    .list item, .client { display: block; padding: 0.65rem 0; border-bottom: 1px solid var(--border); }
+    .err { color: #c45c5c; }
+    .ok { color: var(--accent); }
+    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    th, td { text-align: left; padding: 0.45rem 0.25rem; border-bottom: 1px solid var(--border); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Coach Admin</h1>
+    <p class="sub">Roster, schedule, documents, and basic fees. Sign in with your coach Kallpa account.</p>
+
+    <div class="card" id="authCard">
+      <h2>Sign in</h2>
+      <label>Email</label>
+      <input id="email" type="email" autocomplete="username" />
+      <label>Password</label>
+      <input id="password" type="password" autocomplete="current-password" />
+      <button id="btnLogin">Sign in</button>
+      <p class="muted" id="authMsg"></p>
+    </div>
+
+    <div id="app" hidden>
+      <div class="card">
+        <div class="row">
+          <div>
+            <h2>Roster</h2>
+            <div id="roster"></div>
+          </div>
+          <div>
+            <h2>Add client</h2>
+            <label>Name</label>
+            <input id="newName" />
+            <label>Email (optional)</label>
+            <input id="newEmail" type="email" />
+            <button id="btnOffline" class="secondary">Add offline</button>
+            <button id="btnInvite">Invite to Kallpa</button>
+            <p class="muted" id="addMsg"></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Today’s schedule</h2>
+        <p class="muted">Overlapping / multi-client sessions are supported. Manage details in the app for the session sheet.</p>
+        <div id="schedule"></div>
+        <h3>New session</h3>
+        <label>Start (local)</label>
+        <input id="startAt" type="datetime-local" />
+        <label>End (local)</label>
+        <input id="endAt" type="datetime-local" />
+        <label>Client IDs (comma-separated from roster)</label>
+        <input id="clientIds" placeholder="uuid,uuid" />
+        <button id="btnSession">Create session</button>
+        <p class="muted" id="schedMsg"></p>
+      </div>
+
+      <div class="card">
+        <h2>Program document</h2>
+        <label>Roster client id</label>
+        <input id="progClientId" />
+        <label>Program name</label>
+        <input id="progName" value="Program" />
+        <label>Structure JSON</label>
+        <textarea id="progJson" rows="10">{
+  "days": [
+    { "label": "Day 1", "exercises": [] }
+  ]
+}</textarea>
+        <button id="btnSaveProg">Save + get print link</button>
+        <p class="muted" id="progMsg"></p>
+      </div>
+
+      <button id="btnLogout" class="secondary">Sign out</button>
+    </div>
+  </div>
+
+  <script type="module">
+    const cfg = window.COACH_ADMIN_CONFIG || {};
+    const url = cfg.SUPABASE_URL;
+    const key = cfg.SUPABASE_ANON_KEY;
+    if (!url || !key) {
+      document.getElementById('authMsg').textContent = 'Missing config.js (SUPABASE_URL / ANON_KEY).';
+      document.getElementById('authMsg').className = 'err';
+    }
+
+    const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
+    const sb = createClient(url, key);
+
+    const authCard = document.getElementById('authCard');
+    const app = document.getElementById('app');
+
+    async function ensureCoach() {
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user) return null;
+      const { data } = await sb.from('users').select('role').eq('id', user.id).maybeSingle();
+      if (data?.role !== 'coach') {
+        document.getElementById('authMsg').textContent = 'This account is not a coach.';
+        document.getElementById('authMsg').className = 'err';
+        await sb.auth.signOut();
+        return null;
+      }
+      return user;
+    }
+
+    async function refresh() {
+      const user = await ensureCoach();
+      if (!user) {
+        authCard.hidden = false;
+        app.hidden = true;
+        return;
+      }
+      authCard.hidden = true;
+      app.hidden = false;
+
+      const { data: roster } = await sb
+        .from('coach_roster_clients')
+        .select('id, display_name, status, client_user_id, email')
+        .eq('coach_id', user.id)
+        .neq('status', 'archived')
+        .order('display_name');
+
+      const rosterEl = document.getElementById('roster');
+      rosterEl.innerHTML = (roster || []).map(c =>
+        `<div class="client"><strong>${c.display_name}</strong><br/><span class="muted">${c.id}<br/>${c.client_user_id ? 'Kallpa linked' : 'Offline'} · ${c.status}</span></div>`
+      ).join('') || '<p class="muted">No clients yet.</p>';
+
+      const start = new Date();
+      start.setHours(0,0,0,0);
+      const end = new Date(start); end.setDate(end.getDate()+1);
+      const { data: appts } = await sb
+        .from('coach_appointments')
+        .select('id, starts_at, ends_at, mode')
+        .eq('coach_id', user.id)
+        .gte('starts_at', start.toISOString())
+        .lt('starts_at', end.toISOString())
+        .order('starts_at');
+      document.getElementById('schedule').innerHTML =
+        `<table><tr><th>Time</th><th>Mode</th><th>Id</th></tr>` +
+        (appts || []).map(a => `<tr><td>${new Date(a.starts_at).toLocaleTimeString()} – ${new Date(a.ends_at).toLocaleTimeString()}</td><td>${a.mode}</td><td class="muted">${a.id}</td></tr>`).join('') +
+        `</table>`;
+    }
+
+    document.getElementById('btnLogin').onclick = async () => {
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const { error } = await sb.auth.signInWithPassword({ email, password });
+      document.getElementById('authMsg').textContent = error ? error.message : '';
+      document.getElementById('authMsg').className = error ? 'err' : 'ok';
+      await refresh();
+    };
+
+    document.getElementById('btnLogout').onclick = async () => {
+      await sb.auth.signOut();
+      await refresh();
+    };
+
+    document.getElementById('btnOffline').onclick = async () => {
+      const { data: { user } } = await sb.auth.getUser();
+      const name = document.getElementById('newName').value.trim();
+      if (!user || !name) return;
+      const { error } = await sb.from('coach_roster_clients').insert({
+        coach_id: user.id,
+        display_name: name,
+        email: document.getElementById('newEmail').value.trim() || null,
+        status: 'active',
+        delivery_mode: 'document',
+      });
+      document.getElementById('addMsg').textContent = error ? error.message : 'Added.';
+      document.getElementById('addMsg').className = error ? 'err' : 'ok';
+      await refresh();
+    };
+
+    document.getElementById('btnInvite').onclick = async () => {
+      const { data: { user } } = await sb.auth.getUser();
+      const name = document.getElementById('newName').value.trim();
+      if (!user || !name) return;
+      const token = [...crypto.getRandomValues(new Uint8Array(24))]
+        .map(b => b.toString(16).padStart(2,'0')).join('');
+      const expires = new Date(); expires.setDate(expires.getDate()+14);
+      const { error } = await sb.from('coach_roster_clients').insert({
+        coach_id: user.id,
+        display_name: name,
+        email: document.getElementById('newEmail').value.trim() || null,
+        status: 'pending',
+        delivery_mode: 'both',
+        invite_token: token,
+        invite_expires_at: expires.toISOString(),
+      });
+      if (error) {
+        document.getElementById('addMsg').textContent = error.message;
+        document.getElementById('addMsg').className = 'err';
+      } else {
+        const link = `co.kallpa.app://coach-admin-accept?token=${token}`;
+        const web = `${location.origin}/coach/admin/accept.html?token=${token}`;
+        document.getElementById('addMsg').textContent = `Invite: ${web}`;
+        document.getElementById('addMsg').className = 'ok';
+        try { await navigator.clipboard.writeText(`${link}\n${web}`); } catch (_) {}
+      }
+      await refresh();
+    };
+
+    document.getElementById('btnSession').onclick = async () => {
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user) return;
+      const starts = new Date(document.getElementById('startAt').value);
+      const ends = new Date(document.getElementById('endAt').value);
+      const ids = document.getElementById('clientIds').value.split(',').map(s => s.trim()).filter(Boolean);
+      const { data: appt, error } = await sb.from('coach_appointments').insert({
+        coach_id: user.id,
+        starts_at: starts.toISOString(),
+        ends_at: ends.toISOString(),
+        mode: 'in_person',
+      }).select('id').single();
+      if (error) {
+        document.getElementById('schedMsg').textContent = error.message;
+        document.getElementById('schedMsg').className = 'err';
+        return;
+      }
+      if (ids.length) {
+        await sb.from('coach_appointment_clients').insert(
+          ids.map(id => ({ appointment_id: appt.id, roster_client_id: id }))
+        );
+      }
+      document.getElementById('schedMsg').textContent = 'Session created.';
+      document.getElementById('schedMsg').className = 'ok';
+      await refresh();
+    };
+
+    document.getElementById('btnSaveProg').onclick = async () => {
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user) return;
+      let structure;
+      try { structure = JSON.parse(document.getElementById('progJson').value); }
+      catch (e) {
+        document.getElementById('progMsg').textContent = 'Invalid JSON';
+        document.getElementById('progMsg').className = 'err';
+        return;
+      }
+      const rosterClientId = document.getElementById('progClientId').value.trim();
+      const name = document.getElementById('progName').value.trim() || 'Program';
+      const docToken = [...crypto.getRandomValues(new Uint8Array(20))]
+        .map(b => b.toString(16).padStart(2,'0')).join('');
+      const { data: existing } = await sb.from('coach_client_programs')
+        .select('id')
+        .eq('roster_client_id', rosterClientId)
+        .eq('is_active', true)
+        .limit(1)
+        .maybeSingle();
+      let error;
+      if (existing?.id) {
+        ({ error } = await sb.from('coach_client_programs').update({
+          name, structure, program_meta: { name }, doc_token: docToken,
+          updated_at: new Date().toISOString(),
+        }).eq('id', existing.id));
+      } else {
+        ({ error } = await sb.from('coach_client_programs').insert({
+          coach_id: user.id,
+          roster_client_id: rosterClientId,
+          name, structure, program_meta: { name },
+          doc_token: docToken, is_active: true,
+        }));
+      }
+      if (error) {
+        document.getElementById('progMsg').textContent = error.message;
+        document.getElementById('progMsg').className = 'err';
+      } else {
+        const link = `${location.origin}/coach/admin/doc.html?token=${docToken}`;
+        document.getElementById('progMsg').textContent = `Print link: ${link}`;
+        document.getElementById('progMsg').className = 'ok';
+      }
+    };
+
+    sb.auth.onAuthStateChange(() => refresh());
+    refresh();
+  </script>
+</body>
+</html>

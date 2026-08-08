@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kallpa — Accept coach invite</title>
+  <style>
+    body { font-family: system-ui, sans-serif; background: #0f1419; color: #e8eef4; padding: 2rem 1rem; }
+    .wrap { max-width: 480px; margin: 0 auto; text-align: center; }
+    a.btn {
+      display: inline-block; margin-top: 1rem; padding: 0.75rem 1.25rem;
+      background: #3d9a6a; color: #fff; text-decoration: none; border-radius: 10px; font-weight: 600;
+    }
+    .muted { color: #8b9aab; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Coach invite</h1>
+    <p class="muted">Open this link in the Kallpa app after you sign in to join your coach’s roster.</p>
+    <p id="msg"></p>
+    <a class="btn" id="openApp" href="#">Open in Kallpa</a>
+  </div>
+  <script>
+    const token = new URLSearchParams(location.search).get('token') || '';
+    document.getElementById('msg').textContent = token
+      ? 'Invite ready.'
+      : 'Missing invite token.';
+    const deep = `co.kallpa.app://coach-admin-accept?token=${encodeURIComponent(token)}`;
+    const web = `https://kallpa.co/coach/admin/accept.html?token=${encodeURIComponent(token)}`;
+    const a = document.getElementById('openApp');
+    a.href = deep;
+    a.addEventListener('click', (e) => {
+      setTimeout(() => { location.href = web; }, 800);
+    });
+  </script>
+</body>
+</html>
