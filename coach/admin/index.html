@@ -297,6 +297,36 @@
       font-size: 0.82rem; word-break: break-all; background: #0d141c;
       padding: 0.35rem 0.45rem; border-radius: 6px; display: inline-block; margin-top: 0.35rem;
     }
+    .appt-card {
+      border: 1px solid var(--border); border-radius: 12px; padding: 0.75rem 0.85rem;
+      margin-bottom: 0.55rem; background: var(--bg-elev);
+    }
+    .appt-card .appt-actions { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.55rem; }
+    .appt-card .appt-actions button { margin-top: 0; width: auto; }
+    .session-client-row {
+      border: 1px solid var(--border); border-radius: 12px; padding: 0.65rem 0.75rem;
+      margin: 0.45rem 0; background: var(--bg-elev);
+    }
+    .session-client-row label.check {
+      display: flex; align-items: center; gap: 0.5rem; margin: 0; color: var(--text); font-weight: 600;
+    }
+    .session-client-row label.check input { width: auto; margin: 0; }
+    .session-client-row .day-pick { margin-top: 0.45rem; }
+    .session-client-row .day-pick.hidden { display: none !important; }
+    .ex-preview {
+      font-size: 0.88rem; color: var(--muted); margin: 0.25rem 0 0;
+      padding-left: 1rem;
+    }
+    .ex-preview li { margin: 0.15rem 0; }
+    .sheet-client {
+      border: 1px solid var(--border); border-radius: 12px; padding: 0.85rem;
+      margin: 0.75rem 0; background: var(--bg-elev);
+    }
+    .sheet-client h3 { margin: 0 0 0.35rem; font-size: 1rem; }
+    .done-badge {
+      display: inline-block; font-size: 0.72rem; padding: 0.15rem 0.45rem; border-radius: 999px;
+      background: rgba(61,154,106,0.22); color: #8fd6b0; font-weight: 700; margin-left: 0.35rem;
+    }
   </style>
 </head>
 <body>
@@ -392,12 +422,18 @@
 
       <!-- 3 Schedule -->
       <section id="step-schedule" class="hidden">
-        <div class="card">
+        <div class="card" id="scheduleListCard">
           <h2>Today’s sessions</h2>
-          <p class="hint">You can put several clients in the same session (group training). Only clients with a saved program appear here.</p>
+          <p class="hint">Pick a <strong>program day</strong> for each client. Open a session to see the exercises and log what happened (especially for offline clients). Same client cannot be booked twice in overlapping times.</p>
           <div id="schedule"></div>
         </div>
-        <div class="card">
+        <div class="card hidden" id="sessionSheetCard">
+          <button type="button" class="secondary small" id="btnCloseSheet">← Back to today’s list</button>
+          <h2 id="sessionSheetTitle" style="margin-top:0.75rem">Session</h2>
+          <div id="sessionSheetBody"></div>
+          <p class="muted" id="sheetMsg"></p>
+        </div>
+        <div class="card" id="newSessionCard">
           <h2>New session</h2>
           <label>Start</label>
           <input id="startAt" type="datetime-local" />
@@ -405,6 +441,8 @@
           <input id="endAt" type="datetime-local" />
           <label>Who is training?</label>
           <div id="sessionClients"></div>
+          <label>Session notes (optional)</label>
+          <textarea id="sessionApptNotes" placeholder="e.g. gym floor, focus on form"></textarea>
           <button id="btnSession" type="button">Save session</button>
           <p class="muted" id="schedMsg"></p>
         </div>
@@ -430,6 +468,12 @@
     let lastDocToken = '';
     /** @type {Record<string, boolean>} */
     let hasProgramByClient = {};
+    /** @type {Record<string, { name?: string, structure?: any, doc_token?: string }>} */
+    let programByClient = {};
+    /** @type {any[]} */
+    let todaysAppointments = [];
+    /** @type {string|null} */
+    let openAppointmentId = null;
     /** @type {Record<string, any>} */
     let linkedProfiles = {};
     let addPhase = 'choice'; // choice | kallpa | noapp | offline | invite_form
@@ -516,7 +560,10 @@
         setStep('program');
         return;
       }
-      if (name !== 'schedule') showBanner('');
+      if (name !== 'schedule') {
+        showBanner('');
+        closeSessionSheet();
+      }
       document.querySelectorAll('.steps button').forEach((b) => {
         b.classList.toggle('on', b.dataset.step === name);
       });
@@ -909,6 +956,37 @@
       await refresh();
     }
 
+    function programDaysFor(clientId) {
+      const raw = programByClient[clientId]?.structure?.days;
+      return Array.isArray(raw) ? raw : [];
+    }
+
+    function dayLabelFor(clientId, dayIndex) {
+      const list = programDaysFor(clientId);
+      const d = list[dayIndex];
+      if (!d) return `Day ${(dayIndex ?? 0) + 1}`;
+      const label = (d.label || '').trim();
+      return label || `Day ${dayIndex + 1}`;
+    }
+
+    function exerciseLinesFor(clientId, dayIndex) {
+      const day = programDaysFor(clientId)[dayIndex];
+      const exs = Array.isArray(day?.exercises) ? day.exercises : [];
+      return exs
+        .filter((ex) => (ex.name || ex.exercise_name || '').trim())
+        .map((ex) => {
+          const name = ex.name || ex.exercise_name || 'Exercise';
+          const sets = ex.sets != null ? String(ex.sets) : '';
+          const reps = ex.reps != null ? String(ex.reps) : (ex.rep_range || '');
+          const meta = [sets && `${sets} sets`, reps].filter(Boolean).join(' × ');
+          return meta ? `${name} — ${meta}` : name;
+        });
+    }
+
+    function rangesOverlap(aStart, aEnd, bStart, bEnd) {
+      return aStart < bEnd && bStart < aEnd;
+    }
+
     function renderSessionPickers() {
       const el = $('sessionClients');
       const ready = roster.filter((c) => hasProgramByClient[c.id]);
@@ -918,11 +996,139 @@
         return;
       }
       $('btnSession').disabled = false;
-      el.innerHTML = ready.map((c) => `
-        <label style="display:flex;align-items:center;gap:0.5rem;margin:0.35rem 0;color:var(--text)">
-          <input type="checkbox" value="${c.id}" style="width:auto" ${c.id === selectedId ? 'checked' : ''}/>
-          ${escapeHtml(c.display_name)}
-        </label>`).join('');
+      el.innerHTML = ready.map((c) => {
+        const daysList = programDaysFor(c.id);
+        const options = (daysList.length ? daysList : [{ label: 'Day 1' }]).map((d, i) => {
+          const label = (d.label || '').trim() || `Day ${i + 1}`;
+          const nEx = Array.isArray(d.exercises)
+            ? d.exercises.filter((x) => (x.name || '').trim()).length
+            : 0;
+          return `<option value="${i}">${escapeHtml(label)}${nEx ? ` (${nEx} exercises)` : ''}</option>`;
+        }).join('');
+        return `
+        <div class="session-client-row" data-cid="${c.id}">
+          <label class="check">
+            <input type="checkbox" class="sess-check" value="${c.id}" ${c.id === selectedId ? 'checked' : ''}/>
+            ${escapeHtml(c.display_name)}
+          </label>
+          <div class="day-pick ${c.id === selectedId ? '' : 'hidden'}">
+            <label style="margin-top:0">Program day for this session</label>
+            <select class="sess-day">${options}</select>
+          </div>
+        </div>`;
+      }).join('');
+      el.querySelectorAll('.sess-check').forEach((cb) => {
+        cb.onchange = () => {
+          const row = cb.closest('.session-client-row');
+          row?.querySelector('.day-pick')?.classList.toggle('hidden', !cb.checked);
+        };
+      });
+    }
+
+    function closeSessionSheet() {
+      openAppointmentId = null;
+      $('sessionSheetCard').classList.add('hidden');
+      $('scheduleListCard').classList.remove('hidden');
+      $('newSessionCard').classList.remove('hidden');
+      $('sheetMsg').textContent = '';
+    }
+
+    async function openSessionSheet(apptId) {
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user) return;
+      const { data: appt, error } = await sb
+        .from('coach_appointments')
+        .select('id, starts_at, ends_at, notes, coach_appointment_clients(roster_client_id, day_index, session_notes, completed_at)')
+        .eq('id', apptId)
+        .eq('coach_id', user.id)
+        .maybeSingle();
+      if (error || !appt) {
+        $('schedMsg').textContent = error?.message || 'Could not open session.';
+        $('schedMsg').className = 'err';
+        return;
+      }
+      openAppointmentId = apptId;
+      $('scheduleListCard').classList.add('hidden');
+      $('newSessionCard').classList.add('hidden');
+      $('sessionSheetCard').classList.remove('hidden');
+      const t = `${new Date(appt.starts_at).toLocaleString([], {
+        weekday: 'short', month: 'short', day: 'numeric',
+        hour: '2-digit', minute: '2-digit',
+      })} – ${new Date(appt.ends_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+      $('sessionSheetTitle').textContent = t;
+      const clients = appt.coach_appointment_clients || [];
+      $('sessionSheetBody').innerHTML = `
+        ${appt.notes ? `<p class="muted" style="margin-top:0"><strong>Session notes:</strong> ${escapeHtml(appt.notes)}</p>` : ''}
+        ${clients.map((link) => {
+          const c = roster.find((r) => r.id === link.roster_client_id);
+          const name = c?.display_name || 'Client';
+          const di = link.day_index != null ? Number(link.day_index) : 0;
+          const dayName = dayLabelFor(link.roster_client_id, di);
+          const lines = exerciseLinesFor(link.roster_client_id, di);
+          const done = !!link.completed_at;
+          const doc = programByClient[link.roster_client_id]?.doc_token;
+          return `
+            <div class="sheet-client" data-cid="${link.roster_client_id}">
+              <h3>${escapeHtml(name)}${done ? '<span class="done-badge">Logged</span>' : ''}</h3>
+              <p class="muted" style="margin:0 0 0.5rem">Program day: <strong>${escapeHtml(dayName)}</strong></p>
+              ${lines.length
+                ? `<ol class="ex-preview">${lines.map((l) => `<li>${escapeHtml(l)}</li>`).join('')}</ol>`
+                : '<p class="muted">No exercises on this day.</p>'}
+              <label>What happened (coach log)</label>
+              <textarea class="sheet-notes" rows="3" placeholder="e.g. 3×8 squat @ 60kg, good form; skipped lunges — knee">${escapeHtml(link.session_notes || '')}</textarea>
+              <label class="check" style="margin-top:0.55rem">
+                <input type="checkbox" class="sheet-done" ${done ? 'checked' : ''} style="width:auto" />
+                Mark this client’s session complete
+              </label>
+              <div class="btn-row">
+                <button type="button" class="secondary btn-save-log">Save log</button>
+                ${doc ? `<button type="button" class="secondary btn-print-doc" data-token="${escapeAttr(doc)}">Print / PDF</button>` : ''}
+              </div>
+            </div>`;
+        }).join('') || '<p class="muted">No clients on this session.</p>'}
+        <div class="btn-row">
+          <button type="button" class="danger" id="btnDeleteAppt">Delete session</button>
+        </div>
+      `;
+      $('sessionSheetBody').querySelectorAll('.btn-save-log').forEach((btn) => {
+        btn.onclick = async () => {
+          const block = btn.closest('.sheet-client');
+          const cid = block?.dataset.cid;
+          if (!cid) return;
+          const notes = block.querySelector('.sheet-notes')?.value?.trim() || null;
+          const markDone = !!block.querySelector('.sheet-done')?.checked;
+          const payload = {
+            session_notes: notes,
+            completed_at: markDone ? new Date().toISOString() : null,
+          };
+          const { error: upErr } = await sb.from('coach_appointment_clients').update(payload)
+            .eq('appointment_id', apptId)
+            .eq('roster_client_id', cid);
+          $('sheetMsg').textContent = upErr ? upErr.message : 'Log saved.';
+          $('sheetMsg').className = upErr ? 'err' : 'ok';
+          if (!upErr) await openSessionSheet(apptId);
+        };
+      });
+      $('sessionSheetBody').querySelectorAll('.btn-print-doc').forEach((btn) => {
+        btn.onclick = () => {
+          const tok = btn.dataset.token;
+          if (tok) window.open(`${location.origin}/coach/admin/doc.html?token=${tok}`, '_blank');
+        };
+      });
+      $('btnDeleteAppt').onclick = async () => {
+        if (!confirm('Delete this session? Logs for this slot will be removed.')) return;
+        const { error: delErr } = await sb.from('coach_appointments')
+          .delete().eq('id', apptId).eq('coach_id', user.id);
+        if (delErr) {
+          $('sheetMsg').textContent = delErr.message;
+          $('sheetMsg').className = 'err';
+          return;
+        }
+        closeSessionSheet();
+        await refreshSchedule(user.id);
+        $('schedMsg').textContent = 'Session deleted.';
+        $('schedMsg').className = 'ok';
+      };
     }
 
     function renderAddWizard() {
@@ -1402,12 +1608,21 @@
     async function refreshProgramFlags(coachId) {
       const { data } = await sb
         .from('coach_client_programs')
-        .select('roster_client_id')
+        .select('roster_client_id, name, structure, doc_token, updated_at')
         .eq('coach_id', coachId)
-        .eq('is_active', true);
+        .eq('is_active', true)
+        .order('updated_at', { ascending: false });
       hasProgramByClient = {};
+      programByClient = {};
       for (const row of data || []) {
         hasProgramByClient[row.roster_client_id] = true;
+        if (!programByClient[row.roster_client_id]) {
+          programByClient[row.roster_client_id] = {
+            name: row.name,
+            structure: row.structure,
+            doc_token: row.doc_token,
+          };
+        }
       }
     }
 
@@ -1467,20 +1682,54 @@
       const end = new Date(start); end.setDate(end.getDate() + 1);
       const { data: appts } = await sb
         .from('coach_appointments')
-        .select('id, starts_at, ends_at, mode, coach_appointment_clients(roster_client_id)')
+        .select('id, starts_at, ends_at, mode, notes, coach_appointment_clients(roster_client_id, day_index, session_notes, completed_at)')
         .eq('coach_id', coachId)
         .gte('starts_at', start.toISOString())
         .lt('starts_at', end.toISOString())
         .order('starts_at');
+      todaysAppointments = appts || [];
       const byId = Object.fromEntries(roster.map((c) => [c.id, c.display_name]));
-      $('schedule').innerHTML = (appts || []).length
-        ? (appts || []).map((a) => {
-            const ids = (a.coach_appointment_clients || []).map((x) => x.roster_client_id);
-            const names = ids.map((id) => byId[id] || '—').join(', ');
+      $('schedule').innerHTML = todaysAppointments.length
+        ? todaysAppointments.map((a) => {
+            const links = a.coach_appointment_clients || [];
+            const detail = links.map((x) => {
+              const name = byId[x.roster_client_id] || '—';
+              const di = x.day_index != null ? Number(x.day_index) : null;
+              const day = di != null ? dayLabelFor(x.roster_client_id, di) : 'No day set';
+              const logged = x.completed_at || (x.session_notes && String(x.session_notes).trim())
+                ? ' · logged'
+                : '';
+              return `${name} · ${day}${logged}`;
+            }).join(' · ') || 'No clients';
             const t = `${new Date(a.starts_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} – ${new Date(a.ends_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
-            return `<div class="client" style="cursor:default"><div><strong>${t}</strong><div class="meta">${escapeHtml(names || 'No clients')}</div></div></div>`;
+            return `<div class="appt-card" data-id="${a.id}">
+              <strong>${t}</strong>
+              <div class="meta" style="margin-top:0.25rem">${escapeHtml(detail)}</div>
+              <div class="appt-actions">
+                <button type="button" class="secondary small btn-open-appt">Open / log</button>
+                <button type="button" class="danger small btn-del-appt">Delete</button>
+              </div>
+            </div>`;
           }).join('')
         : '<p class="muted">No sessions today yet.</p>';
+      $('schedule').querySelectorAll('.btn-open-appt').forEach((btn) => {
+        btn.onclick = () => openSessionSheet(btn.closest('.appt-card')?.dataset.id);
+      });
+      $('schedule').querySelectorAll('.btn-del-appt').forEach((btn) => {
+        btn.onclick = async () => {
+          const id = btn.closest('.appt-card')?.dataset.id;
+          if (!id || !confirm('Delete this session?')) return;
+          const { error } = await sb.from('coach_appointments')
+            .delete().eq('id', id).eq('coach_id', coachId);
+          if (error) {
+            $('schedMsg').textContent = error.message;
+            $('schedMsg').className = 'err';
+            return;
+          }
+          if (openAppointmentId === id) closeSessionSheet();
+          await refreshSchedule(coachId);
+        };
+      });
     }
 
     async function loadProgramForSelected() {
@@ -1516,6 +1765,11 @@
         lastDocToken = data.doc_token || '';
         $('btnPrint').disabled = !lastDocToken;
         hasProgramByClient[c.id] = true;
+        programByClient[c.id] = {
+          name: data.name,
+          structure: data.structure,
+          doc_token: data.doc_token,
+        };
       } else {
         $('progName').value = `Program for ${c.display_name}`;
         applySkeletonFromProfile();
@@ -1550,13 +1804,21 @@
       if (!user) return;
       const starts = new Date($('startAt').value);
       const ends = new Date($('endAt').value);
-      const ids = [...$('sessionClients').querySelectorAll('input[type=checkbox]:checked')].map((x) => x.value);
-      if (!ids.length) {
+      const rows = [...$('sessionClients').querySelectorAll('.session-client-row')];
+      const picks = [];
+      for (const row of rows) {
+        const cb = row.querySelector('.sess-check');
+        if (!cb?.checked) continue;
+        const daySel = row.querySelector('.sess-day');
+        const dayIndex = daySel ? Number(daySel.value) : 0;
+        picks.push({ id: cb.value, day_index: Number.isFinite(dayIndex) ? dayIndex : 0 });
+      }
+      if (!picks.length) {
         $('schedMsg').textContent = 'Pick at least one client.';
         $('schedMsg').className = 'err';
         return;
       }
-      if (ids.some((id) => !hasProgramByClient[id])) {
+      if (picks.some((p) => !hasProgramByClient[p.id])) {
         $('schedMsg').textContent = 'Every client in the session needs a saved program first.';
         $('schedMsg').className = 'err';
         return;
@@ -1566,24 +1828,74 @@
         $('schedMsg').className = 'err';
         return;
       }
+
+      // Block same client in overlapping time windows
+      const pickIds = picks.map((p) => p.id);
+      const { data: overlapRows, error: overlapErr } = await sb
+        .from('coach_appointments')
+        .select('id, starts_at, ends_at, coach_appointment_clients(roster_client_id)')
+        .eq('coach_id', user.id)
+        .lt('starts_at', ends.toISOString())
+        .gt('ends_at', starts.toISOString());
+      if (overlapErr) {
+        $('schedMsg').textContent = overlapErr.message;
+        $('schedMsg').className = 'err';
+        return;
+      }
+      const conflictNames = [];
+      for (const a of overlapRows || []) {
+        const aStart = new Date(a.starts_at);
+        const aEnd = new Date(a.ends_at);
+        if (!rangesOverlap(starts, ends, aStart, aEnd)) continue;
+        for (const link of a.coach_appointment_clients || []) {
+          if (pickIds.includes(link.roster_client_id)) {
+            const name = roster.find((c) => c.id === link.roster_client_id)?.display_name || 'Client';
+            if (!conflictNames.includes(name)) conflictNames.push(name);
+          }
+        }
+      }
+      if (conflictNames.length) {
+        $('schedMsg').textContent = `${conflictNames.join(', ')} already has a session overlapping this time. Open that session or pick a different time.`;
+        $('schedMsg').className = 'err';
+        return;
+      }
+
+      const apptNotes = ($('sessionApptNotes')?.value || '').trim() || null;
       const { data: appt, error } = await sb.from('coach_appointments').insert({
         coach_id: user.id,
         starts_at: starts.toISOString(),
         ends_at: ends.toISOString(),
         mode: 'in_person',
+        notes: apptNotes,
       }).select('id').single();
       if (error) {
         $('schedMsg').textContent = error.message;
         $('schedMsg').className = 'err';
         return;
       }
-      await sb.from('coach_appointment_clients').insert(
-        ids.map((id) => ({ appointment_id: appt.id, roster_client_id: id })),
+      const { error: linkErr } = await sb.from('coach_appointment_clients').insert(
+        picks.map((p) => ({
+          appointment_id: appt.id,
+          roster_client_id: p.id,
+          day_index: p.day_index,
+        })),
       );
-      $('schedMsg').textContent = 'Session saved.';
+      if (linkErr) {
+        await sb.from('coach_appointments').delete().eq('id', appt.id);
+        $('schedMsg').textContent = linkErr.message.includes('day_index')
+          ? 'Database needs migration 181 (day_index). Apply it, then retry.'
+          : linkErr.message;
+        $('schedMsg').className = 'err';
+        return;
+      }
+      $('schedMsg').textContent = 'Session saved. Open it to see the program day and log the workout.';
       $('schedMsg').className = 'ok';
+      if ($('sessionApptNotes')) $('sessionApptNotes').value = '';
       await refreshSchedule(user.id);
+      await openSessionSheet(appt.id);
     };
+
+    $('btnCloseSheet')?.addEventListener('click', closeSessionSheet);
 
     // Add-day lives on the board column (#btnAddDayCol), wired in renderDays().
 
@@ -1630,6 +1942,7 @@
       }
       lastDocToken = docToken;
       hasProgramByClient[c.id] = true;
+      programByClient[c.id] = { name, structure, doc_token: docToken };
       $('btnPrint').disabled = false;
       $('btnGoSchedule').classList.remove('hidden');
       updateStepLocks();
