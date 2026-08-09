@@ -360,6 +360,50 @@
     .set-table .col-del { width: 2.2rem; }
     .set-table .col-wu input, .set-table .col-del button { width: auto; margin: 0; padding: 0.25rem 0.35rem; }
     .log-ex .btn-add-set { margin-top: 0.4rem; width: auto; padding: 0.3rem 0.65rem; font-size: 0.8rem; }
+    /* Week calendar */
+    .cal-nav {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 0.45rem; margin-bottom: 0.65rem;
+    }
+    .cal-nav h2 { flex: 1; margin: 0; font-size: 1.05rem; min-width: 10rem; text-align: center; }
+    .cal-nav button { margin-top: 0; width: auto; min-width: 2.4rem; padding: 0.45rem 0.7rem; }
+    .cal-grid {
+      display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 0.35rem;
+      margin-bottom: 0.85rem;
+    }
+    .cal-dow {
+      text-align: center; font-size: 0.68rem; font-weight: 700; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.04em; padding: 0.15rem;
+    }
+    .cal-cell {
+      border: 1px solid var(--border); border-radius: 10px; min-height: 5.2rem;
+      padding: 0.35rem 0.3rem; background: var(--bg-elev); cursor: pointer;
+      text-align: left; margin: 0; width: 100%; font-weight: 500;
+      display: flex; flex-direction: column; gap: 0.2rem; align-items: stretch;
+    }
+    .cal-cell:hover { border-color: var(--accent); }
+    .cal-cell.on {
+      border-color: var(--accent); background: var(--accent-soft);
+    }
+    .cal-cell.today .cal-date { color: #8fd6b0; }
+    .cal-cell.other-month { opacity: 0.45; }
+    .cal-date { font-size: 0.82rem; font-weight: 700; }
+    .cal-chip {
+      display: block; font-size: 0.65rem; line-height: 1.25; padding: 0.12rem 0.28rem;
+      border-radius: 5px; background: #243041; color: #c5d2df; white-space: nowrap;
+      overflow: hidden; text-overflow: ellipsis;
+    }
+    .cal-chip.more { background: transparent; color: var(--muted); font-weight: 600; }
+    .cal-day-panel { margin-top: 0.25rem; }
+    .cal-day-panel h3 { margin: 0 0 0.55rem; font-size: 1rem; }
+    .session-clients-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 0.45rem;
+    }
+    @media (max-width: 720px) {
+      .cal-grid { gap: 0.25rem; }
+      .cal-cell { min-height: 4.2rem; padding: 0.25rem; }
+      .cal-chip { font-size: 0.6rem; }
+      .session-clients-grid { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -456,28 +500,45 @@
       <!-- 3 Schedule -->
       <section id="step-schedule" class="hidden">
         <div class="card" id="scheduleListCard">
-          <h2>Today’s sessions</h2>
-          <p class="hint">Pick a <strong>program day</strong> for each client. Open a session to see the exercises and log what happened (especially for offline clients). Same client cannot be booked twice in overlapping times.</p>
-          <div id="schedule"></div>
+          <div class="cal-nav">
+            <button type="button" class="secondary" id="btnCalPrev" title="Previous week">‹</button>
+            <h2 id="calWeekLabel">Week</h2>
+            <button type="button" class="secondary" id="btnCalNext" title="Next week">›</button>
+            <button type="button" class="secondary small" id="btnCalToday">Today</button>
+          </div>
+          <p class="hint">Tap a day on the calendar. Open a session to log each client (kg / reps / RIR). Per-client notes live on that log — not on the booking.</p>
+          <div id="calGrid" class="cal-grid"></div>
+          <div class="cal-day-panel">
+            <h3 id="calDayTitle">Select a day</h3>
+            <div id="schedule"></div>
+            <button type="button" class="secondary" id="btnShowNewSession" style="width:auto;margin-top:0.65rem">+ Session this day</button>
+            <p class="muted" id="schedMsg"></p>
+          </div>
         </div>
         <div class="card hidden" id="sessionSheetCard">
-          <button type="button" class="secondary small" id="btnCloseSheet">← Back to today’s list</button>
+          <button type="button" class="secondary small" id="btnCloseSheet">← Back to calendar</button>
           <h2 id="sessionSheetTitle" style="margin-top:0.75rem">Session</h2>
           <div id="sessionSheetBody"></div>
           <p class="muted" id="sheetMsg"></p>
         </div>
-        <div class="card" id="newSessionCard">
-          <h2>New session</h2>
-          <label>Start</label>
-          <input id="startAt" type="datetime-local" />
-          <label>End</label>
-          <input id="endAt" type="datetime-local" />
+        <div class="card hidden" id="newSessionCard">
+          <button type="button" class="secondary small" id="btnCancelNewSession">← Cancel</button>
+          <h2 style="margin-top:0.65rem">New session</h2>
+          <p class="muted" id="newSessionDayHint" style="margin-top:0"></p>
+          <div class="profile-grid">
+            <div>
+              <label>Start</label>
+              <input id="startAt" type="time" />
+            </div>
+            <div>
+              <label>End</label>
+              <input id="endAt" type="time" />
+            </div>
+          </div>
           <label>Who is training?</label>
-          <div id="sessionClients"></div>
-          <label>Session notes (optional)</label>
-          <textarea id="sessionApptNotes" placeholder="e.g. gym floor, focus on form"></textarea>
+          <div id="sessionClients" class="session-clients-grid"></div>
           <button id="btnSession" type="button">Save session</button>
-          <p class="muted" id="schedMsg"></p>
+          <p class="muted" id="newSessMsg"></p>
         </div>
       </section>
     </div>
@@ -504,7 +565,21 @@
     /** @type {Record<string, { name?: string, structure?: any, doc_token?: string }>} */
     let programByClient = {};
     /** @type {any[]} */
-    let todaysAppointments = [];
+    let weekAppointments = [];
+    /** @type {Date} */
+    let calWeekStart = (() => {
+      const d = new Date();
+      d.setHours(0, 0, 0, 0);
+      const diff = (d.getDay() + 6) % 7;
+      d.setDate(d.getDate() - diff);
+      return d;
+    })();
+    /** @type {string} */
+    let calSelectedYmd = (() => {
+      const d = new Date();
+      const pad = (n) => String(n).padStart(2, '0');
+      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    })();
     /** @type {string|null} */
     let openAppointmentId = null;
     /** @type {string|null} */
@@ -609,14 +684,22 @@
       ['clients', 'program', 'schedule'].forEach((s) => {
         $('step-' + s).classList.toggle('hidden', s !== name);
       });
-      if (name === 'program') {
+      if (name === 'program' || name === 'schedule') {
         document.querySelector('.wrap')?.classList.add('wide');
-        renderDays();
-        renderProgContext();
+        if (name === 'program') {
+          renderDays();
+          renderProgContext();
+        }
       } else {
         document.querySelector('.wrap')?.classList.remove('wide');
       }
-      if (name === 'schedule') renderSessionPickers();
+      if (name === 'schedule') {
+        hideNewSessionForm();
+        renderSessionPickers();
+        sb.auth.getUser().then(({ data: { user } }) => {
+          if (user) refreshSchedule(user.id);
+        });
+      }
       updateStepLocks();
     }
 
@@ -1057,8 +1140,176 @@
       sheetApptCache = null;
       $('sessionSheetCard').classList.add('hidden');
       $('scheduleListCard').classList.remove('hidden');
-      $('newSessionCard').classList.remove('hidden');
+      hideNewSessionForm();
       $('sheetMsg').textContent = '';
+    }
+
+    function hideNewSessionForm() {
+      $('newSessionCard')?.classList.add('hidden');
+      if ($('newSessMsg')) {
+        $('newSessMsg').textContent = '';
+        $('newSessMsg').className = 'muted';
+      }
+    }
+
+    function ymdFromDate(d) {
+      const pad = (n) => String(n).padStart(2, '0');
+      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    }
+
+    function dateFromYmd(ymd) {
+      const [y, m, day] = ymd.split('-').map(Number);
+      return new Date(y, m - 1, day);
+    }
+
+    function startOfWeekMonday(d) {
+      const x = new Date(d);
+      x.setHours(0, 0, 0, 0);
+      x.setDate(x.getDate() - ((x.getDay() + 6) % 7));
+      return x;
+    }
+
+    function weekEndExclusive(weekStart) {
+      const e = new Date(weekStart);
+      e.setDate(e.getDate() + 7);
+      return e;
+    }
+
+    function formatWeekLabel(weekStart) {
+      const end = new Date(weekStart);
+      end.setDate(end.getDate() + 6);
+      const opts = { month: 'short', day: 'numeric' };
+      const y = weekStart.getFullYear() !== end.getFullYear()
+        ? `, ${weekStart.getFullYear()} – ${end.getFullYear()}`
+        : `, ${end.getFullYear()}`;
+      return `${weekStart.toLocaleDateString([], opts)} – ${end.toLocaleDateString([], opts)}${y}`;
+    }
+
+    function apptsOnYmd(ymd) {
+      return weekAppointments.filter((a) => ymdFromDate(new Date(a.starts_at)) === ymd);
+    }
+
+    function showNewSessionForm() {
+      $('sessionSheetCard').classList.add('hidden');
+      $('newSessionCard').classList.remove('hidden');
+      const day = dateFromYmd(calSelectedYmd);
+      $('newSessionDayHint').textContent = day.toLocaleDateString([], {
+        weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
+      });
+      // Default 18:00–19:00 local
+      if (!$('startAt').value) $('startAt').value = '18:00';
+      if (!$('endAt').value) $('endAt').value = '19:00';
+      renderSessionPickers();
+      $('newSessionCard').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function composeDateTime(ymd, timeStr) {
+      const [hh, mm] = String(timeStr || '18:00').split(':').map(Number);
+      const d = dateFromYmd(ymd);
+      d.setHours(hh || 0, mm || 0, 0, 0);
+      return d;
+    }
+
+    function renderCalendarGrid() {
+      const el = $('calGrid');
+      if (!el) return;
+      $('calWeekLabel').textContent = formatWeekLabel(calWeekStart);
+      const todayYmd = ymdFromDate(new Date());
+      const dows = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+      let html = dows.map((d) => `<div class="cal-dow">${d}</div>`).join('');
+      for (let i = 0; i < 7; i++) {
+        const day = new Date(calWeekStart);
+        day.setDate(day.getDate() + i);
+        const key = ymdFromDate(day);
+        const list = apptsOnYmd(key);
+        const chips = list.slice(0, 3).map((a) => {
+          const t = new Date(a.starts_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          const n = (a.coach_appointment_clients || []).length;
+          return `<span class="cal-chip">${escapeHtml(t)}${n > 1 ? ` · ${n}` : ''}</span>`;
+        }).join('');
+        const more = list.length > 3 ? `<span class="cal-chip more">+${list.length - 3}</span>` : '';
+        html += `<button type="button" class="cal-cell${key === calSelectedYmd ? ' on' : ''}${key === todayYmd ? ' today' : ''}" data-ymd="${key}">
+          <span class="cal-date">${day.getDate()}</span>
+          ${chips}${more}
+        </button>`;
+      }
+      el.innerHTML = html;
+      el.querySelectorAll('.cal-cell').forEach((btn) => {
+        btn.onclick = () => {
+          calSelectedYmd = btn.dataset.ymd;
+          hideNewSessionForm();
+          renderCalendarGrid();
+          renderSelectedDayPanel();
+        };
+      });
+    }
+
+    function renderSelectedDayPanel() {
+      const day = dateFromYmd(calSelectedYmd);
+      $('calDayTitle').textContent = day.toLocaleDateString([], {
+        weekday: 'long', month: 'long', day: 'numeric',
+      });
+      const list = apptsOnYmd(calSelectedYmd);
+      const byId = Object.fromEntries(roster.map((c) => [c.id, c.display_name]));
+      $('schedule').innerHTML = list.length
+        ? list.map((a) => {
+            const links = a.coach_appointment_clients || [];
+            const detail = links.map((x) => {
+              const name = byId[x.roster_client_id] || '—';
+              const di = x.day_index != null ? Number(x.day_index) : null;
+              const dayLabel = di != null ? dayLabelFor(x.roster_client_id, di) : 'No day set';
+              const logged = x.completed_at
+                || (x.session_notes && String(x.session_notes).trim())
+                || logHasWork(x.log_json)
+                ? ' · logged'
+                : '';
+              return `${name} · ${dayLabel}${logged}`;
+            }).join(' · ') || 'No clients';
+            const t = `${new Date(a.starts_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} – ${new Date(a.ends_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+            return `<div class="appt-card" data-id="${a.id}">
+              <strong>${t}</strong>
+              <div class="meta" style="margin-top:0.25rem">${escapeHtml(detail)}</div>
+              <div class="appt-actions">
+                <button type="button" class="secondary small btn-open-appt">Open / log</button>
+                <button type="button" class="danger small btn-del-appt">Delete</button>
+              </div>
+            </div>`;
+          }).join('')
+        : '<p class="muted">No sessions this day. Add one below.</p>';
+      $('schedule').querySelectorAll('.btn-open-appt').forEach((btn) => {
+        btn.onclick = () => openSessionSheet(btn.closest('.appt-card')?.dataset.id);
+      });
+      $('schedule').querySelectorAll('.btn-del-appt').forEach((btn) => {
+        btn.onclick = async () => {
+          const id = btn.closest('.appt-card')?.dataset.id;
+          const { data: { user } } = await sb.auth.getUser();
+          if (!id || !user || !confirm('Delete this session?')) return;
+          const { error } = await sb.from('coach_appointments')
+            .delete().eq('id', id).eq('coach_id', user.id);
+          if (error) {
+            $('schedMsg').textContent = error.message;
+            $('schedMsg').className = 'err';
+            return;
+          }
+          if (openAppointmentId === id) closeSessionSheet();
+          await refreshSchedule(user.id);
+        };
+      });
+    }
+
+    async function refreshSchedule(coachId) {
+      const rangeStart = new Date(calWeekStart);
+      const rangeEnd = weekEndExclusive(calWeekStart);
+      const { data: appts } = await sb
+        .from('coach_appointments')
+        .select('id, starts_at, ends_at, mode, notes, coach_appointment_clients(roster_client_id, day_index, session_notes, completed_at, log_json)')
+        .eq('coach_id', coachId)
+        .gte('starts_at', rangeStart.toISOString())
+        .lt('starts_at', rangeEnd.toISOString())
+        .order('starts_at');
+      weekAppointments = appts || [];
+      renderCalendarGrid();
+      renderSelectedDayPanel();
     }
 
     function emptySetRow(n, isWarmup = false) {
@@ -1265,7 +1516,6 @@
       }).join('');
 
       $('sessionSheetBody').innerHTML = `
-        ${appt.notes ? `<p class="muted" style="margin-top:0"><strong>Session notes:</strong> ${escapeHtml(appt.notes)}</p>` : ''}
         <div class="client-switch">
           <button type="button" class="secondary" id="btnSheetPrev" ${idx <= 0 ? 'disabled' : ''} title="Previous client">‹</button>
           <div class="grow">
@@ -1281,7 +1531,7 @@
           ${(draft.log_json.exercises || []).length
             ? draft.log_json.exercises.map((ex, ei) => renderSetTable(ex, ei)).join('')
             : '<p class="muted">No exercises on this day.</p>'}
-          <label>Extra notes (optional)</label>
+          <label>Notes for this client (optional)</label>
           <textarea class="sheet-notes" rows="2" placeholder="Form cues, skips, injuries…">${escapeHtml(draft.session_notes || '')}</textarea>
           <label class="check" style="margin-top:0.55rem;display:flex;align-items:center;gap:0.5rem">
             <input type="checkbox" class="sheet-done" ${draft.completed ? 'checked' : ''} style="width:auto" />
@@ -1930,74 +2180,6 @@
       await refreshSchedule(user.id);
       renderAddWizard();
       updateStepLocks();
-
-      const start = new Date();
-      start.setMinutes(0, 0, 0);
-      start.setHours(start.getHours() + 1);
-      const end = new Date(start.getTime() + 60 * 60 * 1000);
-      const toLocal = (d) => {
-        const pad = (n) => String(n).padStart(2, '0');
-        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-      };
-      if (!$('startAt').value) $('startAt').value = toLocal(start);
-      if (!$('endAt').value) $('endAt').value = toLocal(end);
-    }
-
-    async function refreshSchedule(coachId) {
-      const start = new Date(); start.setHours(0, 0, 0, 0);
-      const end = new Date(start); end.setDate(end.getDate() + 1);
-      const { data: appts } = await sb
-        .from('coach_appointments')
-        .select('id, starts_at, ends_at, mode, notes, coach_appointment_clients(roster_client_id, day_index, session_notes, completed_at, log_json)')
-        .eq('coach_id', coachId)
-        .gte('starts_at', start.toISOString())
-        .lt('starts_at', end.toISOString())
-        .order('starts_at');
-      todaysAppointments = appts || [];
-      const byId = Object.fromEntries(roster.map((c) => [c.id, c.display_name]));
-      $('schedule').innerHTML = todaysAppointments.length
-        ? todaysAppointments.map((a) => {
-            const links = a.coach_appointment_clients || [];
-            const detail = links.map((x) => {
-              const name = byId[x.roster_client_id] || '—';
-              const di = x.day_index != null ? Number(x.day_index) : null;
-              const day = di != null ? dayLabelFor(x.roster_client_id, di) : 'No day set';
-              const logged = x.completed_at
-                || (x.session_notes && String(x.session_notes).trim())
-                || logHasWork(x.log_json)
-                ? ' · logged'
-                : '';
-              return `${name} · ${day}${logged}`;
-            }).join(' · ') || 'No clients';
-            const t = `${new Date(a.starts_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} – ${new Date(a.ends_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
-            return `<div class="appt-card" data-id="${a.id}">
-              <strong>${t}</strong>
-              <div class="meta" style="margin-top:0.25rem">${escapeHtml(detail)}</div>
-              <div class="appt-actions">
-                <button type="button" class="secondary small btn-open-appt">Open / log</button>
-                <button type="button" class="danger small btn-del-appt">Delete</button>
-              </div>
-            </div>`;
-          }).join('')
-        : '<p class="muted">No sessions today yet.</p>';
-      $('schedule').querySelectorAll('.btn-open-appt').forEach((btn) => {
-        btn.onclick = () => openSessionSheet(btn.closest('.appt-card')?.dataset.id);
-      });
-      $('schedule').querySelectorAll('.btn-del-appt').forEach((btn) => {
-        btn.onclick = async () => {
-          const id = btn.closest('.appt-card')?.dataset.id;
-          if (!id || !confirm('Delete this session?')) return;
-          const { error } = await sb.from('coach_appointments')
-            .delete().eq('id', id).eq('coach_id', coachId);
-          if (error) {
-            $('schedMsg').textContent = error.message;
-            $('schedMsg').className = 'err';
-            return;
-          }
-          if (openAppointmentId === id) closeSessionSheet();
-          await refreshSchedule(coachId);
-        };
-      });
     }
 
     async function loadProgramForSelected() {
@@ -2068,10 +2250,15 @@
     };
 
     $('btnSession').onclick = async () => {
+      const msg = (text, ok) => {
+        const el = $('newSessMsg') || $('schedMsg');
+        el.textContent = text;
+        el.className = ok ? 'ok' : 'err';
+      };
       const { data: { user } } = await sb.auth.getUser();
       if (!user) return;
-      const starts = new Date($('startAt').value);
-      const ends = new Date($('endAt').value);
+      const starts = composeDateTime(calSelectedYmd, $('startAt').value);
+      const ends = composeDateTime(calSelectedYmd, $('endAt').value);
       const rows = [...$('sessionClients').querySelectorAll('.session-client-row')];
       const picks = [];
       for (const row of rows) {
@@ -2082,22 +2269,18 @@
         picks.push({ id: cb.value, day_index: Number.isFinite(dayIndex) ? dayIndex : 0 });
       }
       if (!picks.length) {
-        $('schedMsg').textContent = 'Pick at least one client.';
-        $('schedMsg').className = 'err';
+        msg('Pick at least one client.', false);
         return;
       }
       if (picks.some((p) => !hasProgramByClient[p.id])) {
-        $('schedMsg').textContent = 'Every client in the session needs a saved program first.';
-        $('schedMsg').className = 'err';
+        msg('Every client in the session needs a saved program first.', false);
         return;
       }
       if (!(ends > starts)) {
-        $('schedMsg').textContent = 'End must be after start.';
-        $('schedMsg').className = 'err';
+        msg('End must be after start.', false);
         return;
       }
 
-      // Block same client in overlapping time windows
       const pickIds = picks.map((p) => p.id);
       const { data: overlapRows, error: overlapErr } = await sb
         .from('coach_appointments')
@@ -2106,8 +2289,7 @@
         .lt('starts_at', ends.toISOString())
         .gt('ends_at', starts.toISOString());
       if (overlapErr) {
-        $('schedMsg').textContent = overlapErr.message;
-        $('schedMsg').className = 'err';
+        msg(overlapErr.message, false);
         return;
       }
       const conflictNames = [];
@@ -2123,22 +2305,18 @@
         }
       }
       if (conflictNames.length) {
-        $('schedMsg').textContent = `${conflictNames.join(', ')} already has a session overlapping this time. Open that session or pick a different time.`;
-        $('schedMsg').className = 'err';
+        msg(`${conflictNames.join(', ')} already has a session overlapping this time.`, false);
         return;
       }
 
-      const apptNotes = ($('sessionApptNotes')?.value || '').trim() || null;
       const { data: appt, error } = await sb.from('coach_appointments').insert({
         coach_id: user.id,
         starts_at: starts.toISOString(),
         ends_at: ends.toISOString(),
         mode: 'in_person',
-        notes: apptNotes,
       }).select('id').single();
       if (error) {
-        $('schedMsg').textContent = error.message;
-        $('schedMsg').className = 'err';
+        msg(error.message, false);
         return;
       }
       const { error: linkErr } = await sb.from('coach_appointment_clients').insert(
@@ -2150,20 +2328,49 @@
       );
       if (linkErr) {
         await sb.from('coach_appointments').delete().eq('id', appt.id);
-        $('schedMsg').textContent = linkErr.message.includes('day_index')
+        msg(linkErr.message.includes('day_index')
           ? 'Database needs migration 181 (day_index). Apply it, then retry.'
-          : linkErr.message;
-        $('schedMsg').className = 'err';
+          : linkErr.message, false);
         return;
       }
-      $('schedMsg').textContent = 'Session saved. Open it to see the program day and log the workout.';
+      hideNewSessionForm();
+      $('schedMsg').textContent = 'Session saved.';
       $('schedMsg').className = 'ok';
-      if ($('sessionApptNotes')) $('sessionApptNotes').value = '';
       await refreshSchedule(user.id);
       await openSessionSheet(appt.id);
     };
 
     $('btnCloseSheet')?.addEventListener('click', closeSessionSheet);
+    $('btnShowNewSession')?.addEventListener('click', showNewSessionForm);
+    $('btnCancelNewSession')?.addEventListener('click', hideNewSessionForm);
+    $('btnCalPrev')?.addEventListener('click', async () => {
+      calWeekStart = new Date(calWeekStart);
+      calWeekStart.setDate(calWeekStart.getDate() - 7);
+      const sel = dateFromYmd(calSelectedYmd);
+      sel.setDate(sel.getDate() - 7);
+      calSelectedYmd = ymdFromDate(sel);
+      hideNewSessionForm();
+      const { data: { user } } = await sb.auth.getUser();
+      if (user) await refreshSchedule(user.id);
+    });
+    $('btnCalNext')?.addEventListener('click', async () => {
+      calWeekStart = new Date(calWeekStart);
+      calWeekStart.setDate(calWeekStart.getDate() + 7);
+      const sel = dateFromYmd(calSelectedYmd);
+      sel.setDate(sel.getDate() + 7);
+      calSelectedYmd = ymdFromDate(sel);
+      hideNewSessionForm();
+      const { data: { user } } = await sb.auth.getUser();
+      if (user) await refreshSchedule(user.id);
+    });
+    $('btnCalToday')?.addEventListener('click', async () => {
+      const now = new Date();
+      calWeekStart = startOfWeekMonday(now);
+      calSelectedYmd = ymdFromDate(now);
+      hideNewSessionForm();
+      const { data: { user } } = await sb.auth.getUser();
+      if (user) await refreshSchedule(user.id);
+    });
 
     // Add-day lives on the board column (#btnAddDayCol), wired in renderDays().
 
