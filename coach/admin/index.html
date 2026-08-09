@@ -194,10 +194,26 @@
     .day-head input { flex: 1; }
     .ex-row {
       display: grid; grid-template-columns: 1fr 4.5rem 4.5rem auto; gap: 0.4rem;
-      margin-bottom: 0.4rem; align-items: center;
+      margin-bottom: 0.4rem; align-items: start;
     }
+    .ex-name-wrap { position: relative; grid-column: 1 / 2; }
+    .ex-name-wrap.span2 { grid-column: 1 / -1; }
+    .search-results {
+      position: absolute; z-index: 20; left: 0; right: 0; top: calc(100% + 2px);
+      border: 1px solid var(--border); border-radius: 8px; max-height: 200px;
+      overflow: auto; background: var(--bg-elev); box-shadow: var(--shadow);
+      display: none;
+    }
+    .search-results button {
+      display: block; width: 100%; text-align: left; margin: 0; border: 0;
+      border-bottom: 1px solid var(--border); border-radius: 0;
+      background: transparent; font-weight: 500; padding: 0.55rem 0.7rem;
+    }
+    .search-results button:hover { background: rgba(61,154,106,0.15); }
+    .search-results .muted-sm { color: var(--muted); font-size: 0.78rem; font-weight: 500; }
     @media (max-width: 560px) {
       .ex-row { grid-template-columns: 1fr 1fr; }
+      .ex-name-wrap { grid-column: 1 / -1; }
       .ex-row .span2 { grid-column: 1 / -1; }
     }
     .topbar { display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; margin-bottom: 1rem; }
@@ -287,7 +303,7 @@
           <div class="program-main">
             <div class="card">
               <h2>Build a program</h2>
-              <p class="hint">Keep their profile in view while you add days and exercises. Names, sets, and reps only.</p>
+              <p class="hint">Keep their profile in view while you add days and exercises. Start typing an exercise name to pick from the Kallpa catalog (or type a custom name).</p>
               <p class="muted" id="progClientLabel">Select a client first.</p>
               <label>Program name</label>
               <input id="progName" value="Training program" />
@@ -1022,6 +1038,45 @@
       }
     }
 
+    let searchTimer = null;
+
+    async function searchCatalog(q, resultsEl, onPick) {
+      if (!q || q.length < 2) {
+        resultsEl.style.display = 'none';
+        resultsEl.innerHTML = '';
+        return;
+      }
+      resultsEl.style.display = 'block';
+      resultsEl.innerHTML = '<button type="button" disabled>Searching…</button>';
+      try {
+        const { data, error } = await sb.functions.invoke('coach-admin-exercises', {
+          body: { q },
+        });
+        if (error) throw error;
+        const list = data?.exercises || [];
+        if (!list.length) {
+          resultsEl.innerHTML = '<button type="button" disabled>No matches — keep typing a custom name</button>';
+          return;
+        }
+        resultsEl.innerHTML = list.map((ex) => {
+          const muscles = (ex.muscles_primary || []).slice(0, 2).join(', ');
+          return `<button type="button" data-id="${escapeAttr(ex.id)}" data-name="${escapeAttr(ex.name || '')}">
+            ${escapeHtml(ex.name || 'Exercise')}
+            ${muscles ? `<span class="muted-sm"> · ${escapeHtml(muscles)}</span>` : ''}
+          </button>`;
+        }).join('');
+        resultsEl.querySelectorAll('button[data-id]').forEach((btn) => {
+          btn.onclick = () => {
+            onPick({ id: btn.dataset.id, name: btn.dataset.name || '' });
+            resultsEl.style.display = 'none';
+            resultsEl.innerHTML = '';
+          };
+        });
+      } catch (e) {
+        resultsEl.innerHTML = `<button type="button" disabled>${escapeHtml(e.message || 'Search failed')}</button>`;
+      }
+    }
+
     function renderDays() {
       const el = $('days');
       el.innerHTML = days.map((d, di) => `
@@ -1035,7 +1090,10 @@
           </div>
           ${(d.exercises || []).map((ex, ei) => `
             <div class="ex-row" data-ei="${ei}">
-              <input class="ex-name span2" placeholder="Exercise name" value="${escapeAttr(ex.name || '')}" />
+              <div class="ex-name-wrap">
+                <input class="ex-name" placeholder="Start typing an exercise…" value="${escapeAttr(ex.name || '')}" autocomplete="off" />
+                <div class="search-results"></div>
+              </div>
               <input class="ex-sets" placeholder="Sets" value="${escapeAttr(String(ex.sets ?? '3'))}" />
               <input class="ex-reps" placeholder="Reps" value="${escapeAttr(String(ex.reps ?? ''))}" />
               <button type="button" class="danger small btn-del-ex">✕</button>
@@ -1057,7 +1115,29 @@
         };
         dayEl.querySelectorAll('.ex-row').forEach((row) => {
           const ei = +row.dataset.ei;
-          row.querySelector('.ex-name').oninput = (e) => { days[di].exercises[ei].name = e.target.value; };
+          const nameInput = row.querySelector('.ex-name');
+          const resultsEl = row.querySelector('.search-results');
+          nameInput.oninput = (e) => {
+            days[di].exercises[ei].name = e.target.value;
+            days[di].exercises[ei].exercise_id = null;
+            clearTimeout(searchTimer);
+            searchTimer = setTimeout(
+              () => searchCatalog(e.target.value.trim(), resultsEl, (picked) => {
+                days[di].exercises[ei].name = picked.name;
+                days[di].exercises[ei].exercise_id = picked.id;
+                nameInput.value = picked.name;
+              }),
+              250,
+            );
+          };
+          nameInput.onblur = () => {
+            // Delay so click on a result still registers.
+            setTimeout(() => {
+              if (resultsEl) {
+                resultsEl.style.display = 'none';
+              }
+            }, 180);
+          };
           row.querySelector('.ex-sets').oninput = (e) => { days[di].exercises[ei].sets = e.target.value; };
           row.querySelector('.ex-reps').oninput = (e) => { days[di].exercises[ei].reps = e.target.value; };
           row.querySelector('.btn-del-ex').onclick = () => {
@@ -1076,6 +1156,8 @@
             .filter((ex) => (ex.name || '').trim())
             .map((ex) => ({
               name: ex.name.trim(),
+              exercise_name: ex.name.trim(),
+              ...(ex.exercise_id ? { exercise_id: ex.exercise_id } : {}),
               sets: ex.sets,
               reps: ex.reps,
             })),
@@ -1093,6 +1175,7 @@
         label: d.label || `Day ${i + 1}`,
         exercises: (d.exercises || []).map((ex) => ({
           name: ex.name || ex.exercise_name || '',
+          exercise_id: ex.exercise_id || null,
           sets: ex.sets != null ? String(ex.sets) : '3',
           reps: ex.reps != null ? String(ex.reps) : (ex.rep_range || ''),
         })),
