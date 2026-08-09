@@ -161,60 +161,95 @@
       display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0.5rem 0 0.9rem;
     }
     .program-layout {
-      display: grid;
-      grid-template-columns: minmax(240px, 300px) minmax(0, 1fr);
-      gap: 1rem;
-      align-items: start;
-    }
-    .program-side {
-      position: sticky;
-      top: 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
     }
     .program-side .card { margin-bottom: 0; }
     .program-side .side-name {
-      font-size: 1.15rem; font-weight: 700; margin: 0 0 0.35rem; letter-spacing: -0.01em;
+      font-size: 1.05rem; font-weight: 700; margin: 0 0 0.25rem; letter-spacing: -0.01em;
     }
     .program-side .side-source {
-      font-size: 0.82rem; color: var(--muted); margin: 0 0 0.85rem;
+      font-size: 0.8rem; color: var(--muted); margin: 0 0 0.55rem;
+    }
+    .program-side .profile-grid {
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
     }
     .program-main .card { margin-bottom: 0; }
     .program-empty {
       padding: 1.25rem; text-align: center; color: var(--muted);
     }
+    .wrap.wide { max-width: 1280px; }
     @media (max-width: 820px) {
-      .program-layout { grid-template-columns: 1fr; }
-      .program-side { position: static; }
       .wrap.wide { max-width: 760px; }
     }
-    .day {
-      border: 1px solid var(--border); border-radius: 12px; padding: 0.85rem; margin-bottom: 0.75rem;
-      background: var(--bg-elev);
+    /* App-style horizontal day board */
+    .day-board-meta {
+      display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: end;
+      margin-bottom: 0.85rem;
     }
-    .day-head { display: flex; gap: 0.5rem; align-items: end; margin-bottom: 0.5rem; }
-    .day-head input { flex: 1; }
-    .ex-row {
-      display: grid; grid-template-columns: 1fr 4.5rem 4.5rem auto; gap: 0.4rem;
-      margin-bottom: 0.4rem; align-items: start;
+    .day-board-meta .grow { flex: 1; min-width: 12rem; }
+    .day-board-scroll {
+      display: flex; gap: 0.65rem; overflow-x: auto; padding: 0.15rem 0.15rem 0.85rem;
+      scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch;
     }
-    .ex-name-wrap { position: relative; grid-column: 1 / 2; }
-    .ex-name-wrap.span2 { grid-column: 1 / -1; }
+    .day-col {
+      flex: 0 0 220px; width: 220px; scroll-snap-align: start;
+      border: 1px solid var(--border); border-radius: 12px;
+      background: var(--bg-elev); display: flex; flex-direction: column;
+      min-height: 280px; max-height: min(70vh, 640px);
+    }
+    .day-col-head {
+      padding: 0.65rem 0.7rem 0.55rem; border-bottom: 1px solid var(--border);
+    }
+    .day-col-head .day-num {
+      font-size: 0.7rem; font-weight: 700; letter-spacing: 0.04em;
+      text-transform: uppercase; color: var(--muted); margin-bottom: 0.25rem;
+    }
+    .day-col-head input {
+      width: 100%; padding: 0.35rem 0.45rem; font-size: 0.9rem; font-weight: 600;
+    }
+    .day-col-body {
+      flex: 1; overflow-y: auto; padding: 0.5rem;
+    }
+    .day-col-foot {
+      padding: 0.45rem 0.5rem 0.6rem; border-top: 1px solid var(--border);
+    }
+    .day-col-foot button { margin-top: 0; width: 100%; }
+    .ex-card {
+      border: 1px solid var(--border); border-radius: 10px; padding: 0.45rem;
+      margin-bottom: 0.45rem; background: var(--card); position: relative;
+    }
+    .ex-card .ex-name-wrap { position: relative; }
+    .ex-card .ex-meta {
+      display: grid; grid-template-columns: 1fr 1fr auto; gap: 0.3rem; margin-top: 0.35rem;
+      align-items: center;
+    }
+    .ex-card input { padding: 0.4rem 0.45rem; font-size: 0.85rem; }
+    .ex-card .btn-del-ex { margin-top: 0; padding: 0.3rem 0.45rem; }
+    .day-col-add {
+      flex: 0 0 140px; width: 140px;
+      border: 1px dashed var(--border); border-radius: 12px;
+      background: transparent; color: var(--muted); font-weight: 700;
+      margin-top: 0; align-self: stretch; min-height: 280px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .day-col-add:hover { border-color: var(--accent); color: #fff; background: var(--accent-soft); }
     .search-results {
-      position: absolute; z-index: 20; left: 0; right: 0; top: calc(100% + 2px);
-      border: 1px solid var(--border); border-radius: 8px; max-height: 200px;
+      position: absolute; z-index: 30; left: 0; right: 0; top: calc(100% + 2px);
+      border: 1px solid var(--border); border-radius: 8px; max-height: 180px;
       overflow: auto; background: var(--bg-elev); box-shadow: var(--shadow);
       display: none;
     }
     .search-results button {
       display: block; width: 100%; text-align: left; margin: 0; border: 0;
       border-bottom: 1px solid var(--border); border-radius: 0;
-      background: transparent; font-weight: 500; padding: 0.55rem 0.7rem;
+      background: transparent; font-weight: 500; padding: 0.5rem 0.6rem; font-size: 0.85rem;
     }
     .search-results button:hover { background: rgba(61,154,106,0.15); }
-    .search-results .muted-sm { color: var(--muted); font-size: 0.78rem; font-weight: 500; }
-    @media (max-width: 560px) {
-      .ex-row { grid-template-columns: 1fr 1fr; }
-      .ex-name-wrap { grid-column: 1 / -1; }
-      .ex-row .span2 { grid-column: 1 / -1; }
+    .search-results .muted-sm { color: var(--muted); font-size: 0.72rem; font-weight: 500; }
+    .skeleton-note {
+      font-size: 0.85rem; color: var(--muted); margin: 0 0 0.65rem;
     }
     .topbar { display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; margin-bottom: 1rem; }
     .hidden { display: none !important; }
@@ -289,7 +324,7 @@
         </div>
       </section>
 
-      <!-- 2 Program — side-by-side: profile | builder -->
+      <!-- 2 Program — client strip + app-style day board -->
       <section id="step-program" class="hidden">
         <div class="program-layout">
           <aside class="program-side">
@@ -303,16 +338,18 @@
           <div class="program-main">
             <div class="card">
               <h2>Build a program</h2>
-              <p class="hint">Keep their profile in view while you add days and exercises. Start typing an exercise name to pick from the Kallpa catalog (or type a custom name).</p>
+              <p class="hint">Days sit side by side — same idea as in the Kallpa app. Start typing an exercise to pick from the catalog.</p>
               <p class="muted" id="progClientLabel">Select a client first.</p>
-              <label>Program name</label>
-              <input id="progName" value="Training program" />
-              <div id="days"></div>
-              <div class="btn-row">
-                <button id="btnAddDay" class="secondary" type="button">+ Add day</button>
-                <button id="btnSaveProg" type="button">Save program</button>
+              <p class="skeleton-note hidden" id="skeletonNote"></p>
+              <div class="day-board-meta">
+                <div class="grow">
+                  <label>Program name</label>
+                  <input id="progName" value="Training program" />
+                </div>
+                <button id="btnSaveProg" type="button" style="margin-top:0;width:auto;min-width:9rem">Save program</button>
+                <button id="btnPrint" class="secondary" type="button" disabled style="margin-top:0;width:auto">Print / PDF</button>
               </div>
-              <button id="btnPrint" class="secondary" type="button" disabled>Open print / PDF</button>
+              <div id="days" class="day-board-scroll"></div>
               <button id="btnGoSchedule" class="secondary hidden" type="button">Continue to Schedule →</button>
               <p class="muted" id="progMsg"></p>
             </div>
@@ -483,11 +520,49 @@
         ? `Program for ${c.display_name}`
         : 'Select a client in step 1 first.';
       $('btnSaveProg').disabled = !c;
-      $('btnAddDay').disabled = !c;
       $('btnGoSchedule').classList.toggle('hidden', !selectedHasProgram());
       updateStepLocks();
       renderProfile();
       renderProgContext();
+    }
+
+    function clientDaysPerWeek() {
+      const c = selectedClient();
+      if (!c) return 3;
+      const snap = getClientSnapshot(c);
+      const n = Number(snap.days_per_week);
+      if (Number.isFinite(n) && n >= 1 && n <= 7) return Math.round(n);
+      return 3;
+    }
+
+    function emptyExercise() {
+      return { name: '', sets: '3', reps: '8-12', exercise_id: null };
+    }
+
+    function skeletonDays(count) {
+      const n = Math.max(1, Math.min(7, count || 3));
+      return Array.from({ length: n }, (_, i) => ({
+        label: `Day ${i + 1}`,
+        exercises: [emptyExercise()],
+      }));
+    }
+
+    function applySkeletonFromProfile() {
+      const n = clientDaysPerWeek();
+      days = skeletonDays(n);
+      const note = $('skeletonNote');
+      if (note) {
+        note.classList.remove('hidden');
+        note.textContent = `Started a ${n}-day skeleton from this client’s “days / week” profile setting. Add exercises in each column — same side-by-side layout as the app.`;
+      }
+    }
+
+    function clearSkeletonNote() {
+      const note = $('skeletonNote');
+      if (note) {
+        note.classList.add('hidden');
+        note.textContent = '';
+      }
     }
 
     function kv(k, v) {
@@ -1079,44 +1154,64 @@
 
     function renderDays() {
       const el = $('days');
-      el.innerHTML = days.map((d, di) => `
-        <div class="day" data-di="${di}">
-          <div class="day-head">
-            <div style="flex:1">
-              <label>Day name</label>
-              <input class="day-label" value="${escapeAttr(d.label || ('Day ' + (di + 1)))}" />
-            </div>
-            <button type="button" class="secondary small btn-del-day">Remove day</button>
+      if (!el) return;
+      const c = selectedClient();
+      if (!c) {
+        el.innerHTML = '<p class="muted program-empty" style="padding:1rem">Select a client to build their program board.</p>';
+        return;
+      }
+      el.innerHTML = days.map((d, di) => {
+        const setCount = (d.exercises || []).reduce((s, ex) => {
+          const n = parseInt(String(ex.sets), 10);
+          return s + (Number.isFinite(n) ? n : 0);
+        }, 0);
+        return `
+        <div class="day-col" data-di="${di}">
+          <div class="day-col-head">
+            <div class="day-num">Day ${di + 1}${setCount ? ` · ${setCount} sets` : ''}</div>
+            <input class="day-label" value="${escapeAttr(d.label || ('Day ' + (di + 1)))}" />
+            <button type="button" class="danger small btn-del-day" style="margin-top:0.4rem;width:100%">Remove day</button>
           </div>
-          ${(d.exercises || []).map((ex, ei) => `
-            <div class="ex-row" data-ei="${ei}">
-              <div class="ex-name-wrap">
-                <input class="ex-name" placeholder="Start typing an exercise…" value="${escapeAttr(ex.name || '')}" autocomplete="off" />
-                <div class="search-results"></div>
-              </div>
-              <input class="ex-sets" placeholder="Sets" value="${escapeAttr(String(ex.sets ?? '3'))}" />
-              <input class="ex-reps" placeholder="Reps" value="${escapeAttr(String(ex.reps ?? ''))}" />
-              <button type="button" class="danger small btn-del-ex">✕</button>
-            </div>`).join('')}
-          <button type="button" class="secondary small btn-add-ex">+ Exercise</button>
-        </div>`).join('');
+          <div class="day-col-body">
+            ${(d.exercises || []).map((ex, ei) => `
+              <div class="ex-card" data-ei="${ei}">
+                <div class="ex-name-wrap">
+                  <input class="ex-name" placeholder="Exercise…" value="${escapeAttr(ex.name || '')}" autocomplete="off" />
+                  <div class="search-results"></div>
+                </div>
+                <div class="ex-meta">
+                  <input class="ex-sets" placeholder="Sets" value="${escapeAttr(String(ex.sets ?? '3'))}" />
+                  <input class="ex-reps" placeholder="Reps" value="${escapeAttr(String(ex.reps ?? ''))}" />
+                  <button type="button" class="danger small btn-del-ex">✕</button>
+                </div>
+              </div>`).join('')}
+          </div>
+          <div class="day-col-foot">
+            <button type="button" class="secondary small btn-add-ex">+ Exercise</button>
+          </div>
+        </div>`;
+      }).join('') + `
+        <button type="button" class="day-col-add" id="btnAddDayCol">+ Add day</button>
+      `;
 
-      el.querySelectorAll('.day').forEach((dayEl) => {
+      el.querySelectorAll('.day-col').forEach((dayEl) => {
         const di = +dayEl.dataset.di;
         dayEl.querySelector('.day-label').oninput = (e) => { days[di].label = e.target.value; };
         dayEl.querySelector('.btn-del-day').onclick = () => {
           if (days.length <= 1) return;
           days.splice(di, 1);
+          clearSkeletonNote();
           renderDays();
         };
         dayEl.querySelector('.btn-add-ex').onclick = () => {
-          days[di].exercises.push({ name: '', sets: '3', reps: '8-12' });
+          days[di].exercises.push(emptyExercise());
+          clearSkeletonNote();
           renderDays();
         };
-        dayEl.querySelectorAll('.ex-row').forEach((row) => {
-          const ei = +row.dataset.ei;
-          const nameInput = row.querySelector('.ex-name');
-          const resultsEl = row.querySelector('.search-results');
+        dayEl.querySelectorAll('.ex-card').forEach((card) => {
+          const ei = +card.dataset.ei;
+          const nameInput = card.querySelector('.ex-name');
+          const resultsEl = card.querySelector('.search-results');
           nameInput.oninput = (e) => {
             days[di].exercises[ei].name = e.target.value;
             days[di].exercises[ei].exercise_id = null;
@@ -1131,21 +1226,25 @@
             );
           };
           nameInput.onblur = () => {
-            // Delay so click on a result still registers.
-            setTimeout(() => {
-              if (resultsEl) {
-                resultsEl.style.display = 'none';
-              }
-            }, 180);
+            setTimeout(() => { if (resultsEl) resultsEl.style.display = 'none'; }, 180);
           };
-          row.querySelector('.ex-sets').oninput = (e) => { days[di].exercises[ei].sets = e.target.value; };
-          row.querySelector('.ex-reps').oninput = (e) => { days[di].exercises[ei].reps = e.target.value; };
-          row.querySelector('.btn-del-ex').onclick = () => {
+          card.querySelector('.ex-sets').oninput = (e) => { days[di].exercises[ei].sets = e.target.value; };
+          card.querySelector('.ex-reps').oninput = (e) => { days[di].exercises[ei].reps = e.target.value; };
+          card.querySelector('.btn-del-ex').onclick = () => {
             days[di].exercises.splice(ei, 1);
+            if (!days[di].exercises.length) days[di].exercises.push(emptyExercise());
             renderDays();
           };
         });
       });
+      const addCol = $('btnAddDayCol');
+      if (addCol) {
+        addCol.onclick = () => {
+          days.push({ label: `Day ${days.length + 1}`, exercises: [emptyExercise()] });
+          clearSkeletonNote();
+          renderDays();
+        };
+      }
     }
 
     function structureFromDays() {
@@ -1165,24 +1264,29 @@
       };
     }
 
-    function loadDaysFromStructure(structure) {
+    function loadDaysFromStructure(structure, { allowSkeleton = false } = {}) {
       const raw = structure && Array.isArray(structure.days) ? structure.days : [];
-      if (!raw.length) {
-        days = [{ label: 'Day 1', exercises: [{ name: '', sets: '3', reps: '8-12' }] }];
+      const usable = raw.filter((d) => d && (Array.isArray(d.exercises) ? d.exercises.length : true));
+      if (!usable.length) {
+        if (allowSkeleton) applySkeletonFromProfile();
+        else {
+          days = skeletonDays(1);
+          clearSkeletonNote();
+        }
         return;
       }
-      days = raw.map((d, i) => ({
+      clearSkeletonNote();
+      days = usable.map((d, i) => ({
         label: d.label || `Day ${i + 1}`,
-        exercises: (d.exercises || []).map((ex) => ({
-          name: ex.name || ex.exercise_name || '',
-          exercise_id: ex.exercise_id || null,
-          sets: ex.sets != null ? String(ex.sets) : '3',
-          reps: ex.reps != null ? String(ex.reps) : (ex.rep_range || ''),
-        })),
+        exercises: (d.exercises && d.exercises.length)
+          ? d.exercises.map((ex) => ({
+              name: ex.name || ex.exercise_name || '',
+              exercise_id: ex.exercise_id || null,
+              sets: ex.sets != null ? String(ex.sets) : '3',
+              reps: ex.reps != null ? String(ex.reps) : (ex.rep_range || ''),
+            }))
+          : [emptyExercise()],
       }));
-      if (!days.length) {
-        days = [{ label: 'Day 1', exercises: [{ name: '', sets: '3', reps: '8-12' }] }];
-      }
     }
 
     async function ensureCoach() {
@@ -1287,11 +1391,13 @@
       lastDocToken = '';
       $('btnPrint').disabled = true;
       if (!c) {
-        loadDaysFromStructure(null);
+        days = skeletonDays(1);
+        clearSkeletonNote();
         renderDays();
         updateSelectedHint();
         return;
       }
+      await loadLinkedProfile(c);
       const { data: { user } } = await sb.auth.getUser();
       const { data } = await sb
         .from('coach_client_programs')
@@ -1304,13 +1410,18 @@
         .maybeSingle();
       if (data) {
         $('progName').value = data.name || 'Training program';
-        loadDaysFromStructure(data.structure);
+        const rawDays = Array.isArray(data.structure?.days) ? data.structure.days : [];
+        if (!rawDays.length) {
+          applySkeletonFromProfile();
+        } else {
+          loadDaysFromStructure(data.structure, { allowSkeleton: false });
+        }
         lastDocToken = data.doc_token || '';
         $('btnPrint').disabled = !lastDocToken;
         hasProgramByClient[c.id] = true;
       } else {
         $('progName').value = `Program for ${c.display_name}`;
-        loadDaysFromStructure(null);
+        applySkeletonFromProfile();
       }
       renderDays();
       updateSelectedHint();
@@ -1377,10 +1488,7 @@
       await refreshSchedule(user.id);
     };
 
-    $('btnAddDay').onclick = () => {
-      days.push({ label: `Day ${days.length + 1}`, exercises: [{ name: '', sets: '3', reps: '8-12' }] });
-      renderDays();
-    };
+    // Add-day lives on the board column (#btnAddDayCol), wired in renderDays().
 
     $('btnSaveProg').onclick = async () => {
       const c = selectedClient();
