@@ -4,7 +4,7 @@ Companion UI for [`docs/coach-admin-module-spec.md`](../../../docs/coach-admin-m
 
 | Page | Purpose |
 |------|---------|
-| `index.html` | Guided Coach Admin: **1 Client → 2 Program → 3 Schedule** (hard schedule gate; email lookup + intake; day/exercise builder) |
+| `index.html` | Guided Coach Admin: **1 Client → 2 Program → 3 Schedule**; Program step is **side-by-side** (client profile | day/exercise builder); hard schedule gate; email lookup + intake |
 | `doc.html?token=` | Professional print / Save PDF |
 | `accept.html?token=` | Landing for coach→athlete roster invite |
 
