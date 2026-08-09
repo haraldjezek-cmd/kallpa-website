@@ -745,19 +745,16 @@
       const c = roster.find((x) => x.id === id);
       if (!c) return;
       const ok = window.confirm(
-        `Remove ${c.display_name} from your client list?\n\nThey will disappear from Coach Admin. You can invite them again later if needed.`,
+        `Permanently delete ${c.display_name} from your roster?\n\nTheir programs and session links for this client will also be removed. You can invite them again later if needed.`,
       );
       if (!ok) return;
       const { data: { user } } = await sb.auth.getUser();
       if (!user) return;
-      const { error } = await sb.from('coach_roster_clients').update({
-        status: 'archived',
-        invite_token: null,
-        invite_expires_at: null,
-        updated_at: new Date().toISOString(),
-      }).eq('id', id).eq('coach_id', user.id);
-      if (error) {
-        $('addMsg').textContent = error.message;
+      const { data, error } = await sb.functions.invoke('coach-admin-delete-client', {
+        body: { roster_client_id: id },
+      });
+      if (error || data?.error) {
+        $('addMsg').textContent = error?.message || data?.error || 'Delete failed.';
         $('addMsg').className = 'err';
         return;
       }
@@ -767,7 +764,7 @@
         u.searchParams.delete('client');
         history.replaceState(null, '', u);
       }
-      $('addMsg').textContent = `${c.display_name} removed.`;
+      $('addMsg').textContent = `${c.display_name} permanently deleted.`;
       $('addMsg').className = 'ok';
       await refresh();
     }
