@@ -508,12 +508,28 @@
           ? `${location.origin}/coach/admin/accept.html?token=${c.invite_token}`
           : '';
         body.innerHTML = `
-          <p class="hint">Waiting for <strong>${escapeHtml(c.display_name)}</strong> to accept your invite. Once they do, their Kallpa profile details will appear here.</p>
-          ${web ? `<p class="muted">Share this link:</p><code>${escapeHtml(web)}</code>
-            <button type="button" class="secondary small" id="btnCopyInvite">Copy invite link</button>` : ''}
+          <p class="hint"><strong>Waiting for them to join.</strong> They are not connected yet — send the invite link and ask them to finish on their phone.</p>
+          <ol class="muted" style="margin:0 0 0.85rem;padding-left:1.2rem;color:var(--muted)">
+            <li>Copy the link below (or share it via WhatsApp / email).</li>
+            <li>Tell them: install Kallpa if needed, sign in with their email, open the link on their <strong>phone</strong>, then tap <strong>Join my coach</strong> in the app.</li>
+            <li>When they join, this page will show their Kallpa profile (goal, weight, etc.).</li>
+          </ol>
+          ${web ? `<p class="muted" style="margin:0 0 0.35rem">Invite link for ${escapeHtml(c.display_name)}:</p>
+            <code>${escapeHtml(web)}</code>
+            <div class="btn-row">
+              <button type="button" class="secondary" id="btnCopyInvite">Copy invite link</button>
+            </div>
+            <p class="muted" id="inviteCopyMsg"></p>` : '<p class="err">No invite link on this client — add them again with Invite.</p>'}
         `;
         $('btnCopyInvite')?.addEventListener('click', async () => {
-          try { await navigator.clipboard.writeText(web); $('addMsg').textContent = 'Invite link copied.'; $('addMsg').className = 'ok'; } catch (_) {}
+          try {
+            await navigator.clipboard.writeText(web);
+            $('inviteCopyMsg').textContent = 'Copied. Paste it into a message to your client.';
+            $('inviteCopyMsg').className = 'ok';
+          } catch (_) {
+            $('inviteCopyMsg').textContent = 'Could not copy — select the link above manually.';
+            $('inviteCopyMsg').className = 'err';
+          }
         });
         return;
       }
@@ -926,7 +942,7 @@
         return;
       }
       const web = `${location.origin}/coach/admin/accept.html?token=${inviteToken}`;
-      $('addMsg').innerHTML = `Invite ready — share this link with them:<br/><code>${escapeHtml(web)}</code>`;
+      $('addMsg').innerHTML = `Invite ready. <strong>Send this link to your client</strong> (WhatsApp, email, etc.). Ask them to open it on their phone, sign in to Kallpa, then tap Join my coach.<br/><code>${escapeHtml(web)}</code>`;
       $('addMsg').className = 'ok';
       try { await navigator.clipboard.writeText(web); } catch (_) {}
       selectedId = data.id;
