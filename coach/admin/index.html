@@ -163,25 +163,37 @@
     .program-layout {
       display: flex;
       flex-direction: column;
-      gap: 0.85rem;
+      gap: 0.65rem;
     }
-    .program-side .card { margin-bottom: 0; }
-    .program-side .side-name {
-      font-size: 1.05rem; font-weight: 700; margin: 0 0 0.25rem; letter-spacing: -0.01em;
+    .program-side .card {
+      margin-bottom: 0;
+      padding: 0.7rem 0.85rem;
     }
-    .program-side .side-source {
-      font-size: 0.8rem; color: var(--muted); margin: 0 0 0.55rem;
+    .program-side h2 { font-size: 0.85rem; margin: 0 0 0.4rem; color: var(--muted); font-weight: 700; }
+    .client-compact {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem 0.45rem;
     }
-    .program-side .profile-grid {
-      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    .client-compact .who {
+      font-weight: 700; margin-right: 0.25rem; font-size: 0.98rem;
+    }
+    .client-compact .chip {
+      margin-left: 0;
+      background: #1e2a36;
+      color: #c5d2df;
+    }
+    .client-compact .chip.ok { background: rgba(61,154,106,0.22); color: #8fd6b0; }
+    .client-compact .edit-link {
+      margin-top: 0; margin-left: auto; width: auto;
+      padding: 0.3rem 0.65rem; font-size: 0.8rem;
     }
     .program-main .card { margin-bottom: 0; }
     .program-empty {
-      padding: 1.25rem; text-align: center; color: var(--muted);
+      padding: 0.5rem 0; text-align: left; color: var(--muted); font-size: 0.9rem;
     }
     .wrap.wide { max-width: 1280px; }
     @media (max-width: 820px) {
       .wrap.wide { max-width: 760px; }
+      .client-compact .edit-link { margin-left: 0; width: 100%; }
     }
     /* App-style horizontal day board */
     .day-board-meta {
@@ -190,64 +202,86 @@
     }
     .day-board-meta .grow { flex: 1; min-width: 12rem; }
     .day-board-scroll {
-      display: flex; gap: 0.65rem; overflow-x: auto; padding: 0.15rem 0.15rem 0.85rem;
+      display: flex; gap: 0.65rem; overflow-x: auto; overflow-y: visible;
+      padding: 0.15rem 0.15rem 1rem;
       scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+      scrollbar-color: #3a4a5a transparent;
+    }
+    .day-board-scroll::-webkit-scrollbar { height: 6px; }
+    .day-board-scroll::-webkit-scrollbar-thumb {
+      background: #3a4a5a; border-radius: 999px;
     }
     .day-col {
       flex: 0 0 220px; width: 220px; scroll-snap-align: start;
       border: 1px solid var(--border); border-radius: 12px;
       background: var(--bg-elev); display: flex; flex-direction: column;
-      min-height: 280px; max-height: min(70vh, 640px);
+      min-height: 240px; overflow: visible;
     }
     .day-col-head {
-      padding: 0.65rem 0.7rem 0.55rem; border-bottom: 1px solid var(--border);
+      padding: 0.5rem 0.55rem 0.45rem; border-bottom: 1px solid var(--border);
+    }
+    .day-col-head .day-num-row {
+      display: flex; align-items: center; justify-content: space-between; gap: 0.35rem;
+      margin-bottom: 0.3rem;
     }
     .day-col-head .day-num {
-      font-size: 0.7rem; font-weight: 700; letter-spacing: 0.04em;
-      text-transform: uppercase; color: var(--muted); margin-bottom: 0.25rem;
+      font-size: 0.68rem; font-weight: 700; letter-spacing: 0.04em;
+      text-transform: uppercase; color: var(--muted);
+    }
+    .day-col-head .btn-del-day {
+      margin: 0; width: auto; padding: 0.15rem 0.4rem; font-size: 0.72rem;
     }
     .day-col-head input {
-      width: 100%; padding: 0.35rem 0.45rem; font-size: 0.9rem; font-weight: 600;
+      width: 100%; padding: 0.3rem 0.4rem; font-size: 0.88rem; font-weight: 600;
     }
     .day-col-body {
-      flex: 1; overflow-y: auto; padding: 0.5rem;
+      flex: 1; overflow: visible; padding: 0.45rem;
     }
     .day-col-foot {
-      padding: 0.45rem 0.5rem 0.6rem; border-top: 1px solid var(--border);
+      padding: 0.4rem 0.45rem 0.5rem; border-top: 1px solid var(--border);
     }
     .day-col-foot button { margin-top: 0; width: 100%; }
     .ex-card {
-      border: 1px solid var(--border); border-radius: 10px; padding: 0.45rem;
-      margin-bottom: 0.45rem; background: var(--card); position: relative;
+      border: 1px solid var(--border); border-radius: 10px; padding: 0.4rem;
+      margin-bottom: 0.4rem; background: var(--card); position: relative;
+      overflow: visible;
     }
-    .ex-card .ex-name-wrap { position: relative; }
+    .ex-card .ex-name-wrap { position: relative; overflow: visible; }
     .ex-card .ex-meta {
-      display: grid; grid-template-columns: 1fr 1fr auto; gap: 0.3rem; margin-top: 0.35rem;
+      display: grid; grid-template-columns: 1fr 1fr auto; gap: 0.3rem; margin-top: 0.3rem;
       align-items: center;
     }
-    .ex-card input { padding: 0.4rem 0.45rem; font-size: 0.85rem; }
-    .ex-card .btn-del-ex { margin-top: 0; padding: 0.3rem 0.45rem; }
+    .ex-card input { padding: 0.35rem 0.4rem; font-size: 0.85rem; }
+    .ex-card .btn-del-ex { margin-top: 0; padding: 0.25rem 0.4rem; }
     .day-col-add {
-      flex: 0 0 140px; width: 140px;
+      flex: 0 0 120px; width: 120px;
       border: 1px dashed var(--border); border-radius: 12px;
       background: transparent; color: var(--muted); font-weight: 700;
-      margin-top: 0; align-self: stretch; min-height: 280px;
+      margin-top: 0; align-self: stretch; min-height: 240px;
       display: flex; align-items: center; justify-content: center;
     }
     .day-col-add:hover { border-color: var(--accent); color: #fff; background: var(--accent-soft); }
-    .search-results {
-      position: absolute; z-index: 30; left: 0; right: 0; top: calc(100% + 2px);
-      border: 1px solid var(--border); border-radius: 8px; max-height: 180px;
-      overflow: auto; background: var(--bg-elev); box-shadow: var(--shadow);
+    /* Autocomplete floats above the board (no nested column scrollbars) */
+    .search-results-float {
+      position: fixed; z-index: 80;
+      border: 1px solid var(--border); border-radius: 8px; max-height: 220px;
+      overflow-y: auto; background: #121a22; box-shadow: var(--shadow);
       display: none;
+      scrollbar-width: thin;
+      scrollbar-color: #3a4a5a transparent;
     }
-    .search-results button {
+    .search-results-float::-webkit-scrollbar { width: 6px; }
+    .search-results-float::-webkit-scrollbar-thumb {
+      background: #3a4a5a; border-radius: 999px;
+    }
+    .search-results-float button {
       display: block; width: 100%; text-align: left; margin: 0; border: 0;
       border-bottom: 1px solid var(--border); border-radius: 0;
-      background: transparent; font-weight: 500; padding: 0.5rem 0.6rem; font-size: 0.85rem;
+      background: transparent; font-weight: 500; padding: 0.5rem 0.65rem; font-size: 0.85rem;
     }
-    .search-results button:hover { background: rgba(61,154,106,0.15); }
-    .search-results .muted-sm { color: var(--muted); font-size: 0.72rem; font-weight: 500; }
+    .search-results-float button:hover { background: rgba(61,154,106,0.15); }
+    .search-results-float .muted-sm { color: var(--muted); font-size: 0.72rem; font-weight: 500; }
     .skeleton-note {
       font-size: 0.85rem; color: var(--muted); margin: 0 0 0.65rem;
     }
@@ -329,7 +363,6 @@
         <div class="program-layout">
           <aside class="program-side">
             <div class="card">
-              <h2>Client</h2>
               <div id="progSidePanel">
                 <p class="muted program-empty">Select a client in step 1 first.</p>
               </div>
@@ -629,17 +662,26 @@
       if (c.client_user_id) {
         const p = linkedProfiles[c.client_user_id] || {};
         const age = ageFromBirth(p.birth_date);
+        const chips = [];
+        if (p.goal) chips.push(labelGoal(p.goal));
+        if (age != null) chips.push(`Age ${age}`);
+        if (p.bodyweight_kg != null) chips.push(`${p.bodyweight_kg} kg`);
+        if (p.sex) chips.push(labelSex(p.sex));
+        if (p.training_environment) chips.push(labelEnv(p.training_environment));
+        if (p.days_per_week != null) chips.push(`${p.days_per_week}× / week`);
+        if (p.training_years != null && p.training_years !== '') {
+          chips.push(`${p.training_years} yr exp`);
+        }
+        const inj = Array.isArray(p.injury_flags) && p.injury_flags.length
+          ? p.injury_flags.join(', ')
+          : '';
+        if (inj) chips.push(inj);
         body.innerHTML = `
           <p class="muted" style="margin-top:0">Pulled from their Kallpa profile</p>
-          <div class="profile-grid">
-            ${kv('Goal', labelGoal(p.goal))}
-            ${kv('Age', age != null ? age : '—')}
-            ${kv('Weight', p.bodyweight_kg != null ? `${p.bodyweight_kg} kg` : '—')}
-            ${kv('Sex', labelSex(p.sex))}
-            ${kv('Training place', labelEnv(p.training_environment))}
-            ${kv('Days / week', p.days_per_week != null ? p.days_per_week : '—')}
-            ${kv('Experience', p.training_years != null ? `${p.training_years} years` : '—')}
-            ${kv('Injuries', Array.isArray(p.injury_flags) && p.injury_flags.length ? p.injury_flags.join(', ') : '—')}
+          <div class="client-compact" style="margin:0.35rem 0 0.75rem">
+            ${chips.length
+              ? chips.map((t) => `<span class="chip">${escapeHtml(t)}</span>`).join('')
+              : '<span class="muted">No profile details yet</span>'}
           </div>
           <div class="btn-row">
             <button type="button" class="secondary" id="btnToProgram">Build / edit program →</button>
@@ -684,12 +726,20 @@
           ${Object.entries(ENV_LABELS).map(([k, v]) =>
             `<option value="${k}" ${c.training_environment === k ? 'selected' : ''}>${v}</option>`).join('')}
         </select>
-        <label>Days per week</label>
-        <select id="intakeDays">
-          <option value="">Not sure</option>
-          ${[1,2,3,4,5,6,7].map((n) =>
-            `<option value="${n}" ${Number(c.days_per_week) === n ? 'selected' : ''}>${n}</option>`).join('')}
-        </select>
+        <div class="profile-grid">
+          <div>
+            <label>Days per week</label>
+            <select id="intakeDays">
+              <option value="">Not sure</option>
+              ${[1,2,3,4,5,6,7].map((n) =>
+                `<option value="${n}" ${Number(c.days_per_week) === n ? 'selected' : ''}>${n}</option>`).join('')}
+            </select>
+          </div>
+          <div>
+            <label>Experience (years)</label>
+            <input id="intakeYears" type="number" min="0" max="60" step="0.5" value="${escapeAttr(c.training_years ?? '')}" placeholder="e.g. 2" />
+          </div>
+        </div>
         <label>Injuries or limits (optional)</label>
         <textarea id="intakeInjuries" placeholder="e.g. sensitive right knee">${escapeHtml(c.injury_notes || '')}</textarea>
         <label>Private coach notes (optional)</label>
@@ -718,6 +768,7 @@
         sex: $('intakeSex').value || null,
         training_environment: $('intakeEnv').value || null,
         days_per_week: $('intakeDays').value ? Number($('intakeDays').value) : null,
+        training_years: $('intakeYears').value !== '' ? Number($('intakeYears').value) : null,
         injury_notes: $('intakeInjuries').value.trim() || null,
         notes: $('intakeNotes').value.trim() || null,
         updated_at: new Date().toISOString(),
@@ -762,30 +813,28 @@
         return;
       }
       const snap = getClientSnapshot(c);
-      const sourceLabel = snap.source === 'kallpa'
-        ? 'From their Kallpa profile'
-        : snap.source === 'pending'
-          ? 'Invite pending — limited details'
-          : 'Offline intake';
+      const chips = [];
+      if (snap.goal) chips.push(labelGoal(snap.goal));
+      if (snap.age != null) chips.push(`Age ${snap.age}`);
+      if (snap.bodyweight_kg != null) chips.push(`${snap.bodyweight_kg} kg`);
+      if (snap.sex) chips.push(labelSex(snap.sex));
+      if (snap.training_environment) chips.push(labelEnv(snap.training_environment));
+      if (snap.days_per_week != null) chips.push(`${snap.days_per_week}× / week`);
+      if (snap.training_years != null && snap.training_years !== '') {
+        chips.push(`${snap.training_years} yr exp`);
+      }
       const inj = snap.injury_notes
         || (Array.isArray(snap.injury_flags) && snap.injury_flags.length
           ? snap.injury_flags.join(', ')
           : '');
+      if (inj) chips.push(inj);
       el.innerHTML = `
-        <p class="side-name">${escapeHtml(c.display_name)}</p>
-        <p class="side-source">${escapeHtml(sourceLabel)} ${statusChips(c)}</p>
-        <div class="profile-grid" style="grid-template-columns:1fr">
-          ${kv('Goal', labelGoal(snap.goal))}
-          ${kv('Age', snap.age != null ? snap.age : '—')}
-          ${kv('Weight', snap.bodyweight_kg != null ? `${snap.bodyweight_kg} kg` : '—')}
-          ${kv('Sex', labelSex(snap.sex))}
-          ${kv('Trains at', labelEnv(snap.training_environment))}
-          ${kv('Days / week', snap.days_per_week != null ? snap.days_per_week : '—')}
-          ${kv('Experience', snap.training_years != null ? `${snap.training_years} years` : '—')}
-          ${kv('Injuries / limits', inj || '—')}
+        <div class="client-compact">
+          <span class="who">${escapeHtml(c.display_name)}</span>
+          ${statusChips(c)}
+          ${chips.map((t) => `<span class="chip">${escapeHtml(t)}</span>`).join('')}
+          <button type="button" class="secondary small edit-link" id="btnSideToClient">Edit details</button>
         </div>
-        ${c.notes ? `<p class="muted" style="margin:0.75rem 0 0"><strong>Notes:</strong> ${escapeHtml(c.notes)}</p>` : ''}
-        <button type="button" class="secondary small" id="btnSideToClient" style="margin-top:0.85rem">Edit client details</button>
       `;
       $('btnSideToClient').onclick = () => setStep('clients');
     }
@@ -974,11 +1023,19 @@
             <option value="">Not sure</option>
             ${Object.entries(ENV_LABELS).map(([k, v]) => `<option value="${k}">${v}</option>`).join('')}
           </select>
-          <label>Days per week</label>
-          <select id="offDays">
-            <option value="">Not sure</option>
-            ${[1,2,3,4,5,6,7].map((n) => `<option value="${n}">${n}</option>`).join('')}
-          </select>
+          <div class="profile-grid">
+            <div>
+              <label>Days per week</label>
+              <select id="offDays">
+                <option value="">Not sure</option>
+                ${[1,2,3,4,5,6,7].map((n) => `<option value="${n}">${n}</option>`).join('')}
+              </select>
+            </div>
+            <div>
+              <label>Experience (years)</label>
+              <input id="offYears" type="number" min="0" max="60" step="0.5" placeholder="e.g. 2" />
+            </div>
+          </div>
           <label>Injuries or limits (optional)</label>
           <textarea id="offInj" placeholder="Anything you should work around"></textarea>
           <button type="button" id="btnSaveOffline">Save client</button>
@@ -1100,6 +1157,9 @@
         goal: $('offGoal')?.value || null,
         training_environment: $('offEnv')?.value || null,
         days_per_week: $('offDays')?.value ? Number($('offDays').value) : null,
+        training_years: $('offYears')?.value !== '' && $('offYears')?.value != null
+          ? Number($('offYears').value)
+          : null,
         injury_notes: ($('offInj')?.value || '').trim() || null,
       }).select('id').single();
       $('addMsg').textContent = error ? error.message : 'Client saved. Next: build their program.';
@@ -1114,14 +1174,40 @@
     }
 
     let searchTimer = null;
+    let floatResults = null;
 
-    async function searchCatalog(q, resultsEl, onPick) {
+    function ensureFloatResults() {
+      if (floatResults && document.body.contains(floatResults)) return floatResults;
+      floatResults = document.createElement('div');
+      floatResults.className = 'search-results-float';
+      floatResults.id = 'exSearchFloat';
+      document.body.appendChild(floatResults);
+      return floatResults;
+    }
+
+    function hideFloatResults() {
+      const el = ensureFloatResults();
+      el.style.display = 'none';
+      el.innerHTML = '';
+    }
+
+    function placeFloatResults(anchor) {
+      const el = ensureFloatResults();
+      const r = anchor.getBoundingClientRect();
+      const width = Math.max(r.width, 220);
+      el.style.left = `${Math.min(r.left, window.innerWidth - width - 8)}px`;
+      el.style.top = `${r.bottom + 4}px`;
+      el.style.width = `${width}px`;
+      el.style.display = 'block';
+      return el;
+    }
+
+    async function searchCatalog(q, anchorInput, onPick) {
       if (!q || q.length < 2) {
-        resultsEl.style.display = 'none';
-        resultsEl.innerHTML = '';
+        hideFloatResults();
         return;
       }
-      resultsEl.style.display = 'block';
+      const resultsEl = placeFloatResults(anchorInput);
       resultsEl.innerHTML = '<button type="button" disabled>Searching…</button>';
       try {
         const { data, error } = await sb.functions.invoke('coach-admin-exercises', {
@@ -1141,10 +1227,10 @@
           </button>`;
         }).join('');
         resultsEl.querySelectorAll('button[data-id]').forEach((btn) => {
+          btn.onmousedown = (ev) => ev.preventDefault();
           btn.onclick = () => {
             onPick({ id: btn.dataset.id, name: btn.dataset.name || '' });
-            resultsEl.style.display = 'none';
-            resultsEl.innerHTML = '';
+            hideFloatResults();
           };
         });
       } catch (e) {
@@ -1153,6 +1239,7 @@
     }
 
     function renderDays() {
+      hideFloatResults();
       const el = $('days');
       if (!el) return;
       const c = selectedClient();
@@ -1168,16 +1255,17 @@
         return `
         <div class="day-col" data-di="${di}">
           <div class="day-col-head">
-            <div class="day-num">Day ${di + 1}${setCount ? ` · ${setCount} sets` : ''}</div>
+            <div class="day-num-row">
+              <span class="day-num">Day ${di + 1}${setCount ? ` · ${setCount} sets` : ''}</span>
+              <button type="button" class="danger small btn-del-day">Remove</button>
+            </div>
             <input class="day-label" value="${escapeAttr(d.label || ('Day ' + (di + 1)))}" />
-            <button type="button" class="danger small btn-del-day" style="margin-top:0.4rem;width:100%">Remove day</button>
           </div>
           <div class="day-col-body">
             ${(d.exercises || []).map((ex, ei) => `
               <div class="ex-card" data-ei="${ei}">
                 <div class="ex-name-wrap">
                   <input class="ex-name" placeholder="Exercise…" value="${escapeAttr(ex.name || '')}" autocomplete="off" />
-                  <div class="search-results"></div>
                 </div>
                 <div class="ex-meta">
                   <input class="ex-sets" placeholder="Sets" value="${escapeAttr(String(ex.sets ?? '3'))}" />
@@ -1211,13 +1299,12 @@
         dayEl.querySelectorAll('.ex-card').forEach((card) => {
           const ei = +card.dataset.ei;
           const nameInput = card.querySelector('.ex-name');
-          const resultsEl = card.querySelector('.search-results');
           nameInput.oninput = (e) => {
             days[di].exercises[ei].name = e.target.value;
             days[di].exercises[ei].exercise_id = null;
             clearTimeout(searchTimer);
             searchTimer = setTimeout(
-              () => searchCatalog(e.target.value.trim(), resultsEl, (picked) => {
+              () => searchCatalog(e.target.value.trim(), nameInput, (picked) => {
                 days[di].exercises[ei].name = picked.name;
                 days[di].exercises[ei].exercise_id = picked.id;
                 nameInput.value = picked.name;
@@ -1226,7 +1313,17 @@
             );
           };
           nameInput.onblur = () => {
-            setTimeout(() => { if (resultsEl) resultsEl.style.display = 'none'; }, 180);
+            setTimeout(() => hideFloatResults(), 160);
+          };
+          nameInput.onfocus = () => {
+            const q = nameInput.value.trim();
+            if (q.length >= 2) {
+              searchCatalog(q, nameInput, (picked) => {
+                days[di].exercises[ei].name = picked.name;
+                days[di].exercises[ei].exercise_id = picked.id;
+                nameInput.value = picked.name;
+              });
+            }
           };
           card.querySelector('.ex-sets').oninput = (e) => { days[di].exercises[ei].sets = e.target.value; };
           card.querySelector('.ex-reps').oninput = (e) => { days[di].exercises[ei].reps = e.target.value; };
