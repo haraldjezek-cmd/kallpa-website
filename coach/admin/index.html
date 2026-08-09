@@ -327,6 +327,39 @@
       display: inline-block; font-size: 0.72rem; padding: 0.15rem 0.45rem; border-radius: 999px;
       background: rgba(61,154,106,0.22); color: #8fd6b0; font-weight: 700; margin-left: 0.35rem;
     }
+    .client-switch {
+      display: flex; flex-wrap: wrap; align-items: end; gap: 0.45rem; margin: 0.5rem 0 0.85rem;
+    }
+    .client-switch .grow { flex: 1; min-width: 10rem; }
+    .client-switch button { margin-top: 0; width: auto; min-width: 2.4rem; padding: 0.55rem 0.65rem; }
+    .client-switch .count { color: var(--muted); font-size: 0.82rem; padding-bottom: 0.55rem; }
+    .log-ex {
+      border: 1px solid var(--border); border-radius: 10px; padding: 0.55rem 0.6rem;
+      margin: 0.55rem 0; background: var(--card);
+    }
+    .log-ex .ex-head {
+      display: flex; justify-content: space-between; gap: 0.5rem; align-items: baseline;
+      margin-bottom: 0.35rem;
+    }
+    .log-ex .ex-head strong { font-size: 0.95rem; }
+    .log-ex .ex-target { font-size: 0.78rem; color: var(--muted); }
+    .set-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    .set-table th {
+      text-align: left; color: var(--muted); font-weight: 700; font-size: 0.7rem;
+      text-transform: uppercase; letter-spacing: 0.03em; padding: 0.2rem 0.25rem;
+    }
+    .set-table td { padding: 0.2rem 0.25rem; vertical-align: middle; }
+    .set-table input[type="number"] {
+      width: 100%; padding: 0.35rem 0.4rem; font-size: 0.85rem;
+    }
+    .set-table .col-n { width: 2rem; color: var(--muted); font-weight: 700; }
+    .set-table .col-w { width: 4.5rem; }
+    .set-table .col-r { width: 3.5rem; }
+    .set-table .col-rir { width: 3.2rem; }
+    .set-table .col-wu { width: 2.2rem; text-align: center; }
+    .set-table .col-del { width: 2.2rem; }
+    .set-table .col-wu input, .set-table .col-del button { width: auto; margin: 0; padding: 0.25rem 0.35rem; }
+    .log-ex .btn-add-set { margin-top: 0.4rem; width: auto; padding: 0.3rem 0.65rem; font-size: 0.8rem; }
   </style>
 </head>
 <body>
@@ -474,6 +507,12 @@
     let todaysAppointments = [];
     /** @type {string|null} */
     let openAppointmentId = null;
+    /** @type {string|null} */
+    let sheetFocusClientId = null;
+    /** @type {Record<string, any>} */
+    let sheetDraftByClient = {};
+    /** @type {any|null} */
+    let sheetApptCache = null;
     /** @type {Record<string, any>} */
     let linkedProfiles = {};
     let addPhase = 'choice'; // choice | kallpa | noapp | offline | invite_form
@@ -969,20 +1008,6 @@
       return label || `Day ${dayIndex + 1}`;
     }
 
-    function exerciseLinesFor(clientId, dayIndex) {
-      const day = programDaysFor(clientId)[dayIndex];
-      const exs = Array.isArray(day?.exercises) ? day.exercises : [];
-      return exs
-        .filter((ex) => (ex.name || ex.exercise_name || '').trim())
-        .map((ex) => {
-          const name = ex.name || ex.exercise_name || 'Exercise';
-          const sets = ex.sets != null ? String(ex.sets) : '';
-          const reps = ex.reps != null ? String(ex.reps) : (ex.rep_range || '');
-          const meta = [sets && `${sets} sets`, reps].filter(Boolean).join(' × ');
-          return meta ? `${name} — ${meta}` : name;
-        });
-    }
-
     function rangesOverlap(aStart, aEnd, bStart, bEnd) {
       return aStart < bEnd && bStart < aEnd;
     }
@@ -1027,98 +1052,306 @@
 
     function closeSessionSheet() {
       openAppointmentId = null;
+      sheetFocusClientId = null;
+      sheetDraftByClient = {};
+      sheetApptCache = null;
       $('sessionSheetCard').classList.add('hidden');
       $('scheduleListCard').classList.remove('hidden');
       $('newSessionCard').classList.remove('hidden');
       $('sheetMsg').textContent = '';
     }
 
-    async function openSessionSheet(apptId) {
-      const { data: { user } } = await sb.auth.getUser();
-      if (!user) return;
-      const { data: appt, error } = await sb
-        .from('coach_appointments')
-        .select('id, starts_at, ends_at, notes, coach_appointment_clients(roster_client_id, day_index, session_notes, completed_at)')
-        .eq('id', apptId)
-        .eq('coach_id', user.id)
-        .maybeSingle();
-      if (error || !appt) {
-        $('schedMsg').textContent = error?.message || 'Could not open session.';
-        $('schedMsg').className = 'err';
+    function emptySetRow(n, isWarmup = false) {
+      return {
+        set_number: n,
+        weight_kg: null,
+        reps: null,
+        rir: null,
+        is_warmup: !!isWarmup,
+      };
+    }
+
+    function defaultLogForClient(clientId, dayIndex) {
+      const day = programDaysFor(clientId)[dayIndex] || {};
+      const exs = Array.isArray(day.exercises) ? day.exercises : [];
+      return {
+        exercises: exs
+          .filter((ex) => (ex.name || ex.exercise_name || '').trim())
+          .map((ex) => {
+            const targetSets = Math.max(1, parseInt(String(ex.sets ?? '3'), 10) || 3);
+            return {
+              name: ex.name || ex.exercise_name || 'Exercise',
+              exercise_id: ex.exercise_id || null,
+              target_sets: targetSets,
+              target_reps: ex.reps != null ? String(ex.reps) : (ex.rep_range || ''),
+              sets: Array.from({ length: targetSets }, (_, i) => emptySetRow(i + 1)),
+            };
+          }),
+      };
+    }
+
+    function normalizeLog(raw, clientId, dayIndex) {
+      if (raw && Array.isArray(raw.exercises) && raw.exercises.length) {
+        return {
+          exercises: raw.exercises.map((ex, ei) => {
+            const sets = Array.isArray(ex.sets) && ex.sets.length
+              ? ex.sets.map((s, i) => ({
+                  set_number: s.set_number != null ? Number(s.set_number) : i + 1,
+                  weight_kg: s.weight_kg != null && s.weight_kg !== '' ? Number(s.weight_kg) : null,
+                  reps: s.reps != null && s.reps !== '' ? Number(s.reps) : null,
+                  rir: s.rir != null && s.rir !== '' ? Number(s.rir) : null,
+                  is_warmup: !!s.is_warmup,
+                }))
+              : [emptySetRow(1)];
+            return {
+              name: ex.name || `Exercise ${ei + 1}`,
+              exercise_id: ex.exercise_id || null,
+              target_sets: ex.target_sets != null ? Number(ex.target_sets) : sets.length,
+              target_reps: ex.target_reps != null ? String(ex.target_reps) : '',
+              sets,
+            };
+          }),
+        };
+      }
+      return defaultLogForClient(clientId, dayIndex);
+    }
+
+    function logHasWork(log) {
+      return (log?.exercises || []).some((ex) =>
+        (ex.sets || []).some((s) => s.weight_kg != null || s.reps != null || s.rir != null));
+    }
+
+    function collectSheetDraftFromDom() {
+      const block = $('sessionSheetBody')?.querySelector('.sheet-client');
+      if (!block) return;
+      const cid = block.dataset.cid;
+      if (!cid) return;
+      const exercises = [...block.querySelectorAll('.log-ex')].map((exEl) => {
+        const sets = [...exEl.querySelectorAll('tbody tr')].map((tr, i) => {
+          const weight = tr.querySelector('.in-kg')?.value;
+          const reps = tr.querySelector('.in-reps')?.value;
+          const rir = tr.querySelector('.in-rir')?.value;
+          return {
+            set_number: i + 1,
+            weight_kg: weight !== '' && weight != null ? Number(weight) : null,
+            reps: reps !== '' && reps != null ? Number(reps) : null,
+            rir: rir !== '' && rir != null ? Number(rir) : null,
+            is_warmup: !!tr.querySelector('.in-wu')?.checked,
+          };
+        });
+        return {
+          name: exEl.dataset.name || 'Exercise',
+          exercise_id: exEl.dataset.eid || null,
+          target_sets: Number(exEl.dataset.targetSets) || sets.length,
+          target_reps: exEl.dataset.targetReps || '',
+          sets,
+        };
+      });
+      sheetDraftByClient[cid] = {
+        session_notes: block.querySelector('.sheet-notes')?.value || '',
+        completed: !!block.querySelector('.sheet-done')?.checked,
+        log_json: { exercises },
+      };
+    }
+
+    function renderSetTable(ex, exIndex) {
+      const rows = (ex.sets || [emptySetRow(1)]).map((s, i) => `
+        <tr>
+          <td class="col-n">${s.is_warmup ? 'W' : (i + 1)}</td>
+          <td class="col-w"><input class="in-kg" type="number" step="0.5" min="0" inputmode="decimal" value="${s.weight_kg != null ? escapeAttr(String(s.weight_kg)) : ''}" placeholder="kg" /></td>
+          <td class="col-r"><input class="in-reps" type="number" step="1" min="0" inputmode="numeric" value="${s.reps != null ? escapeAttr(String(s.reps)) : ''}" /></td>
+          <td class="col-rir"><input class="in-rir" type="number" step="0.5" min="0" max="10" inputmode="decimal" value="${s.rir != null ? escapeAttr(String(s.rir)) : ''}" /></td>
+          <td class="col-wu"><input class="in-wu" type="checkbox" ${s.is_warmup ? 'checked' : ''} title="Warm-up" /></td>
+          <td class="col-del"><button type="button" class="danger small btn-del-set" title="Remove set">✕</button></td>
+        </tr>`).join('');
+      const target = [ex.target_sets && `${ex.target_sets} sets`, ex.target_reps].filter(Boolean).join(' × ');
+      return `
+        <div class="log-ex" data-ex="${exIndex}" data-name="${escapeAttr(ex.name || '')}" data-eid="${escapeAttr(ex.exercise_id || '')}" data-target-sets="${escapeAttr(String(ex.target_sets ?? ''))}" data-target-reps="${escapeAttr(ex.target_reps || '')}">
+          <div class="ex-head">
+            <strong>${escapeHtml(ex.name || 'Exercise')}</strong>
+            ${target ? `<span class="ex-target">Target ${escapeHtml(target)}</span>` : ''}
+          </div>
+          <table class="set-table">
+            <thead><tr>
+              <th class="col-n">#</th><th class="col-w">kg</th><th class="col-r">Reps</th><th class="col-rir">RIR</th><th class="col-wu">W</th><th class="col-del"></th>
+            </tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+          <button type="button" class="secondary small btn-add-set">+ Set</button>
+        </div>`;
+    }
+
+    function wireSetTableHandlers(root) {
+      root.querySelectorAll('.btn-add-set').forEach((btn) => {
+        btn.onclick = () => {
+          collectSheetDraftFromDom();
+          const exEl = btn.closest('.log-ex');
+          const cid = sheetFocusClientId;
+          const draft = sheetDraftByClient[cid];
+          const ei = Number(exEl?.dataset.ex);
+          if (!draft?.log_json?.exercises?.[ei]) return;
+          const sets = draft.log_json.exercises[ei].sets;
+          sets.push(emptySetRow(sets.length + 1));
+          renderSheetClientPane();
+        };
+      });
+      root.querySelectorAll('.btn-del-set').forEach((btn) => {
+        btn.onclick = () => {
+          collectSheetDraftFromDom();
+          const exEl = btn.closest('.log-ex');
+          const tr = btn.closest('tr');
+          const cid = sheetFocusClientId;
+          const draft = sheetDraftByClient[cid];
+          const ei = Number(exEl?.dataset.ex);
+          if (!draft?.log_json?.exercises?.[ei]) return;
+          const tbody = exEl.querySelector('tbody');
+          const idx = [...tbody.querySelectorAll('tr')].indexOf(tr);
+          const sets = draft.log_json.exercises[ei].sets;
+          if (sets.length <= 1) {
+            sets[0] = emptySetRow(1);
+          } else if (idx >= 0) {
+            sets.splice(idx, 1);
+            sets.forEach((s, i) => { s.set_number = i + 1; });
+          }
+          renderSheetClientPane();
+        };
+      });
+      root.querySelectorAll('.in-wu').forEach((cb) => {
+        cb.onchange = () => {
+          const tr = cb.closest('tr');
+          const nCell = tr?.querySelector('.col-n');
+          if (nCell) {
+            const idx = [...tr.parentElement.querySelectorAll('tr')].indexOf(tr);
+            nCell.textContent = cb.checked ? 'W' : String(idx + 1);
+          }
+        };
+      });
+    }
+
+    function renderSheetClientPane() {
+      const appt = sheetApptCache;
+      if (!appt) return;
+      const clients = appt.coach_appointment_clients || [];
+      if (!clients.length) {
+        $('sessionSheetBody').innerHTML = '<p class="muted">No clients on this session.</p>';
         return;
       }
-      openAppointmentId = apptId;
-      $('scheduleListCard').classList.add('hidden');
-      $('newSessionCard').classList.add('hidden');
-      $('sessionSheetCard').classList.remove('hidden');
-      const t = `${new Date(appt.starts_at).toLocaleString([], {
-        weekday: 'short', month: 'short', day: 'numeric',
-        hour: '2-digit', minute: '2-digit',
-      })} – ${new Date(appt.ends_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
-      $('sessionSheetTitle').textContent = t;
-      const clients = appt.coach_appointment_clients || [];
+      if (!sheetFocusClientId || !clients.some((c) => c.roster_client_id === sheetFocusClientId)) {
+        sheetFocusClientId = clients[0].roster_client_id;
+      }
+      const idx = clients.findIndex((c) => c.roster_client_id === sheetFocusClientId);
+      const link = clients[idx];
+      const c = roster.find((r) => r.id === link.roster_client_id);
+      const name = c?.display_name || 'Client';
+      const di = link.day_index != null ? Number(link.day_index) : 0;
+      const dayName = dayLabelFor(link.roster_client_id, di);
+      if (!sheetDraftByClient[link.roster_client_id]) {
+        sheetDraftByClient[link.roster_client_id] = {
+          session_notes: link.session_notes || '',
+          completed: !!link.completed_at,
+          log_json: normalizeLog(link.log_json, link.roster_client_id, di),
+        };
+      }
+      const draft = sheetDraftByClient[link.roster_client_id];
+      const doc = programByClient[link.roster_client_id]?.doc_token;
+      const options = clients.map((cl) => {
+        const nm = roster.find((r) => r.id === cl.roster_client_id)?.display_name || 'Client';
+        const d = sheetDraftByClient[cl.roster_client_id];
+        const logged = cl.completed_at
+          || (d && logHasWork(d.log_json))
+          || (cl.session_notes && String(cl.session_notes).trim())
+          || logHasWork(cl.log_json);
+        return `<option value="${cl.roster_client_id}" ${cl.roster_client_id === sheetFocusClientId ? 'selected' : ''}>${escapeHtml(nm)}${logged ? ' · logged' : ''}</option>`;
+      }).join('');
+
       $('sessionSheetBody').innerHTML = `
         ${appt.notes ? `<p class="muted" style="margin-top:0"><strong>Session notes:</strong> ${escapeHtml(appt.notes)}</p>` : ''}
-        ${clients.map((link) => {
-          const c = roster.find((r) => r.id === link.roster_client_id);
-          const name = c?.display_name || 'Client';
-          const di = link.day_index != null ? Number(link.day_index) : 0;
-          const dayName = dayLabelFor(link.roster_client_id, di);
-          const lines = exerciseLinesFor(link.roster_client_id, di);
-          const done = !!link.completed_at;
-          const doc = programByClient[link.roster_client_id]?.doc_token;
-          return `
-            <div class="sheet-client" data-cid="${link.roster_client_id}">
-              <h3>${escapeHtml(name)}${done ? '<span class="done-badge">Logged</span>' : ''}</h3>
-              <p class="muted" style="margin:0 0 0.5rem">Program day: <strong>${escapeHtml(dayName)}</strong></p>
-              ${lines.length
-                ? `<ol class="ex-preview">${lines.map((l) => `<li>${escapeHtml(l)}</li>`).join('')}</ol>`
-                : '<p class="muted">No exercises on this day.</p>'}
-              <label>What happened (coach log)</label>
-              <textarea class="sheet-notes" rows="3" placeholder="e.g. 3×8 squat @ 60kg, good form; skipped lunges — knee">${escapeHtml(link.session_notes || '')}</textarea>
-              <label class="check" style="margin-top:0.55rem">
-                <input type="checkbox" class="sheet-done" ${done ? 'checked' : ''} style="width:auto" />
-                Mark this client’s session complete
-              </label>
-              <div class="btn-row">
-                <button type="button" class="secondary btn-save-log">Save log</button>
-                ${doc ? `<button type="button" class="secondary btn-print-doc" data-token="${escapeAttr(doc)}">Print / PDF</button>` : ''}
-              </div>
-            </div>`;
-        }).join('') || '<p class="muted">No clients on this session.</p>'}
+        <div class="client-switch">
+          <button type="button" class="secondary" id="btnSheetPrev" ${idx <= 0 ? 'disabled' : ''} title="Previous client">‹</button>
+          <div class="grow">
+            <label style="margin-top:0">Logging for</label>
+            <select id="sheetClientSelect">${options}</select>
+          </div>
+          <button type="button" class="secondary" id="btnSheetNext" ${idx >= clients.length - 1 ? 'disabled' : ''} title="Next client">›</button>
+          <span class="count">${idx + 1} / ${clients.length}</span>
+        </div>
+        <div class="sheet-client" data-cid="${link.roster_client_id}">
+          <h3>${escapeHtml(name)}${draft.completed ? '<span class="done-badge">Complete</span>' : ''}</h3>
+          <p class="muted" style="margin:0 0 0.55rem">Program day: <strong>${escapeHtml(dayName)}</strong> — log kg / reps / RIR like in the athlete app</p>
+          ${(draft.log_json.exercises || []).length
+            ? draft.log_json.exercises.map((ex, ei) => renderSetTable(ex, ei)).join('')
+            : '<p class="muted">No exercises on this day.</p>'}
+          <label>Extra notes (optional)</label>
+          <textarea class="sheet-notes" rows="2" placeholder="Form cues, skips, injuries…">${escapeHtml(draft.session_notes || '')}</textarea>
+          <label class="check" style="margin-top:0.55rem;display:flex;align-items:center;gap:0.5rem">
+            <input type="checkbox" class="sheet-done" ${draft.completed ? 'checked' : ''} style="width:auto" />
+            Mark this client’s session complete
+          </label>
+          <div class="btn-row">
+            <button type="button" class="btn-save-log">Save log</button>
+            ${doc ? `<button type="button" class="secondary btn-print-doc" data-token="${escapeAttr(doc)}">Print / PDF</button>` : ''}
+          </div>
+        </div>
         <div class="btn-row">
           <button type="button" class="danger" id="btnDeleteAppt">Delete session</button>
         </div>
       `;
-      $('sessionSheetBody').querySelectorAll('.btn-save-log').forEach((btn) => {
-        btn.onclick = async () => {
-          const block = btn.closest('.sheet-client');
-          const cid = block?.dataset.cid;
-          if (!cid) return;
-          const notes = block.querySelector('.sheet-notes')?.value?.trim() || null;
-          const markDone = !!block.querySelector('.sheet-done')?.checked;
-          const payload = {
-            session_notes: notes,
-            completed_at: markDone ? new Date().toISOString() : null,
-          };
-          const { error: upErr } = await sb.from('coach_appointment_clients').update(payload)
-            .eq('appointment_id', apptId)
-            .eq('roster_client_id', cid);
-          $('sheetMsg').textContent = upErr ? upErr.message : 'Log saved.';
-          $('sheetMsg').className = upErr ? 'err' : 'ok';
-          if (!upErr) await openSessionSheet(apptId);
+
+      const switchTo = (nextId) => {
+        collectSheetDraftFromDom();
+        sheetFocusClientId = nextId;
+        renderSheetClientPane();
+      };
+      $('sheetClientSelect').onchange = (e) => switchTo(e.target.value);
+      $('btnSheetPrev').onclick = () => { if (idx > 0) switchTo(clients[idx - 1].roster_client_id); };
+      $('btnSheetNext').onclick = () => { if (idx < clients.length - 1) switchTo(clients[idx + 1].roster_client_id); };
+
+      wireSetTableHandlers($('sessionSheetBody'));
+
+      $('sessionSheetBody').querySelector('.btn-save-log').onclick = async () => {
+        collectSheetDraftFromDom();
+        const cid = sheetFocusClientId;
+        const d = sheetDraftByClient[cid];
+        if (!cid || !d) return;
+        const payload = {
+          session_notes: (d.session_notes || '').trim() || null,
+          log_json: d.log_json || {},
+          completed_at: d.completed ? new Date().toISOString() : null,
         };
-      });
-      $('sessionSheetBody').querySelectorAll('.btn-print-doc').forEach((btn) => {
-        btn.onclick = () => {
-          const tok = btn.dataset.token;
-          if (tok) window.open(`${location.origin}/coach/admin/doc.html?token=${tok}`, '_blank');
-        };
+        const { error: upErr } = await sb.from('coach_appointment_clients').update(payload)
+          .eq('appointment_id', openAppointmentId)
+          .eq('roster_client_id', cid);
+        if (upErr) {
+          $('sheetMsg').textContent = upErr.message.includes('log_json')
+            ? 'Database needs migration 182 (log_json). Apply it, then retry.'
+            : upErr.message;
+          $('sheetMsg').className = 'err';
+          return;
+        }
+        // Refresh link cache so badges stay accurate
+        const cl = (sheetApptCache.coach_appointment_clients || [])
+          .find((x) => x.roster_client_id === cid);
+        if (cl) {
+          cl.session_notes = payload.session_notes;
+          cl.log_json = payload.log_json;
+          cl.completed_at = payload.completed_at;
+        }
+        $('sheetMsg').textContent = 'Log saved.';
+        $('sheetMsg').className = 'ok';
+        const { data: { user } } = await sb.auth.getUser();
+        if (user) await refreshSchedule(user.id);
+        renderSheetClientPane();
+      };
+      $('sessionSheetBody').querySelector('.btn-print-doc')?.addEventListener('click', (ev) => {
+        const tok = ev.currentTarget.dataset.token;
+        if (tok) window.open(`${location.origin}/coach/admin/doc.html?token=${tok}`, '_blank');
       });
       $('btnDeleteAppt').onclick = async () => {
         if (!confirm('Delete this session? Logs for this slot will be removed.')) return;
+        const { data: { user } } = await sb.auth.getUser();
+        if (!user) return;
         const { error: delErr } = await sb.from('coach_appointments')
-          .delete().eq('id', apptId).eq('coach_id', user.id);
+          .delete().eq('id', openAppointmentId).eq('coach_id', user.id);
         if (delErr) {
           $('sheetMsg').textContent = delErr.message;
           $('sheetMsg').className = 'err';
@@ -1129,6 +1362,39 @@
         $('schedMsg').textContent = 'Session deleted.';
         $('schedMsg').className = 'ok';
       };
+    }
+
+    async function openSessionSheet(apptId, preferClientId) {
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user) return;
+      const { data: appt, error } = await sb
+        .from('coach_appointments')
+        .select('id, starts_at, ends_at, notes, coach_appointment_clients(roster_client_id, day_index, session_notes, completed_at, log_json)')
+        .eq('id', apptId)
+        .eq('coach_id', user.id)
+        .maybeSingle();
+      if (error || !appt) {
+        $('schedMsg').textContent = error?.message || 'Could not open session.';
+        $('schedMsg').className = 'err';
+        return;
+      }
+      openAppointmentId = apptId;
+      sheetApptCache = appt;
+      sheetDraftByClient = {};
+      const clients = appt.coach_appointment_clients || [];
+      sheetFocusClientId = preferClientId && clients.some((c) => c.roster_client_id === preferClientId)
+        ? preferClientId
+        : (clients[0]?.roster_client_id || null);
+      $('scheduleListCard').classList.add('hidden');
+      $('newSessionCard').classList.add('hidden');
+      $('sessionSheetCard').classList.remove('hidden');
+      const t = `${new Date(appt.starts_at).toLocaleString([], {
+        weekday: 'short', month: 'short', day: 'numeric',
+        hour: '2-digit', minute: '2-digit',
+      })} – ${new Date(appt.ends_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+      $('sessionSheetTitle').textContent = t;
+      $('sheetMsg').textContent = '';
+      renderSheetClientPane();
     }
 
     function renderAddWizard() {
@@ -1682,7 +1948,7 @@
       const end = new Date(start); end.setDate(end.getDate() + 1);
       const { data: appts } = await sb
         .from('coach_appointments')
-        .select('id, starts_at, ends_at, mode, notes, coach_appointment_clients(roster_client_id, day_index, session_notes, completed_at)')
+        .select('id, starts_at, ends_at, mode, notes, coach_appointment_clients(roster_client_id, day_index, session_notes, completed_at, log_json)')
         .eq('coach_id', coachId)
         .gte('starts_at', start.toISOString())
         .lt('starts_at', end.toISOString())
@@ -1696,7 +1962,9 @@
               const name = byId[x.roster_client_id] || '—';
               const di = x.day_index != null ? Number(x.day_index) : null;
               const day = di != null ? dayLabelFor(x.roster_client_id, di) : 'No day set';
-              const logged = x.completed_at || (x.session_notes && String(x.session_notes).trim())
+              const logged = x.completed_at
+                || (x.session_notes && String(x.session_notes).trim())
+                || logHasWork(x.log_json)
                 ? ' · logged'
                 : '';
               return `${name} · ${day}${logged}`;
