@@ -2,6 +2,19 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <script>
+    (function () {
+      try {
+        if (location.protocol === 'http:' &&
+            /(^|\.)kallpa\.co$/i.test(location.hostname)) {
+          location.replace(
+            'https://' + location.host + location.pathname +
+            location.search + location.hash
+          );
+        }
+      } catch (_) {}
+    })();
+  </script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Kallpa — Coach Admin</title>
   <script src="/config.js" onerror="void 0"></script>
@@ -556,6 +569,15 @@
     const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
     const sb = createClient(url || 'https://invalid.local', key || 'x');
 
+    /** Public origin for share/print links — always HTTPS on kallpa.co. */
+    function coachAdminOrigin() {
+      const host = location.host || 'kallpa.co';
+      if (/(^|\.)kallpa\.co$/i.test(location.hostname || '')) {
+        return 'https://' + host;
+      }
+      return location.origin;
+    }
+
     let roster = [];
     let selectedId = new URLSearchParams(location.search).get('client') || '';
     let days = [{ label: 'Day 1', exercises: [{ name: '', sets: '3', reps: '8-12' }] }];
@@ -799,7 +821,7 @@
 
       if (c.status === 'pending' && !c.client_user_id) {
         const web = c.invite_token
-          ? `${location.origin}/coach/admin/accept.html?token=${c.invite_token}`
+          ? `${coachAdminOrigin()}/coach/admin/accept.html?token=${c.invite_token}`
           : '';
         body.innerHTML = `
           <p class="hint"><strong>Waiting for them to join.</strong> They are not connected yet — send the invite link and ask them to finish on their phone.</p>
@@ -1594,7 +1616,7 @@
       };
       $('sessionSheetBody').querySelector('.btn-print-doc')?.addEventListener('click', (ev) => {
         const tok = ev.currentTarget.dataset.token;
-        if (tok) window.open(`${location.origin}/coach/admin/doc.html?token=${tok}`, '_blank');
+        if (tok) window.open(`${coachAdminOrigin()}/coach/admin/doc.html?token=${tok}`, '_blank');
       });
       $('btnDeleteAppt').onclick = async () => {
         if (!confirm('Delete this session? Logs for this slot will be removed.')) return;
@@ -1849,7 +1871,7 @@
         $('addMsg').className = 'err';
         return;
       }
-      const web = `${location.origin}/coach/admin/accept.html?token=${inviteToken}`;
+      const web = `${coachAdminOrigin()}/coach/admin/accept.html?token=${inviteToken}`;
       $('addMsg').innerHTML = `Invite ready. <strong>Send this link to your client</strong> (WhatsApp, email, etc.). Ask them to open it on their phone, sign in to Kallpa, then tap Join my coach.<br/><code>${escapeHtml(web)}</code>`;
       $('addMsg').className = 'ok';
       try { await navigator.clipboard.writeText(web); } catch (_) {}
@@ -2422,14 +2444,14 @@
       $('btnGoSchedule').classList.remove('hidden');
       updateStepLocks();
       renderRoster();
-      const link = `${location.origin}/coach/admin/doc.html?token=${docToken}`;
+      const link = `${coachAdminOrigin()}/coach/admin/doc.html?token=${docToken}`;
       $('progMsg').innerHTML = `Program saved. You can schedule sessions now.<br/><code>${escapeHtml(link)}</code>`;
       $('progMsg').className = 'ok';
     };
 
     $('btnPrint').onclick = () => {
       if (!lastDocToken) return;
-      window.open(`${location.origin}/coach/admin/doc.html?token=${lastDocToken}`, '_blank');
+      window.open(`${coachAdminOrigin()}/coach/admin/doc.html?token=${lastDocToken}`, '_blank');
     };
 
     $('btnGoSchedule').onclick = () => setStep('schedule');

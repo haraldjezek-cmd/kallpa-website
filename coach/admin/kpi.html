@@ -2,6 +2,19 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <script>
+    (function () {
+      try {
+        if (location.protocol === 'http:' &&
+            /(^|\.)kallpa\.co$/i.test(location.hostname)) {
+          location.replace(
+            'https://' + location.host + location.pathname +
+            location.search + location.hash
+          );
+        }
+      } catch (_) {}
+    })();
+  </script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Kallpa — KPI summary</title>
   <script src="/config.js" onerror="void 0"></script>
