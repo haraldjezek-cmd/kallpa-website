@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kallpa — KPI summary</title>
+  <script src="/config.js" onerror="void 0"></script>
+  <script src="config.js" onerror="void 0"></script>
+  <style>
+    :root {
+      --text: #111; --muted: #555; --border: #ccc; --accent: #2d7350;
+      --font: "Segoe UI", system-ui, sans-serif;
+    }
+    body { margin: 0; font-family: var(--font); color: var(--text); background: #fff; padding: 1.25rem; }
+    .wrap { max-width: 720px; margin: 0 auto; }
+    .actions { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+    button { font: inherit; padding: 0.5rem 0.9rem; border-radius: 8px; border: 1px solid var(--border); background: var(--accent); color: #fff; cursor: pointer; }
+    h1 { font-size: 1.5rem; margin: 0 0 0.25rem; }
+    h2 { font-size: 1.1rem; margin: 1.25rem 0 0.5rem; border-top: 2px solid #111; padding-top: 0.75rem; }
+    .sub { color: var(--muted); margin-bottom: 1rem; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    .kpi { border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem; }
+    .kpi .label { color: var(--muted); font-size: 0.85rem; }
+    .kpi .value { font-size: 1.25rem; font-weight: 700; margin-top: 0.2rem; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+    th, td { text-align: left; padding: 0.4rem 0.25rem; border-bottom: 1px solid var(--border); }
+    .err { color: #a33; }
+    @media print {
+      .actions { display: none; }
+      body { padding: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="actions">
+      <button onclick="window.print()">Print / Save PDF</button>
+    </div>
+    <div id="root"><p class="sub">Loading…</p></div>
+  </div>
+  <script>
+    const params = new URLSearchParams(location.search);
+    const token = params.get('token') || '';
+    const cfg = window.KALLPA_CONFIG || window.COACH_ADMIN_CONFIG || {};
+    const base = (cfg.SUPABASE_URL || '').replace(/\/$/, '');
+
+    async function load() {
+      const root = document.getElementById('root');
+      if (!token || !base) {
+        root.innerHTML = '<p class="err">Missing token or config.</p>';
+        return;
+      }
+      const res = await fetch(`${base}/functions/v1/coach-admin-print?token=${encodeURIComponent(token)}`, {
+        headers: { apikey: cfg.SUPABASE_ANON_KEY || '', Authorization: `Bearer ${cfg.SUPABASE_ANON_KEY || ''}` },
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.ok || data.kind !== 'kpi') {
+        root.innerHTML = `<p class="err">${data.error || 'Not found'}</p>`;
+        return;
+      }
+      const p = data.payload || {};
+      let html = `<h1>KPI summary</h1>`;
+      html += `<p class="sub">${escapeHtml(p.client_name || 'Client')}`;
+      if (p.coach_name) html += ` · Coach ${escapeHtml(p.coach_name)}`;
+      html += `</p>`;
+      html += `<p class="sub">${escapeHtml(p.from || '')} → ${escapeHtml(p.to || '')}</p>`;
+      html += `<div class="grid">`;
+      html += kpi('Sessions', String(p.sessions_completed ?? 0));
+      html += kpi('Adherence', p.adherence_pct != null ? `${p.adherence_pct}%` : '—');
+      html += kpi('Working sets', String(p.total_working_sets ?? 0));
+      html += kpi('Avg RIR', p.avg_rir != null ? String(p.avg_rir) : '—');
+      html += `</div>`;
+      if (p.planned_sessions) {
+        html += `<p class="sub">Planned ~${escapeHtml(String(p.planned_sessions))} sessions (${escapeHtml(String(p.days_per_week || 0))}/week)</p>`;
+      }
+      html += `<h2>Top lifts</h2>`;
+      if (!(p.top_lifts || []).length) {
+        html += `<p class="sub">No lift data in this range.</p>`;
+      } else {
+        html += `<table><thead><tr><th>Exercise</th><th>Start</th><th>End</th><th>Peak</th></tr></thead><tbody>`;
+        (p.top_lifts || []).forEach(l => {
+          html += `<tr><td>${escapeHtml(l.name)}</td><td>${escapeHtml(String(l.start_e1rm))}</td><td>${escapeHtml(String(l.end_e1rm))}</td><td>${escapeHtml(String(l.peak_e1rm))}</td></tr>`;
+        });
+        html += `</tbody></table>`;
+      }
+      html += `<h2>Sessions</h2>`;
+      if (!(p.sessions || []).length) {
+        html += `<p class="sub">No sessions in this range.</p>`;
+      } else {
+        html += `<table><thead><tr><th>Date</th><th>Exercises</th></tr></thead><tbody>`;
+        (p.sessions || []).forEach(s => {
+          const d = String(s.date || '').replace('T', ' ').slice(0, 16);
+          html += `<tr><td>${escapeHtml(d)}</td><td>${escapeHtml(String(s.exercise_count ?? 0))}</td></tr>`;
+        });
+        html += `</tbody></table>`;
+      }
+      root.innerHTML = html;
+    }
+
+    function kpi(label, value) {
+      return `<div class="kpi"><div class="label">${escapeHtml(label)}</div><div class="value">${escapeHtml(value)}</div></div>`;
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+    load();
+  </script>
+</body>
+</html>
